@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DEPLOY_HOST: ${{ secrets.SSH_HOST }}
-      DEPLOY_USER: ${{ secrets.SSH_USER }}
+      DEPLOY_USER: github
       DEPLOY_PATH: /home/github/homelab
       DEPLOY_SERVICES: ${{ inputs.services }}
 
@@ -49,9 +49,10 @@ jobs:
           set -euo pipefail
           install -d -m 700 "$HOME/.ssh"
           umask 077
-          printf '%s' "$DEPLOY_SECRET_KEY" > "$HOME/.ssh/id_ed25519"
+          printf '%s\n' "$DEPLOY_SECRET_KEY" | tr -d '\r' > "$HOME/.ssh/id_ed25519"
           printf '%s\n' "$SSH_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
           chmod 600 "$HOME/.ssh/id_ed25519" "$HOME/.ssh/known_hosts"
+          ssh-keygen -y -f "$HOME/.ssh/id_ed25519" >/dev/null
 
       - name: Prepare deployment directory
         run: |
