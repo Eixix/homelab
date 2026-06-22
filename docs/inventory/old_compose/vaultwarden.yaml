@@ -1,0 +1,33 @@
+services:
+  vaultwarden:
+    image: "vaultwarden/server:latest"
+    container_name: vaultwarden
+    restart: unless-stopped
+    volumes:
+      - /docker-compose-services/vaultwarden/:/data/
+    environment:
+      TZ: Europe/Berlin
+      ADMIN_TOKEN: REDACTED_ROTATE_BEFORE_USE
+      DOMAIN:
+        "https://passwort.betz.coffee/"
+        # SMTP_HOST: smtp.sendgrid.net
+        # SMTP_FROM: noreply@home.tobiasbetz.de
+        # SMTP_PORT: 587
+        # SMTP_SSL: "true"
+        # SMTP_USERNAME: apikey
+$1 REDACTED_ROTATE_BEFORE_USE
+        # adminSettings__admins: "tobiasbetz@hotmail.de"
+    networks:
+      - external_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.vault.rule=Host(`passwort.betz.coffee`)"
+      - "traefik.http.routers.vault.entrypoints=websecure"
+      #- "traefik.http.routers.vault.tls.certresolver=externalresolver"
+      - "traefik.http.routers.vault.tls=true"
+      - "traefik.docker.network=external_network"
+
+networks:
+  external_network:
+    name: external_network
+    external: true

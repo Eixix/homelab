@@ -1,0 +1,26 @@
+services:
+  go2rtc:
+    container_name: go2rtc
+    image: alexxit/go2rtc
+    privileged: true # only for FFmpeg hardware transcoding
+    restart: unless-stopped # autorestart on fail or config change from WebUI
+    environment:
+      - TZ=Europe/Berlin # timezone in logs
+    volumes:
+      - "/docker-compose-services/go2rtc:/config" # folder for go2rtc.yaml file (edit from WebUI)
+    networks:
+      - internal_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.go2rtc.rule=Host(`go2rtc.home`)"
+      - "traefik.http.services.go2rtc.loadbalancer.server.port=1984"
+      - "traefik.http.routers.go2rtc.entrypoints=websecure"
+      - "traefik.http.routers.go2rtc.tls.certresolver=internalresolver"
+      - "traefik.http.routers.go2rtc.tls=true"
+      - "traefik.http.middlewares.test-ipwhitelist.ipwhitelist.sourcerange=10.0.0.0/8"
+      - "traefik.docker.network=internal_network"
+
+networks:
+  internal_network:
+    external: true
+    name: internal_network

@@ -1,0 +1,73 @@
+services:
+  immich-server:
+    container_name: immich_server
+    image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION}
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ}
+      DB_HOSTNAME: immich-postgres
+      DB_USERNAME: ${IMMICH_DB_USERNAME}
+      DB_PASSWORD: ${IMMICH_DB_PASSWORD}
+      DB_DATABASE_NAME: ${IMMICH_DB_DATABASE_NAME}
+      REDIS_HOSTNAME: immich-redis
+      IMMICH_MACHINE_LEARNING_URL: http://immich-machine-learning:3003
+    depends_on:
+      - immich-redis
+      - immich-postgres
+    volumes:
+      - ${IMMICH_UPLOAD_PATH}:/usr/src/app/upload
+    networks:
+      - external_network
+      - internal_network
+    labels:
+      - traefik.enable=true
+
+      - traefik.http.routers.immich-external.rule=Host(`${IMMICH_HOST}`)
+      - traefik.http.routers.immich-external.entrypoints=websecure
+      - traefik.http.routers.immich-external.tls=true
+      - traefik.http.routers.immich-external.tls.certresolver=internalresolver
+      - traefik.http.routers.immich-external.middlewares=security-headers@file
+      - traefik.http.routers.immich-external.service=immich
+
+      - traefik.http.routers.immich-internal.rule=Host(`${IMMICH_INTERNAL_HOST}`)
+      - traefik.http.routers.immich-internal.entrypoints=websecure
+      - traefik.http.routers.immich-internal.tls=true
+      - traefik.http.routers.immich-internal.tls.certresolver=internalresolver
+      - traefik.http.routers.immich-internal.middlewares=lan-only@file,security-headers@file
+      - traefik.http.routers.immich-internal.service=immich
+
+      - traefik.http.services.immich.loadbalancer.server.port=2283
+      - traefik.docker.network=internal_network
+
+  immich-machine-learning:
+    container_name: immich_machine_learning
+    image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION}
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ}
+    volumes:
+      - ../../data/immich/model-cache:/cache
+    networks:
+      - internal_network
+
+  immich-redis:
+    container_name: immich_redis
+    image: redis:6.2-alpine
+    restart: unless-stopped
+    networks:
+      - internal_network
+
+  immich-postgres:
+    container_name: immich_postgres
+    image: ghcr.io/immich-app/postgres:14-vectorchord0.3.0-pgvectors0.2.0
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${IMMICH_DB_PASSWORD}
+      POSTGRES_USER: ${IMMICH_DB_USERNAME}
+      POSTGRES_DB: ${IMMICH_DB_DATABASE_NAME}
+      POSTGRES_INITDB_ARGS: --data-checksums
+      PG_DATA: /var/lib/postgresql/data
+    volumes:
+      - ../../data/immich/database:/var/lib/postgresql/data
+    networks:
+      - internal_network

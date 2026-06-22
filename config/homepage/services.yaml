@@ -1,0 +1,61 @@
+- Core:
+    - Traefik:
+        href: "{{HOMEPAGE_VAR_TRAEFIK_URL}}"
+        description: Reverse proxy
+        icon: traefik.png
+    - AdGuard Home:
+        href: "{{HOMEPAGE_VAR_ADGUARD_URL}}"
+        description: DNS and filtering
+        icon: adguard-home.png
+
+- Apps:
+    - Homepage:
+        href: "{{HOMEPAGE_VAR_HOMEPAGE_URL}}"
+        description: Homelab dashboard
+        icon: homepage.png
+    - Vaultwarden:
+        href: "{{HOMEPAGE_VAR_VAULTWARDEN_URL}}"
+        description: Password vault
+        icon: vaultwarden.png
+    - Shlink:
+        href: "{{HOMEPAGE_VAR_SHLINK_WEB_URL}}"
+        description: Short link management
+        icon: shlink.png
+    - Actual Budget:
+        href: "{{HOMEPAGE_VAR_ACTUAL_URL}}"
+        description: Budgeting
+        icon: actual-budget.png
+    - n8n:
+        href: "{{HOMEPAGE_VAR_N8N_URL}}"
+        description: Automation
+        icon: n8n.png
+    - go2rtc:
+        href: "{{HOMEPAGE_VAR_GO2RTC_URL}}"
+        description: Camera streams
+        icon: go2rtc.png
+    - KitchenOwl:
+        href: "{{HOMEPAGE_VAR_KITCHENOWL_URL}}"
+        description: Groceries and meal planning
+        icon: kitchenowl.png
+    - Paperless-ngx:
+        href: "{{HOMEPAGE_VAR_PAPERLESS_URL}}"
+        description: Documents
+        icon: paperless-ngx.png
+    - Home Assistant:
+        href: "{{HOMEPAGE_VAR_HOMEASSISTANT_URL}}"
+        description: Home automation
+        icon: home-assistant.png
+    - Immich:
+        href: "{{HOMEPAGE_VAR_IMMICH_URL}}"
+        description: Photos and videos
+        icon: immich.png
+    - Kavita:
+        href: "{{HOMEPAGE_VAR_KAVITA_URL}}"
+        description: Books and comics
+        icon: kavita.png
+
+- Monitoring:
+    - Beszel:
+        href: "{{HOMEPAGE_VAR_BESZEL_URL}}"
+        description: Server monitoring
+        icon: beszel.png

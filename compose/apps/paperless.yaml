@@ -1,0 +1,66 @@
+services:
+  paperless-broker:
+    container_name: paperless-broker
+    image: redis:7
+    restart: unless-stopped
+    volumes:
+      - ../../data/paperless/redis:/data
+    networks:
+      - internal_network
+
+  paperless-db:
+    container_name: paperless-db
+    image: mariadb:10
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ}
+      MARIADB_DATABASE: paperless
+      MARIADB_USER: paperless
+      MARIADB_PASSWORD: ${PAPERLESS_DB_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${PAPERLESS_DB_ROOT_PASSWORD}
+    volumes:
+      - ../../data/paperless/db:/var/lib/mysql
+    networks:
+      - internal_network
+
+  paperless-web:
+    container_name: paperless-web
+    image: ghcr.io/paperless-ngx/paperless-ngx:latest
+    restart: unless-stopped
+    depends_on:
+      - paperless-db
+      - paperless-broker
+    environment:
+      PAPERLESS_URL: https://${PAPERLESS_HOST}
+      PAPERLESS_REDIS: redis://paperless-broker:6379
+      PAPERLESS_DBENGINE: mariadb
+      PAPERLESS_DBHOST: paperless-db
+      PAPERLESS_DBNAME: paperless
+      PAPERLESS_DBUSER: paperless
+      PAPERLESS_DBPASS: ${PAPERLESS_DB_PASSWORD}
+      PAPERLESS_DBPORT: 3306
+      PAPERLESS_SECRET_KEY: ${PAPERLESS_SECRET_KEY}
+      PAPERLESS_TIME_ZONE: ${TZ}
+      PAPERLESS_ADMIN_USER: ${PAPERLESS_ADMIN_USER}
+      PAPERLESS_ADMIN_PASSWORD: ${PAPERLESS_ADMIN_PASSWORD}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    volumes:
+      - ../../data/paperless/data:/usr/src/paperless/data
+      - ../../data/paperless/media:/usr/src/paperless/media
+      - ../../data/paperless/export:/usr/src/paperless/export
+      - ${PAPERLESS_CONSUME_PATH}:/usr/src/paperless/consume
+    networks:
+      - internal_network
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.paperless.rule=Host(`${PAPERLESS_HOST}`)
+      - traefik.http.routers.paperless.entrypoints=websecure
+      - traefik.http.routers.paperless.tls=true
+      - traefik.http.routers.paperless.tls.certresolver=internalresolver
+      - traefik.http.routers.paperless.middlewares=lan-only@file,security-headers@file
+      - traefik.http.services.paperless.loadbalancer.server.port=8000
+      - traefik.docker.network=internal_network

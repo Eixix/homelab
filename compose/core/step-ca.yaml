@@ -1,0 +1,19 @@
+services:
+  step-ca:
+    container_name: step-ca
+    image: smallstep/step-ca:latest
+    restart: unless-stopped
+    volumes:
+      - ../../data/step-ca:/home/step
+    ports:
+      - 9000:9000
+    environment:
+      TZ: ${TZ}
+      DOCKER_STEPCA_INIT_NAME: ${STEP_CA_INIT_NAME}
+      DOCKER_STEPCA_INIT_DNS_NAMES: ${STEP_CA_HOST}
+      DOCKER_STEPCA_INIT_REMOTE_MANAGEMENT: "true"
+      DOCKER_STEPCA_INIT_ACME: "true"
+    networks:
+      internal_network:
+        aliases:
+          - ${STEP_CA_HOST}

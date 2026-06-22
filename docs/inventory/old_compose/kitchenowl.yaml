@@ -1,0 +1,30 @@
+services:
+  front:
+    image: tombursch/kitchenowl-web:latest
+    container_name: kitchenowlfront
+    restart: unless-stopped
+    depends_on:
+      - back
+    networks:
+      - external_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.kitchenowl.rule=Host(`shopping.betz.coffee`)"
+      - "traefik.http.routers.kitchenowl.entrypoints=websecure"
+      #- "traefik.http.routers.kitchenowl.tls.certresolver=externalresolver"
+      - "traefik.http.routers.kitchenowl.tls=true"
+      - "traefik.docker.network=external_network"
+
+  back:
+    image: tombursch/kitchenowl-backend:latest
+    restart: unless-stopped
+    container_name: kitchenowlback
+    volumes:
+      - /docker-compose-services/kitchenowl-data:/data
+    networks:
+      - external_network
+
+networks:
+  external_network:
+    external: true
+    name: external_network

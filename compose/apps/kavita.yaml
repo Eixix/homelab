@@ -1,0 +1,22 @@
+services:
+  kavita:
+    container_name: kavita
+    image: jvmilazz0/kavita:latest
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ}
+    volumes:
+      - ../../data/kavita/config:/kavita/config
+      - ${KAVITA_BOOKS_PATH}:/books:ro
+      - ${KAVITA_COMICS_PATH}:/comics:ro
+    networks:
+      - internal_network
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.kavita.rule=Host(`${KAVITA_HOST}`)
+      - traefik.http.routers.kavita.entrypoints=websecure
+      - traefik.http.routers.kavita.tls=true
+      - traefik.http.routers.kavita.tls.certresolver=internalresolver
+      - traefik.http.routers.kavita.middlewares=lan-only@file,security-headers@file
+      - traefik.http.services.kavita.loadbalancer.server.port=5000
+      - traefik.docker.network=internal_network

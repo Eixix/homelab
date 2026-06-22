@@ -1,0 +1,39 @@
+services:
+  homepage:
+    container_name: homepage
+    image: ghcr.io/gethomepage/homepage:latest
+    restart: unless-stopped
+    user: ${HOMEPAGE_UID}:${HOMEPAGE_GID}
+    cap_drop: [all]
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      TZ: ${TZ}
+      HOMEPAGE_ALLOWED_HOSTS: ${HOMEPAGE_HOST}
+      HOMEPAGE_VAR_ADGUARD_URL: https://${ADGUARD_HOST}
+      HOMEPAGE_VAR_ACTUAL_URL: https://${ACTUAL_HOST}
+      HOMEPAGE_VAR_HOMEPAGE_URL: https://${HOMEPAGE_HOST}
+      HOMEPAGE_VAR_GO2RTC_URL: https://${GO2RTC_HOST}
+      HOMEPAGE_VAR_HOMEASSISTANT_URL: https://${HOMEASSISTANT_HOST}
+      HOMEPAGE_VAR_IMMICH_URL: https://${IMMICH_INTERNAL_HOST}
+      HOMEPAGE_VAR_KAVITA_URL: https://${KAVITA_HOST}
+      HOMEPAGE_VAR_KITCHENOWL_URL: https://${KITCHENOWL_HOST}
+      HOMEPAGE_VAR_N8N_URL: https://${N8N_HOST}
+      HOMEPAGE_VAR_PAPERLESS_URL: https://${PAPERLESS_HOST}
+      HOMEPAGE_VAR_BESZEL_URL: https://${BESZEL_HOST}
+      HOMEPAGE_VAR_SHLINK_WEB_URL: https://${SHLINK_WEB_HOST}
+      HOMEPAGE_VAR_TRAEFIK_URL: https://${TRAEFIK_HOST}
+      HOMEPAGE_VAR_VAULTWARDEN_URL: https://${VAULTWARDEN_HOST}
+    volumes:
+      - ../../config/homepage:/app/config
+    networks:
+      - internal_network
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.homepage.rule=Host(`${HOMEPAGE_HOST}`)
+      - traefik.http.routers.homepage.entrypoints=websecure
+      - traefik.http.routers.homepage.tls=true
+      - traefik.http.routers.homepage.tls.certresolver=internalresolver
+      - traefik.http.routers.homepage.middlewares=lan-only@file,security-headers@file
+      - traefik.http.services.homepage.loadbalancer.server.port=3000
+      - traefik.docker.network=internal_network

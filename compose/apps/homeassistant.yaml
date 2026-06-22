@@ -1,0 +1,30 @@
+services:
+  homeassistant:
+    container_name: homeassistant
+    image: ghcr.io/home-assistant/home-assistant:stable
+    restart: unless-stopped
+    privileged: true
+    network_mode: host
+    environment:
+      TZ: ${TZ}
+    volumes:
+      - ../../data/homeassistant:/config
+      - /run/dbus:/run/dbus:ro
+      - /etc/localtime:/etc/localtime:ro
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.homeassistant.loadbalancer.server.port=8123
+
+      - traefik.http.routers.homeassistant-internal.rule=Host(`${HOMEASSISTANT_HOST}`)
+      - traefik.http.routers.homeassistant-internal.entrypoints=websecure
+      - traefik.http.routers.homeassistant-internal.tls=true
+      - traefik.http.routers.homeassistant-internal.tls.certresolver=internalresolver
+      - traefik.http.routers.homeassistant-internal.middlewares=lan-only@file,security-headers@file
+      - traefik.http.routers.homeassistant-internal.service=homeassistant
+
+      - traefik.http.routers.homeassistant-alexa.rule=Host(`${HOMEASSISTANT_EXTERNAL_HOST}`) && (PathPrefix(`/api/alexa`) || PathPrefix(`/auth`))
+      - traefik.http.routers.homeassistant-alexa.entrypoints=websecure
+      - traefik.http.routers.homeassistant-alexa.tls=true
+      - traefik.http.routers.homeassistant-alexa.tls.certresolver=internalresolver
+      - traefik.http.routers.homeassistant-alexa.middlewares=security-headers@file
+      - traefik.http.routers.homeassistant-alexa.service=homeassistant

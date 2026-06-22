@@ -1,0 +1,65 @@
+services:
+  shlink:
+    image: shlinkio/shlink:stable
+    restart: "unless-stopped"
+    container_name: shlink
+    environment:
+      DEFAULT_DOMAIN: l.betz.coffee
+      IS_HTTPS_ENABLED: true
+      TZ: "Europe/Berlin"
+      DB_DRIVER: maria
+      DB_USER: root
+      DB_NAME: shlink
+      DB_PASSWORD: REDACTED_ROTATE_BEFORE_USE
+      DB_HOST: shlink_database
+    networks:
+      - external_network
+      - internal_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.shlink.rule=Host(`l.betz.coffee`)"
+      - "traefik.http.routers.shlink.entrypoints=websecure"
+      #- "traefik.http.routers.shlink.tls.certresolver=externalresolver"
+      - "traefik.http.routers.shlink.tls=true"
+      - "traefik.docker.network=external_network"
+
+  shlink_webclient:
+    image: shlinkio/shlink-web-client
+    container_name: shlink-web
+    restart: unless-stopped
+    volumes:
+      - /docker-compose-services/vaultwarden/:/data/
+    environment:
+      DEFAULT_DOMAIN: l.betz.coffee
+      IS_HTTPS_ENABLED: true
+    networks:
+      - internal_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.shlink-web.rule=Host(`shlink.home`)"
+      - "traefik.http.routers.shlink-web.entrypoints=websecure"
+      - "traefik.http.routers.shlink-web.tls.certresolver=internalresolver"
+      - "traefik.http.routers.shlink-web.tls=true"
+      - "traefik.docker.network=internal_network"
+
+  shlink_database:
+    image: mariadb
+    restart: unless-stopped
+    container_name: shlink_database
+    environment:
+      - MARIADB_ROOT_PASSWORD=REDACTED_ROTATE_BEFORE_USE
+      - MARIADB_DATABASE=shlink
+      - MARIADB_USER=shlink
+      - MARIADB_PASSWORD=REDACTED_ROTATE_BEFORE_USE
+    networks:
+      - internal_network
+    volumes:
+      - /docker-compose-services/shlink/db_data:/var/lib/mysql
+
+networks:
+  external_network:
+    name: external_network
+    external: true
+  internal_network:
+    name: internal_network
+    external: true

@@ -1,0 +1,28 @@
+services:
+  kavita:
+    image: jvmilazz0/kavita:latest # Using the stable branch from the official dockerhub repo.
+    container_name: kavita
+    volumes:
+      # Use as many as you want
+      - /storage_array/books/books:/books
+      - /storage_array/books/comics:/comics
+      - /docker-compose-services/kavita/data:/kavita/config # Change './data if you want to have the config files in a different place.
+
+    environment:
+      - TZ=Europe/Berlin
+    networks:
+      - internal_network
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.kavita.rule=Host(`reader.home`)"
+      - "traefik.http.routers.kavita.entrypoints=websecure"
+      - "traefik.http.routers.kavita.tls.certresolver=internalresolver"
+      - "traefik.http.routers.kavita.tls=true"
+      - "traefik.http.middlewares.test-ipwhitelist.ipwhitelist.sourcerange=10.0.0.0/8"
+      - "traefik.docker.network=internal_network"
+
+networks:
+  internal_network:
+    external: true
+    name: internal_network

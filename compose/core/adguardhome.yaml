@@ -1,0 +1,22 @@
+services:
+  adguardhome:
+    container_name: adguardhome
+    image: adguard/adguardhome:latest
+    restart: unless-stopped
+    volumes:
+      - ../../data/adguardhome/work:/opt/adguardhome/work
+      - ../../data/adguardhome/conf:/opt/adguardhome/conf
+    ports:
+      - ${ADGUARD_DNS_BIND_IP}:53:53/tcp
+      - ${ADGUARD_DNS_BIND_IP}:53:53/udp
+    networks:
+      - internal_network
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.adguardhome.rule=Host(`${ADGUARD_HOST}`)
+      - traefik.http.routers.adguardhome.entrypoints=websecure
+      - traefik.http.routers.adguardhome.tls=true
+      - traefik.http.routers.adguardhome.tls.certresolver=internalresolver
+      - traefik.http.routers.adguardhome.middlewares=lan-only@file,security-headers@file
+      - traefik.http.services.adguardhome.loadbalancer.server.port=${ADGUARD_WEB_PORT}
+      - traefik.docker.network=internal_network

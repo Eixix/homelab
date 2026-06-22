@@ -1,0 +1,73 @@
+services:
+  reverse-proxy:
+    container_name: traefik
+    image: traefik:latest
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ}
+    depends_on:
+      step-ca:
+        condition: service_healthy
+    command:
+      - --accesslog=true
+      - --api.dashboard=true
+      - --api.insecure=false
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.file.directory=/etc/traefik/dynamic
+      - --providers.file.watch=true
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --entrypoints.websecure.transport.respondingTimeouts.readTimeout=0s
+      - --entryPoints.name.transport.respondingTimeouts.idleTimeout=600
+      - --entryPoints.name.transport.respondingTimeouts.readTimeout=600
+      - --certificatesresolvers.internalresolver.acme.tlschallenge=true
+      - --certificatesresolvers.internalresolver.acme.caServer=https://${STEP_CA_HOST}:9000/acme/acme/directory
+      - --certificatesresolvers.internalresolver.acme.certificatesDuration=24
+      - --certificatesresolvers.internalresolver.acme.email=${TRAEFIK_ACME_EMAIL}
+      - --certificatesresolvers.internalresolver.acme.storage=/letsencrypt/internal-acme.json
+    ports:
+      - 80:80
+      - 443:443
+      # Dashboard deliberately not exposed on :8080 anymore.
+    volumes:
+      - ../../config/traefik/dynamic/middlewares.yaml:/etc/traefik/dynamic/middlewares.yaml:ro
+      - ${TRAEFIK_EXTERNAL_CERTIFICATE_CONFIG_PATH}:/etc/traefik/dynamic/99-external-certificate.yaml:ro
+      - ../../data/step-ca/certs/root_ca.crt:/etc/ssl/certs/ca-certificates.crt:ro
+      - ../../data/traefik/letsencrypt:/letsencrypt
+      - ../../data/traefik/certificates:/certificates:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      external_network:
+      internal_network:
+        aliases:
+          - ${TRAEFIK_HOST}
+          - ${HOMEPAGE_HOST}
+          - ${ADGUARD_HOST}
+          - ${VAULTWARDEN_HOST}
+          - ${SHLINK_HOST}
+          - ${SHLINK_WEB_HOST}
+          - ${ACTUAL_HOST}
+          - ${N8N_HOST}
+          - ${GO2RTC_HOST}
+          - ${KITCHENOWL_HOST}
+          - ${PAPERLESS_HOST}
+          - ${HOMEASSISTANT_HOST}
+          - ${HOMEASSISTANT_EXTERNAL_HOST}
+          - ${KAVITA_HOST}
+          - ${IMMICH_HOST}
+          - ${IMMICH_INTERNAL_HOST}
+          - ${BESZEL_HOST}
+    extra_hosts:
+      - host.docker.internal:172.17.0.1
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.traefik.rule=Host(`${TRAEFIK_HOST}`)
+      - traefik.http.routers.traefik.entrypoints=websecure
+      - traefik.http.routers.traefik.tls=true
+      - traefik.http.routers.traefik.tls.certresolver=internalresolver
+      - traefik.http.routers.traefik.service=api@internal
+      - traefik.http.routers.traefik.middlewares=lan-only@file,security-headers@file
+      - traefik.docker.network=internal_network

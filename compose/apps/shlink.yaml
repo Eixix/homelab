@@ -1,0 +1,61 @@
+services:
+  shlink:
+    container_name: shlink
+    image: shlinkio/shlink:stable
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ}
+      DEFAULT_DOMAIN: ${SHLINK_HOST}
+      IS_HTTPS_ENABLED: "true"
+      DB_DRIVER: maria
+      DB_HOST: shlink-database
+      DB_NAME: shlink
+      DB_USER: shlink
+      DB_PASSWORD: ${SHLINK_DB_PASSWORD}
+    depends_on:
+      - shlink-database
+    networks:
+      - external_network
+      - internal_network
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.shlink.rule=Host(`${SHLINK_HOST}`)
+      - traefik.http.routers.shlink.entrypoints=websecure
+      - traefik.http.routers.shlink.tls=true
+      - traefik.http.routers.shlink.tls.certresolver=internalresolver
+      - traefik.http.routers.shlink.middlewares=security-headers@file
+      - traefik.http.services.shlink.loadbalancer.server.port=8080
+      - traefik.docker.network=external_network
+
+  shlink-web:
+    container_name: shlink-web
+    image: shlinkio/shlink-web-client:stable
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ}
+    networks:
+      - internal_network
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.shlink-web.rule=Host(`${SHLINK_WEB_HOST}`)
+      - traefik.http.routers.shlink-web.entrypoints=websecure
+      - traefik.http.routers.shlink-web.tls=true
+      - traefik.http.routers.shlink-web.tls.certresolver=internalresolver
+      - traefik.http.routers.shlink-web.middlewares=lan-only@file,security-headers@file
+      - traefik.http.services.shlink-web.loadbalancer.server.port=8080
+      - traefik.docker.network=internal_network
+
+  shlink-database:
+    container_name: shlink-database
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ}
+      MARIADB_ROOT_PASSWORD: ${SHLINK_DB_ROOT_PASSWORD}
+      MARIADB_DATABASE: shlink
+      MARIADB_USER: shlink
+      MARIADB_PASSWORD: ${SHLINK_DB_PASSWORD}
+    volumes:
+      - ../../data/shlink/db:/var/lib/mysql
+    networks:
+      - internal_network

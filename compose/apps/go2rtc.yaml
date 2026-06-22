@@ -1,0 +1,21 @@
+services:
+  go2rtc:
+    container_name: go2rtc
+    image: alexxit/go2rtc:latest
+    restart: unless-stopped
+    privileged: true
+    environment:
+      TZ: ${TZ}
+    volumes:
+      - ../../data/go2rtc:/config
+    networks:
+      - internal_network
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.go2rtc.rule=Host(`${GO2RTC_HOST}`)
+      - traefik.http.routers.go2rtc.entrypoints=websecure
+      - traefik.http.routers.go2rtc.tls=true
+      - traefik.http.routers.go2rtc.tls.certresolver=internalresolver
+      - traefik.http.routers.go2rtc.middlewares=lan-only@file,security-headers@file
+      - traefik.http.services.go2rtc.loadbalancer.server.port=1984
+      - traefik.docker.network=internal_network

@@ -1,0 +1,24 @@
+services:
+  homepage:
+    image: ghcr.io/gethomepage/homepage:latest
+    container_name: homepage
+    networks:
+      - internal_network
+    volumes:
+      - /docker-compose-services/homepage/config:/app/config # Make sure your local config directory exists
+      - /var/run/docker.sock:/var/run/docker.sock:ro # optional, for docker integrations
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.homepage.rule=Host(`dashboard.home`)"
+      - "traefik.http.services.homepage.loadbalancer.server.port=3000"
+      - "traefik.http.routers.homepage.entrypoints=websecure"
+      - "traefik.http.routers.homepage.tls.certresolver=internalresolver"
+      - "traefik.http.routers.homepage.tls=true"
+      - "traefik.http.middlewares.test-ipwhitelist.ipwhitelist.sourcerange=10.0.0.0/8"
+      - "traefik.docker.network=internal_network"
+
+networks:
+  internal_network:
+    external: true
+    name: internal_network

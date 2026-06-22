@@ -1,0 +1,31 @@
+services:
+  n8n:
+    image: docker.n8n.io/n8nio/n8n
+    container_name: n8n
+    restart: unless-stopped
+    volumes:
+      - /docker-compose-services/n8n:/home/node/.n8n
+
+    environment:
+      # Set Backend ENV Variables Here
+      - GENERIC_TIMEZONE="Europe/Berlin"
+      - TZ="Europe/Berlin"
+      - USER=root
+      - NODE_TLS_REJECT_UNAUTHORIZED=0
+    networks:
+      - internal_network
+    ports:
+      - 5678:5678
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.n8n.rule=Host(`n8n.home`)"
+      - "traefik.http.routers.n8n.entrypoints=websecure"
+      - "traefik.http.routers.n8n.tls.certresolver=internalresolver"
+      - "traefik.http.routers.n8n.tls=true"
+      - "traefik.http.middlewares.test-ipwhitelist.ipwhitelist.sourcerange=10.0.0.0/8"
+      - "traefik.docker.network=internal_network"
+
+networks:
+  internal_network:
+    external: true
+    name: internal_network

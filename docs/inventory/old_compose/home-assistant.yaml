@@ -1,0 +1,49 @@
+services:
+  homeassistant:
+    privileged: true
+    restart: unless-stopped
+    image: "ghcr.io/home-assistant/home-assistant:stable"
+    network_mode: host
+    container_name: homeassistant
+    volumes:
+      - /docker-compose-services/homeassistant:/config
+      - /run/dbus:/run/dbus:ro
+      - /etc/localtime:/etc/localtime:ro
+    labels:
+      - "traefik.enable=true"
+
+      ############################
+      # SHARED SERVICE (EXACTLY ONE)
+      ############################
+      - "traefik.http.services.homeassistant.loadbalancer.server.port=8123"
+
+      ############################
+      # INTERNAL ACCESS (FULL UI)
+      ############################
+      - "traefik.http.routers.homeassistant-internal.rule=Host(`hass.home`)"
+      - "traefik.http.routers.homeassistant-internal.entrypoints=websecure"
+      - "traefik.http.routers.homeassistant-internal.tls=true"
+      - "traefik.http.routers.homeassistant-internal.tls.certresolver=internalresolver"
+      - "traefik.http.routers.homeassistant-internal.middlewares=internal-ipwhitelist"
+      - "traefik.http.routers.homeassistant-internal.service=homeassistant"
+      - "traefik.http.middlewares.internal-ipwhitelist.ipwhitelist.sourcerange=10.0.0.0/8"
+      - "traefik.docker.network=internal_network"
+
+      ############################
+      # EXTERNAL ALEXA ACCESS
+      ############################
+      - "traefik.http.routers.hass-alexa.rule=Host(`hass.betz.coffee`) && (PathPrefix(`/api/alexa`) || PathPrefix(`/auth`))"
+      - "traefik.http.routers.hass-alexa.entrypoints=websecure"
+      - "traefik.http.routers.hass-alexa.tls=true"
+      - "traefik.http.routers.hass-alexa.service=homeassistant"
+      - "traefik.docker.network=external_network"
+      # - "traefik.http.middlewares.alexa-ipwhitelist.ipwhitelist.sourcerange=1.178.7.0/24,3.2.57.0/24,3.2.59.0/24,3.248.0.0/13,3.248.245.0/24,3.248.246.0/23,3.251.56.0/24,3.251.62.128/25,3.251.94.0/24,3.253.134.0/23,3.253.148.0/22,3.253.174.0/23,3.253.184.0/22,3.253.188.0/24,3.255.16.0/22,13.248.96.0/24,13.248.113.0/24,13.248.118.0/24,13.248.119.0/24,13.248.121.0/24,15.177.75.0/24,15.177.89.0/24,15.193.140.0/22,15.221.144.0/23,15.221.153.0/24,15.221.2.0/24,15.230.103.0/24,15.230.113.0/24,15.230.117.0/31,15.230.124.0/24,15.230.132.0/24,15.230.150.0/23,15.230.166.0/24,15.230.176.0/24,15.230.182.0/24,15.230.188.0/25,15.230.188.128/25,15.230.189.0/25,15.230.19.0/24,15.230.195.0/24,15.230.223.0/31,15.230.223.2/31,15.230.223.4/31,15.230.223.6/31,15.230.223.8/31,15.230.223.10/31,15.230.223.12/32,15.230.223.13/32,15.230.223.14/32,15.230.223.15/32,15.230.30.0/24,15.230.31.0/24,15.230.32.0/24,15.230.50.0/24,15.230.51.0/24,15.230.61.0/24,15.230.84.0/24,99.82.162.0/24,108.128.0.0/13,108.128.160.0/23,108.128.162.0/24"
+      # - "traefik.http.routers.hass-alexa.middlewares=alexa-ipwhitelist"
+
+networks:
+  internal_network:
+    external: true
+    name: internal_network
+  external_network:
+    external: true
+    name: external_network

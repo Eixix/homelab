@@ -1,0 +1,25 @@
+services:
+  actual-server:
+    image: actualbudget/actual-server:latest
+    container_name: actual-server
+    volumes:
+      - /docker-compose-services/actual/data:/data
+    environment:
+      - TZ=Europe/Berlin
+    networks:
+      - internal_network
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.actual-server.rule=Host(`budget.home`)"
+      - "traefik.http.routers.actual-server.entrypoints=websecure"
+      - "traefik.http.routers.actual-server.tls.certresolver=internalresolver"
+      - "traefik.http.routers.actual-server.tls=true"
+      - "traefik.http.services.actual-server.loadbalancer.server.port=5006"
+      - "traefik.http.middlewares.test-ipwhitelist.ipwhitelist.sourcerange=10.0.0.0/8"
+      - "traefik.docker.network=internal_network"
+
+networks:
+  internal_network:
+    external: true
+    name: internal_network

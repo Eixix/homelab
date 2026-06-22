@@ -1,0 +1,31 @@
+name: homelab
+
+include:
+  - ./compose/core/step-ca.yaml
+  - ./compose/core/traefik.yaml
+  - ./compose/core/adguardhome.yaml
+  - ./compose/core/cloudflare-ddns.yaml
+  - ./compose/apps/homepage.yaml
+  - ./compose/apps/vaultwarden.yaml
+  - ./compose/apps/shlink.yaml
+  - ./compose/apps/actual-budget.yaml
+  - ./compose/apps/n8n.yaml
+  - ./compose/apps/go2rtc.yaml
+  - ./compose/apps/kitchenowl.yaml
+  - ./compose/apps/paperless.yaml
+  - ./compose/apps/homeassistant.yaml
+  - ./compose/apps/kavita.yaml
+  - ./compose/apps/immich.yaml
+  - ./compose/apps/monitoring.yaml
+
+networks:
+  external_network:
+    name: external_network
+    external: true
+  internal_network:
+    name: internal_network
+    external: true
+
+secrets:
+  cloudflare_api_token:
+    file: ./secrets/cloudflare_api_token

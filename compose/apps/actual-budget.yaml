@@ -1,0 +1,20 @@
+services:
+  actual-server:
+    container_name: actual-server
+    image: actualbudget/actual-server:latest
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ}
+    volumes:
+      - ../../data/actual:/data
+    networks:
+      - internal_network
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.actual-server.rule=Host(`${ACTUAL_HOST}`)
+      - traefik.http.routers.actual-server.entrypoints=websecure
+      - traefik.http.routers.actual-server.tls=true
+      - traefik.http.routers.actual-server.tls.certresolver=internalresolver
+      - traefik.http.routers.actual-server.middlewares=lan-only@file,security-headers@file
+      - traefik.http.services.actual-server.loadbalancer.server.port=5006
+      - traefik.docker.network=internal_network

@@ -1,0 +1,94 @@
+name: Deploy Homelab
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      DEPLOY_HOST: ${{ secrets.SSH_HOST }}
+      DEPLOY_USER: ${{ secrets.SSH_USER }}
+      DEPLOY_PATH: /home/github/homelab
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install and connect WireGuard
+        env:
+          WIREGUARD_CONF: ${{ secrets.WIREGUARD_CONF }}
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y wireguard-tools
+          sudo ln -sf "$(command -v resolvectl)" /usr/local/bin/resolvconf
+          umask 077
+          printf '%s' "$WIREGUARD_CONF" > "$RUNNER_TEMP/wg0.conf"
+          sudo wg-quick up "$RUNNER_TEMP/wg0.conf"
+
+      - name: Configure SSH
+        env:
+          DEPLOY_SECRET_KEY: ${{ secrets.DEPLOY_SECRET_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+          install -d -m 700 "$HOME/.ssh"
+          umask 077
+          printf '%s' "$DEPLOY_SECRET_KEY" > "$HOME/.ssh/id_ed25519"
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/id_ed25519" "$HOME/.ssh/known_hosts"
+
+      - name: Prepare deployment directory
+        run: |
+          set -euo pipefail
+          ssh "$DEPLOY_USER@$DEPLOY_HOST" "install -d -m 700 '$DEPLOY_PATH/secrets'; install -d '$DEPLOY_PATH/data' '$DEPLOY_PATH/backups'"
+
+      - name: Synchronize repository
+        run: |
+          set -euo pipefail
+          rsync -az --delete --delete-delay \
+            --exclude='/.env' \
+            --exclude='/data/' \
+            --exclude='/secrets/' \
+            --exclude='/backups/' \
+            --exclude='/.git/' \
+            ./ "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/"
+
+      - name: Write production configuration
+        env:
+          DEPLOY_ENV_FILE: ${{ secrets.ENV_FILE }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$DEPLOY_ENV_FILE" | ssh "$DEPLOY_USER@$DEPLOY_HOST" "umask 077; cat > '$DEPLOY_PATH/.env'"
+          printf '%s' "$CLOUDFLARE_API_TOKEN" | ssh "$DEPLOY_USER@$DEPLOY_HOST" "umask 077; cat > '$DEPLOY_PATH/secrets/cloudflare_api_token'"
+
+      - name: Validate and start production stack
+        run: |
+          set -euo pipefail
+          ssh "$DEPLOY_USER@$DEPLOY_HOST" "
+            set -e
+            cd '$DEPLOY_PATH'
+            test -s .env
+            test -s secrets/cloudflare_api_token
+            docker network inspect external_network >/dev/null 2>&1 || docker network create external_network
+            docker network inspect internal_network >/dev/null 2>&1 || docker network create internal_network
+            docker compose --env-file .env --profile external config --quiet
+            docker compose --env-file .env --profile external pull
+            docker compose --env-file .env --profile external up -d --remove-orphans
+          "
+
+      - name: Disconnect WireGuard
+        if: always()
+        run: |
+          if [[ -f "$RUNNER_TEMP/wg0.conf" ]]; then
+            sudo wg-quick down "$RUNNER_TEMP/wg0.conf" || true
+          fi

@@ -1,0 +1,13 @@
+title: Homelab
+startUrl: "{{HOMEPAGE_VAR_HOMEPAGE_URL}}"
+theme: dark
+color: slate
+target: _self
+
+layout:
+  Core:
+    style: row
+    columns: 4
+  Apps:
+    style: row
+    columns: 4

@@ -1,0 +1,16 @@
+# local configuration / secrets
+.env
+secrets/*
+!secrets/.gitkeep
+config/homepage/logs/
+
+# runtime data
+data/
+backups/
+**/acme.json
+**/*-acme.json
+
+# editor/system
+.DS_Store
+.vscode/
+.idea/

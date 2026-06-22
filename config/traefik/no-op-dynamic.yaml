@@ -1,0 +1,6 @@
+http:
+  middlewares:
+    local-environment-marker:
+      headers:
+        customRequestHeaders:
+          X-Homelab-Environment: local

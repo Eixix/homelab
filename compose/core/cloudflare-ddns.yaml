@@ -1,0 +1,18 @@
+services:
+  cloudflare-ddns:
+    image: favonia/cloudflare-ddns:1
+    container_name: cloudflare-ddns
+    profiles: [external]
+    restart: unless-stopped
+    network_mode: host
+    read_only: true
+    cap_drop: [all]
+    security_opt:
+      - no-new-privileges:true
+    secrets:
+      - cloudflare_api_token
+    environment:
+      IP6_PROVIDER: local
+      CLOUDFLARE_API_TOKEN_FILE: /run/secrets/cloudflare_api_token
+      DOMAINS: ${CLOUDFLARE_DDNS_DOMAINS}
+      PROXIED: ${CLOUDFLARE_DDNS_PROXIED}

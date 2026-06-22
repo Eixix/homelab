@@ -1,0 +1,36 @@
+services:
+  beszel:
+    container_name: beszel
+    image: henrygd/beszel:latest
+    restart: unless-stopped
+    volumes:
+      - ../../data/monitoring/beszel/data:/beszel_data
+      - ../../data/monitoring/beszel/socket:/beszel_socket
+    networks:
+      - internal_network
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.beszel.rule=Host(`${BESZEL_HOST}`)
+      - traefik.http.routers.beszel.entrypoints=websecure
+      - traefik.http.routers.beszel.tls=true
+      - traefik.http.routers.beszel.tls.certresolver=internalresolver
+      - traefik.http.routers.beszel.middlewares=lan-only@file,security-headers@file
+      - traefik.http.services.beszel.loadbalancer.server.port=8090
+      - traefik.docker.network=internal_network
+
+  beszel-agent:
+    container_name: beszel-agent
+    image: henrygd/beszel-agent:latest
+    profiles:
+      - agent
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      LISTEN: 45876
+      KEY: ${BESZEL_AGENT_KEY}
+      TOKEN: ${BESZEL_AGENT_TOKEN}
+      HUB_URL: https://${BESZEL_HOST}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ../../data/monitoring/beszel-agent:/var/lib/beszel-agent
+      - ${BESZEL_EXTRA_FILESYSTEM_PATH}:/extra-filesystems/zfs-pool:ro

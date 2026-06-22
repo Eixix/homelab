@@ -1,0 +1,83 @@
+services:
+  immich-server:
+    container_name: immich_server
+    image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
+    env_file:
+      - stack.env
+    volumes:
+      - ${UPLOAD_LOCATION}:/usr/src/app/upload
+    depends_on:
+      - redis
+      - database
+    restart: unless-stopped
+    networks:
+      - external_network
+      - internal_network
+
+    labels:
+      - "traefik.enable=true"
+
+      ########################
+      # External normal access
+      ########################
+      - "traefik.http.routers.immich-external.rule=Host(`fotos.betz.coffee`) || Host(`fotos.fabian-und-kristina.de`)"
+      - "traefik.http.routers.immich-external.entrypoints=websecure"
+      - "traefik.http.routers.immich-external.tls=true"
+      - "traefik.http.routers.immich-external.priority=10"
+      - "traefik.http.routers.immich-external.service=immich"
+      - "traefik.docker.network=external_network"
+
+      ########################
+      # Internal access
+      ########################
+      - "traefik.http.routers.immich-internal.rule=Host(`fotos.home`)"
+      - "traefik.http.routers.immich-internal.entrypoints=websecure"
+      - "traefik.http.routers.immich-internal.tls=true"
+      - "traefik.http.routers.immich-internal.tls.certresolver=internalresolver"
+      - "traefik.http.routers.immich-internal.service=immich"
+      - "traefik.docker.network=internal_network"
+
+      ########################
+      # Service
+      ########################
+      - "traefik.http.services.immich.loadbalancer.server.port=2283"
+
+  immich-machine-learning:
+    container_name: immich_machine_learning
+    image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}
+    volumes:
+      - /docker-compose-services/immich/model-cache:/cache
+    restart: unless-stopped
+    networks:
+      - external_network
+
+  redis:
+    container_name: immich_redis
+    image: redis:6.2-alpine
+    restart: unless-stopped
+    networks:
+      - external_network
+
+  database:
+    container_name: immich_postgres
+    image: ghcr.io/immich-app/postgres:14-vectorchord0.3.0-pgvectors0.2.0
+    env_file:
+      - stack.env
+    environment:
+      POSTGRES_PASSWORD: REDACTED_ROTATE_BEFORE_USE
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_DB: ${DB_DATABASE_NAME}
+      PG_DATA: /var/lib/postgresql/data
+    volumes:
+      - /docker-compose-services/immich/database:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - external_network
+
+networks:
+  external_network:
+    external: true
+    name: external_network
+  internal_network:
+    external: true
+    name: internal_network
