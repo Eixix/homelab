@@ -20,10 +20,10 @@ Keep this list current while porting services. Check items only after they are v
 - [ ] Replace all placeholder DB/app secrets in production `.env`.
 - [ ] Decide whether to regenerate production Step CA data for the final `STEP_CA_INIT_NAME`.
 - [ ] Verify production DNS for `*.home` through AdGuard/hosts and `*.betz.coffee` through Cloudflare/DDNS.
-- [ ] Run `docker compose --env-file .env.example config --quiet` before deployment.
+- [x] Validate the staged production configuration with `docker compose --env-file .env --profile external config --quiet`.
 - [ ] Run `docker compose --profile external up -d cloudflare-ddns` only on production.
-- [ ] Deploy the repository to `/home/github/homelab`; preserve `.env`, `secrets/`, `data/`, and `backups/` during code synchronization.
-- [ ] Configure GitHub Actions deployment secrets, including the pinned `SSH_KNOWN_HOSTS`, production `.env`, and Cloudflare API token.
+- [x] Deploy the repository to `/home/github/homelab`; preserve `.env`, `secrets/`, `data/`, and `backups/` during code synchronization.
+- [x] Configure GitHub Actions deployment secrets, including the pinned `SSH_KNOWN_HOSTS`, production `.env`, and Cloudflare API token.
 - [x] Keep the GitHub Actions production deployment manual-only until the staged migration is complete.
 - [ ] Configure `/etc/homelab-backup.env` and a protected GPG passphrase file, then test a backup and restore of the new `backup.sh`.
 - [ ] Update the host backup job to invoke `/home/github/homelab/backup.sh`; retain the separate `/storage_array` backup job.
