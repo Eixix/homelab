@@ -2,6 +2,12 @@ name: Deploy Homelab
 
 on:
   workflow_dispatch:
+    inputs:
+      services:
+        description: "Space-separated Compose services to start after synchronization; leave empty to stage only"
+        required: false
+        default: ""
+        type: string
 
 concurrency:
   group: production-deploy
@@ -17,6 +23,7 @@ jobs:
       DEPLOY_HOST: ${{ secrets.SSH_HOST }}
       DEPLOY_USER: ${{ secrets.SSH_USER }}
       DEPLOY_PATH: /home/github/homelab
+      DEPLOY_SERVICES: ${{ inputs.services }}
 
     steps:
       - name: Checkout repository
@@ -71,20 +78,33 @@ jobs:
           printf '%s' "$DEPLOY_ENV_FILE" | ssh "$DEPLOY_USER@$DEPLOY_HOST" "umask 077; cat > '$DEPLOY_PATH/.env'"
           printf '%s' "$CLOUDFLARE_API_TOKEN" | ssh "$DEPLOY_USER@$DEPLOY_HOST" "umask 077; cat > '$DEPLOY_PATH/secrets/cloudflare_api_token'"
 
-      - name: Validate and start production stack
+      - name: Validate and optionally start selected services
         run: |
           set -euo pipefail
-          ssh "$DEPLOY_USER@$DEPLOY_HOST" "
+          DEPLOY_SERVICES_B64="$(printf '%s' "$DEPLOY_SERVICES" | base64 -w 0)"
+          ssh "$DEPLOY_USER@$DEPLOY_HOST" "DEPLOY_SERVICES_B64=$DEPLOY_SERVICES_B64 bash -s" <<'REMOTE'
             set -e
-            cd '$DEPLOY_PATH'
+            cd /home/github/homelab
+            DEPLOY_SERVICES="$(printf '%s' "$DEPLOY_SERVICES_B64" | base64 --decode)"
+            case "$DEPLOY_SERVICES" in
+              *[!a-zA-Z0-9_.\ -]*)
+                echo 'Service selection contains unsupported characters.' >&2
+                exit 1
+                ;;
+            esac
             test -s .env
             test -s secrets/cloudflare_api_token
             docker network inspect external_network >/dev/null 2>&1 || docker network create external_network
             docker network inspect internal_network >/dev/null 2>&1 || docker network create internal_network
             docker compose --env-file .env --profile external config --quiet
-            docker compose --env-file .env --profile external pull
-            docker compose --env-file .env --profile external up -d --remove-orphans
-          "
+            if [ -n "$DEPLOY_SERVICES" ]; then
+              read -r -a services <<< "$DEPLOY_SERVICES"
+              docker compose --env-file .env --profile external pull "${services[@]}"
+              docker compose --env-file .env --profile external up -d "${services[@]}"
+            else
+              echo 'Repository synchronized and configuration validated; no services selected for startup.'
+            fi
+          REMOTE
 
       - name: Disconnect WireGuard
         if: always()
