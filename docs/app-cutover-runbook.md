@@ -425,7 +425,7 @@ chown -R github:github "$BASE/data/n8n"
 EOF
 ```
 
-The Git-managed n8n service runs as the deploy user. It sets `N8N_USER_FOLDER=/home/node` so n8n uses the mounted default data directory at `/home/node/.n8n`, and bind-mounts `data/n8n/.cache` to `/home/node/.cache` because n8n's startup asset generation writes there even when `XDG_CACHE_HOME` points elsewhere.
+The Git-managed n8n service runs as the deploy user. It sets `N8N_USER_FOLDER=/home/node` so n8n uses the mounted default data directory at `/home/node/.n8n`, bind-mounts `data/n8n/.cache` to `/home/node/.cache` because n8n's startup asset generation writes there even when `XDG_CACHE_HOME` points elsewhere, and sets `N8N_PROXY_HOPS=1` for the Traefik hop in front of n8n.
 
 Then run the GitHub Actions deploy workflow with:
 
