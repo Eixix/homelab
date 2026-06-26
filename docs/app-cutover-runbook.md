@@ -398,3 +398,63 @@ done
 docker start kitchenowlback kitchenowlfront
 EOF
 ```
+
+## n8n
+
+n8n uses SQLite and stores credentials/workflows under `/home/node/.n8n`. Stop the old container before the final sync. The Git-managed service no longer publishes host port `5678`; access goes through Traefik at `https://n8n.home`.
+
+### Handover
+
+Run on the production host:
+
+```bash
+sudo bash -euxo pipefail <<'EOF'
+BASE=/home/github/homelab
+
+if docker container inspect n8n_legacy_git_cutover >/dev/null 2>&1; then
+  echo "n8n_legacy_git_cutover already exists" >&2
+  exit 1
+fi
+
+docker stop n8n
+docker rename n8n n8n_legacy_git_cutover
+
+install -d "$BASE/data/n8n"
+rsync -a --delete /docker-compose-services/n8n/ "$BASE/data/n8n/"
+chown -R github:github "$BASE/data/n8n"
+EOF
+```
+
+Then run the GitHub Actions deploy workflow with:
+
+```text
+services = n8n
+```
+
+### Checks
+
+```bash
+docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}' | grep n8n
+docker logs --tail=120 n8n
+```
+
+From a LAN client:
+
+- `https://n8n.home`
+- Editor loads existing workflows.
+- Webhook/test webhook URLs use `https://n8n.home`.
+
+### Rollback
+
+```bash
+sudo bash -euxo pipefail <<'EOF'
+cd /home/github/homelab
+docker compose --env-file .env --profile external rm -sf n8n || true
+
+if docker container inspect n8n_legacy_git_cutover >/dev/null 2>&1; then
+  docker rename n8n_legacy_git_cutover n8n
+fi
+
+docker start n8n
+EOF
+```

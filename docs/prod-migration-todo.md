@@ -90,7 +90,7 @@ The current production Traefik also routes projects that are not represented in 
 - [ ] Monitoring: smoke test `https://beszel.home`.
 - [x] Actual Budget: stop legacy container, final-sync `/docker-compose-services/actual/data` into `data/actual`, and start the Git-managed service.
 - [x] Actual Budget: smoke test `https://budget.home`.
-- [ ] n8n: migrate `/docker-compose-services/n8n` into `data/n8n`.
+- [ ] n8n: stop legacy container, final-sync `/docker-compose-services/n8n` into `data/n8n`, and start the Git-managed service.
 - [ ] n8n: verify webhook/editor URLs after prod hostname cutover.
 - [ ] n8n: decide whether production needs external task runners for Python-capable executions.
 - [x] go2rtc: stop legacy container, final-sync `/docker-compose-services/go2rtc` into `data/go2rtc`, and start the Git-managed service.
