@@ -22,7 +22,6 @@ services:
       - traefik.http.routers.shlink.rule=Host(`${SHLINK_HOST}`)
       - traefik.http.routers.shlink.entrypoints=websecure
       - traefik.http.routers.shlink.tls=true
-      - traefik.http.routers.shlink.tls.certresolver=internalresolver
       - traefik.http.routers.shlink.middlewares=security-headers@file
       - traefik.http.services.shlink.loadbalancer.server.port=8080
       - traefik.docker.network=external_network

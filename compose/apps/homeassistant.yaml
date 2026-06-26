@@ -25,6 +25,5 @@ services:
       - traefik.http.routers.homeassistant-alexa.rule=Host(`${HOMEASSISTANT_EXTERNAL_HOST}`) && (PathPrefix(`/api/alexa`) || PathPrefix(`/auth`))
       - traefik.http.routers.homeassistant-alexa.entrypoints=websecure
       - traefik.http.routers.homeassistant-alexa.tls=true
-      - traefik.http.routers.homeassistant-alexa.tls.certresolver=internalresolver
       - traefik.http.routers.homeassistant-alexa.middlewares=security-headers@file
       - traefik.http.routers.homeassistant-alexa.service=homeassistant
