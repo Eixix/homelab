@@ -96,7 +96,7 @@ The current production Traefik also routes projects that are not represented in 
 - [x] go2rtc: stop legacy container, final-sync `/docker-compose-services/go2rtc` into `data/go2rtc`, and start the Git-managed service.
 - [x] go2rtc: verify camera config, WebRTC/RTSP access, and whether privileged mode is still required.
 - [x] go2rtc: smoke test `https://go2rtc.home`.
-- [ ] KitchenOwl: migrate `/docker-compose-services/kitchenowl-data` into `data/kitchenowl`.
+- [ ] KitchenOwl: stop legacy containers, final-sync `/docker-compose-services/kitchenowl-data` into `data/kitchenowl`, and start the Git-managed frontend/backend services.
 - [ ] KitchenOwl: smoke test `https://shopping.betz.coffee` and confirm frontend/backend login flow.
 - [ ] Paperless-ngx: replace placeholder DB, secret key, and admin password values.
 - [ ] Paperless-ngx: migrate `/docker-compose-services/paperless-*` data into `data/paperless/*`.

@@ -334,3 +334,67 @@ fi
 docker start go2rtc
 EOF
 ```
+
+## KitchenOwl
+
+KitchenOwl uses a frontend/backend pair. The backend stores SQLite data and uploads under `/data`, so stop both old containers before the final sync.
+
+### Handover
+
+Run on the production host:
+
+```bash
+sudo bash -euxo pipefail <<'EOF'
+BASE=/home/github/homelab
+
+for container in kitchenowlfront kitchenowlback; do
+  if docker container inspect "${container}_legacy_git_cutover" >/dev/null 2>&1; then
+    echo "${container}_legacy_git_cutover already exists" >&2
+    exit 1
+  fi
+done
+
+docker stop kitchenowlfront kitchenowlback
+docker rename kitchenowlfront kitchenowlfront_legacy_git_cutover
+docker rename kitchenowlback kitchenowlback_legacy_git_cutover
+
+install -d "$BASE/data/kitchenowl"
+rsync -a --delete /docker-compose-services/kitchenowl-data/ "$BASE/data/kitchenowl/"
+EOF
+```
+
+Then run the GitHub Actions deploy workflow with:
+
+```text
+services = kitchenowl-back kitchenowl-front
+```
+
+### Checks
+
+```bash
+docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}' | grep kitchenowl
+docker logs --tail=80 kitchenowlback
+docker logs --tail=80 kitchenowlfront
+```
+
+From a client:
+
+- `https://shopping.betz.coffee`
+- Login and frontend/backend API flow
+
+### Rollback
+
+```bash
+sudo bash -euxo pipefail <<'EOF'
+cd /home/github/homelab
+docker compose --env-file .env --profile external rm -sf kitchenowl-front kitchenowl-back || true
+
+for container in kitchenowlfront kitchenowlback; do
+  if docker container inspect "${container}_legacy_git_cutover" >/dev/null 2>&1; then
+    docker rename "${container}_legacy_git_cutover" "$container"
+  fi
+done
+
+docker start kitchenowlback kitchenowlfront
+EOF
+```
