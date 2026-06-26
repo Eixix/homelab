@@ -13,6 +13,6 @@ services:
       - cloudflare_api_token
     environment:
       IP6_PROVIDER: local
-      CLOUDFLARE_API_TOKEN_FILE: /run/secrets/cloudflare_api_token
+      CF_API_TOKEN_FILE: /run/secrets/cloudflare_api_token
       DOMAINS: ${CLOUDFLARE_DDNS_DOMAINS}
       PROXIED: ${CLOUDFLARE_DDNS_PROXIED}

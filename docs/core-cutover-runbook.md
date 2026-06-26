@@ -64,6 +64,7 @@ From a LAN client, check:
 
 - If `docker compose ... up` cannot resolve `registry-1.docker.io`, rollback or start old AdGuard again, then run the pull step before stopping DNS.
 - If Step CA logs `defaults.json failed: permission denied`, restore the copied Step CA data ownership with `sudo chown -R 1000:1000 /home/github/homelab/data/step-ca` and recreate the container.
+- If DNS works but `https://adguard.home` fails through Traefik, check the migrated AdGuard web port in `/home/github/homelab/data/adguardhome/conf/AdGuardHome.yaml`; production currently listens on `3125`, so `ADGUARD_WEB_PORT` must match.
 
 ## Rollback
 
