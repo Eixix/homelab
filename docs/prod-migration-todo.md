@@ -98,12 +98,12 @@ The current production Traefik also routes projects that are not represented in 
 - [x] go2rtc: smoke test `https://go2rtc.home`.
 - [x] KitchenOwl: stop legacy containers, final-sync `/docker-compose-services/kitchenowl-data` into `data/kitchenowl`, and start the Git-managed frontend/backend services.
 - [x] KitchenOwl: smoke test `https://shopping.betz.coffee` and confirm frontend/backend login flow.
-- [ ] Paperless-ngx: replace placeholder DB, secret key, and admin password values.
-- [ ] Paperless-ngx: migrate `/docker-compose-services/paperless-*` data into `data/paperless/*`.
-- [ ] Paperless-ngx: verify production consume mount points `PAPERLESS_CONSUME_PATH` at `/storage_array/documents`.
+- [x] Paperless-ngx: replace placeholder DB, secret key, and admin password values.
+- [x] Paperless-ngx: migrate `/docker-compose-services/paperless-*` data into `data/paperless/*`.
+- [x] Paperless-ngx: verify production consume mount points `PAPERLESS_CONSUME_PATH` at `/storage_array/documents`.
 - [ ] Paperless-ngx: enable Redis-friendly memory overcommit on the production host if not already set.
 - [x] Paperless-ngx: retire the old Outlook OAuth integration during migration.
-- [ ] Paperless-ngx: smoke test `https://dokumente.home`.
+- [x] Paperless-ngx: smoke test `https://dokumente.home`.
 - [x] Home Assistant: migrate `/docker-compose-services/homeassistant` into `data/homeassistant`.
 - [x] Home Assistant: preserve `.storage` authentication data, users, roles, MFA settings, and long-lived access tokens during the data migration.
 - [x] Home Assistant: verify `http:` trusted proxy settings for Traefik in `configuration.yaml`.
