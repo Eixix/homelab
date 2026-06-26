@@ -473,3 +473,62 @@ fi
 docker start n8n
 EOF
 ```
+
+## Kavita
+
+Kavita stores its application config, database, covers, progress, and cache under `/kavita/config`. Stop the old container before the final sync. The book and comic libraries stay on `/storage_array` and are mounted read-only by the Git-managed service.
+
+### Handover
+
+Run on the production host:
+
+```bash
+sudo bash -euxo pipefail <<'EOF'
+BASE=/home/github/homelab
+
+if docker container inspect kavita_legacy_git_cutover >/dev/null 2>&1; then
+  echo "kavita_legacy_git_cutover already exists" >&2
+  exit 1
+fi
+
+docker stop kavita
+docker rename kavita kavita_legacy_git_cutover
+
+install -d "$BASE/data/kavita/config"
+rsync -a --delete /docker-compose-services/kavita/data/ "$BASE/data/kavita/config/"
+EOF
+```
+
+Then run the GitHub Actions deploy workflow with:
+
+```text
+services = kavita
+```
+
+### Checks
+
+```bash
+docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}' | grep kavita
+docker logs --tail=100 kavita
+```
+
+From a LAN client:
+
+- `https://reader.home`
+- Existing users, libraries, reading progress, and covers are present.
+- Books and comics library scans can read `/books` and `/comics`.
+
+### Rollback
+
+```bash
+sudo bash -euxo pipefail <<'EOF'
+cd /home/github/homelab
+docker compose --env-file .env --profile external rm -sf kavita || true
+
+if docker container inspect kavita_legacy_git_cutover >/dev/null 2>&1; then
+  docker rename kavita_legacy_git_cutover kavita
+fi
+
+docker start kavita
+EOF
+```
