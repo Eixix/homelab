@@ -9,7 +9,7 @@ services:
       - no-new-privileges:true
     environment:
       TZ: ${TZ}
-      HOMEPAGE_ALLOWED_HOSTS: ${HOMEPAGE_HOST}
+      HOMEPAGE_ALLOWED_HOSTS: ${HOMEPAGE_HOST},${HOMEPAGE_LEGACY_HOST}
       HOMEPAGE_VAR_ADGUARD_URL: https://${ADGUARD_HOST}
       HOMEPAGE_VAR_ACTUAL_URL: https://${ACTUAL_HOST}
       HOMEPAGE_VAR_HOMEPAGE_URL: https://${HOMEPAGE_HOST}
@@ -35,5 +35,14 @@ services:
       - traefik.http.routers.homepage.tls=true
       - traefik.http.routers.homepage.tls.certresolver=internalresolver
       - traefik.http.routers.homepage.middlewares=lan-only@file,security-headers@file
+      - traefik.http.routers.homepage-legacy.rule=Host(`${HOMEPAGE_LEGACY_HOST}`)
+      - traefik.http.routers.homepage-legacy.entrypoints=websecure
+      - traefik.http.routers.homepage-legacy.tls=true
+      - traefik.http.routers.homepage-legacy.tls.certresolver=internalresolver
+      - traefik.http.routers.homepage-legacy.middlewares=lan-only@file,homepage-legacy-redirect,security-headers@file
+      - traefik.http.routers.homepage-legacy.service=homepage
+      - traefik.http.middlewares.homepage-legacy-redirect.redirectregex.regex=^https?://${HOMEPAGE_LEGACY_HOST}/(.*)
+      - traefik.http.middlewares.homepage-legacy-redirect.redirectregex.replacement=https://${HOMEPAGE_HOST}/$${1}
+      - traefik.http.middlewares.homepage-legacy-redirect.redirectregex.permanent=true
       - traefik.http.services.homepage.loadbalancer.server.port=3000
       - traefik.docker.network=internal_network

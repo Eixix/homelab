@@ -22,10 +22,10 @@ services:
     labels:
       - traefik.enable=true
 
-      - traefik.http.routers.immich-external.rule=Host(`${IMMICH_HOST}`)
+      - traefik.http.routers.immich-external.rule=Host(`${IMMICH_HOST}`) || Host(`${IMMICH_ADDITIONAL_EXTERNAL_HOST}`)
       - traefik.http.routers.immich-external.entrypoints=websecure
       - traefik.http.routers.immich-external.tls=true
-      - traefik.http.routers.immich-external.tls.certresolver=internalresolver
+      - traefik.http.routers.immich-external.tls.certresolver=externalresolver
       - traefik.http.routers.immich-external.middlewares=security-headers@file
       - traefik.http.routers.immich-external.service=immich
 

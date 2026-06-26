@@ -5,6 +5,7 @@ services:
     restart: unless-stopped
     environment:
       TZ: ${TZ}
+      CF_DNS_API_TOKEN_FILE: /run/secrets/cloudflare_api_token
     depends_on:
       step-ca:
         condition: service_healthy
@@ -28,6 +29,12 @@ services:
       - --certificatesresolvers.internalresolver.acme.certificatesDuration=24
       - --certificatesresolvers.internalresolver.acme.email=${TRAEFIK_ACME_EMAIL}
       - --certificatesresolvers.internalresolver.acme.storage=/letsencrypt/internal-acme.json
+      - --certificatesresolvers.externalresolver.acme.dnschallenge=true
+      - --certificatesresolvers.externalresolver.acme.dnschallenge.provider=cloudflare
+      - --certificatesresolvers.externalresolver.acme.email=${TRAEFIK_ACME_EMAIL}
+      - --certificatesresolvers.externalresolver.acme.storage=/letsencrypt/external-acme.json
+    secrets:
+      - cloudflare_api_token
     ports:
       - 80:80
       - 443:443
@@ -44,6 +51,7 @@ services:
       internal_network:
         aliases:
           - ${TRAEFIK_HOST}
+          - ${HOMEPAGE_LEGACY_HOST}
           - ${HOMEPAGE_HOST}
           - ${ADGUARD_HOST}
           - ${VAULTWARDEN_HOST}
@@ -58,6 +66,7 @@ services:
           - ${HOMEASSISTANT_EXTERNAL_HOST}
           - ${KAVITA_HOST}
           - ${IMMICH_HOST}
+          - ${IMMICH_ADDITIONAL_EXTERNAL_HOST}
           - ${IMMICH_INTERNAL_HOST}
           - ${BESZEL_HOST}
     extra_hosts:

@@ -16,6 +16,7 @@ Keep this list current while porting services. Check items only after they are v
 - [ ] Migrate `/docker/adguardhome` into `data/adguardhome/{work,conf}`.
 - [ ] Migrate `/docker/certificates/cloudflare.{crt,key}` into `data/traefik/certificates/` with the private key mode set to `600`.
 - [ ] Verify the Cloudflare origin certificate remains the default Traefik certificate for `*.betz.coffee`; it currently expires in 2040.
+- [ ] Verify the Cloudflare ACME token can issue a certificate for the retained `fotos.fabian-und-kristina.de` Immich route.
 - [ ] Rotate Cloudflare token and write it to `secrets/cloudflare_api_token`.
 - [ ] Replace all placeholder DB/app secrets in production `.env`.
 - [ ] Decide whether to regenerate production Step CA data for the final `STEP_CA_INIT_NAME`.
@@ -55,13 +56,13 @@ Keep this list current while porting services. Check items only after they are v
 The current production Traefik also routes projects that are not represented in this repository. Do not retire it until each retained route has an explicit owner and proxy path.
 
 - [ ] Validate a replacement Traefik can discover the still-running legacy containers attached to `internal_network` or `external_network` before the port 80/443 handover.
-- [ ] Add a temporary router/service for the legacy host-networked Home Assistant container, or migrate Home Assistant in the same cutover window.
-- [ ] Decide whether the legacy `fotos.fabian-und-kristina.de` Immich hostname remains supported; the staged Cloudflare origin certificate covers `*.betz.coffee`, not that domain.
-- [ ] Retain or migrate the Wedding routes using `*.tobiasbetz.de` before cutover; they need a matching certificate/resolver that the new stack does not yet provide.
-- [ ] Decide whether to retain the old `dashboard.home` Homepage hostname alongside the new `homepage.home` hostname.
+- [x] Migrate Home Assistant in the same cutover window instead of adding a temporary legacy host-network router.
+- [x] Keep the legacy `fotos.fabian-und-kristina.de` Immich hostname; it now uses the external ACME resolver.
+- [x] Exclude Wedding from this repository migration; it is deployed through its own GitHub pipeline.
+- [x] Redirect the old `dashboard.home` Homepage hostname to `homepage.home`.
 - [ ] Intentionally retire the old Portainer, Grafana, Prometheus, and WUD routes during the cutover.
 - [ ] Decide the future of the currently separate Mealie, Leantime, Stirling PDF, Audiobookshelf, EVCC, Ghostfolio, Scrypted, Uptime Kuma, Open WebUI, Ollama, Docker Registry, and WUD projects.
-- [ ] Decide the future of independent GitHub-user projects currently behind the old proxy, including MTG, SplitLedger, FollowUp, and Wedding.
+- [ ] Decide the future of independent GitHub-user projects currently behind the old proxy, including MTG, SplitLedger, and FollowUp.
 - [ ] Keep the old Traefik running until every retained service above has migrated to the new proxy or another explicit ingress.
 
 ## Newly Ported, Needs Production Verification
@@ -74,8 +75,8 @@ The current production Traefik also routes projects that are not represented in 
 - [ ] Immich: migrate `/docker-compose-services/immich/database` into `data/immich/database`.
 - [ ] Immich: migrate `/docker-compose-services/immich/model-cache` into `data/immich/model-cache`.
 - [ ] Immich: enable Redis-friendly memory overcommit on the production host if not already set.
-- [ ] Immich: decide whether to keep the old additional external hostname `fotos.fabian-und-kristina.de`.
-- [ ] Immich: smoke test `https://fotos.home` and `https://fotos.betz.coffee`.
+- [x] Immich: keep the old additional external hostname `fotos.fabian-und-kristina.de`.
+- [ ] Immich: smoke test `https://fotos.home`, `https://fotos.betz.coffee`, and `https://fotos.fabian-und-kristina.de`.
 - [ ] Monitoring: replace placeholder Beszel agent key/token before production; do not reuse the old tracked values.
 - [ ] Monitoring: start `beszel-agent` in production with `docker compose --profile agent up -d beszel-agent`.
 - [ ] Monitoring: migrate `/docker-compose-services/beszel_data` and socket data into `data/monitoring/beszel`.
