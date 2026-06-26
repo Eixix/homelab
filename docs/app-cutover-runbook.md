@@ -425,7 +425,7 @@ chown -R github:github "$BASE/data/n8n"
 EOF
 ```
 
-The Git-managed n8n service runs as the deploy user and explicitly sets `HOME=/home/node` so n8n uses the mounted default data directory at `/home/node/.n8n` instead of trying to create `/.n8n`.
+The Git-managed n8n service runs as the deploy user. It sets `N8N_USER_FOLDER=/home/node` so n8n uses the mounted default data directory at `/home/node/.n8n`, and points `HOME` plus `XDG_CACHE_HOME` into that writable mount so startup asset generation does not try to write to the image-owned `/home/node`.
 
 Then run the GitHub Actions deploy workflow with:
 
