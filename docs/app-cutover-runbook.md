@@ -54,3 +54,40 @@ fi
 docker start homepage
 EOF
 ```
+
+## Legacy Wedding
+
+Wedding is excluded from this repository migration because it is owned by a separate GitHub deployment. The old containers still had Traefik labels, which made the new Traefik try to issue unsupported `tobiasbetz.de` certificates.
+
+### Disable Legacy Ingress
+
+Run on the production host:
+
+```bash
+sudo bash -euxo pipefail <<'EOF'
+for container in wedding_frontend wedding_backend; do
+  if docker container inspect "${container}_legacy_git_cutover" >/dev/null 2>&1; then
+    echo "${container}_legacy_git_cutover already exists" >&2
+    exit 1
+  fi
+done
+
+docker stop wedding_frontend wedding_backend
+docker rename wedding_frontend wedding_frontend_legacy_git_cutover
+docker rename wedding_backend wedding_backend_legacy_git_cutover
+EOF
+```
+
+### Rollback
+
+```bash
+sudo bash -euxo pipefail <<'EOF'
+for container in wedding_frontend wedding_backend; do
+  if docker container inspect "${container}_legacy_git_cutover" >/dev/null 2>&1; then
+    docker rename "${container}_legacy_git_cutover" "$container"
+  fi
+done
+
+docker start wedding_frontend wedding_backend
+EOF
+```

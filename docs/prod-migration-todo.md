@@ -62,7 +62,7 @@ The current production Traefik also routes projects that are not represented in 
 - [x] Keep the legacy `fotos.fabian-und-kristina.de` Immich hostname; it now uses the external ACME resolver.
 - [x] Exclude Wedding from this repository migration; it is deployed through its own GitHub pipeline.
 - [x] Redirect the old `dashboard.home` Homepage hostname to `homepage.home`.
-- [ ] Remove or disable Traefik labels on legacy Wedding containers after confirming the separate GitHub deployment owns those routes; the new Traefik currently discovers them and attempts unsupported `tobiasbetz.de` ACME issuance.
+- [x] Remove or disable Traefik labels on legacy Wedding containers after confirming the separate GitHub deployment owns those routes; the old containers are stopped and renamed to `*_legacy_git_cutover`.
 - [ ] Intentionally retire the old Portainer, Grafana, Prometheus, and WUD routes during the cutover.
 - [ ] Decide the future of the currently separate Mealie, Leantime, Stirling PDF, Audiobookshelf, EVCC, Ghostfolio, Scrypted, Uptime Kuma, Open WebUI, Ollama, Docker Registry, and WUD projects.
 - [ ] Decide the future of independent GitHub-user projects currently behind the old proxy, including MTG, SplitLedger, and FollowUp.
