@@ -137,6 +137,20 @@ jobs:
               echo "ENV_FILE is incomplete; missing required keys:$missing_env" >&2
               exit 1
             fi
+            case " $DEPLOY_SERVICES " in
+              *" paperless-broker "*|*" paperless-db "*|*" paperless-web "*)
+                for key in PAPERLESS_DB_PASSWORD PAPERLESS_DB_ROOT_PASSWORD PAPERLESS_SECRET_KEY PAPERLESS_ADMIN_PASSWORD; do
+                  if ! grep -Eq "^${key}=" .env; then
+                    echo "ENV_FILE is incomplete; missing required Paperless key: $key" >&2
+                    exit 1
+                  fi
+                done
+                if grep -Eq '^PAPERLESS_DB_PASSWORD=change-me$|^PAPERLESS_DB_ROOT_PASSWORD=change-me-root$|^PAPERLESS_SECRET_KEY=change-me-long-random-secret$|^PAPERLESS_ADMIN_PASSWORD=change-me$' .env; then
+                  echo "ENV_FILE contains placeholder Paperless secrets; refusing to deploy Paperless." >&2
+                  exit 1
+                fi
+                ;;
+            esac
             docker network inspect external_network >/dev/null 2>&1 || docker network create external_network
             docker network inspect internal_network >/dev/null 2>&1 || docker network create internal_network
             docker compose --env-file .env --profile external config --quiet
