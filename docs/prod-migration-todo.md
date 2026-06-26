@@ -15,6 +15,7 @@ Keep this list current while porting services. Check items only after they are v
 - [ ] Migrate `/docker/letsencrypt` into `data/traefik/letsencrypt`.
 - [ ] Migrate `/docker/adguardhome` into `data/adguardhome/{work,conf}`.
 - [ ] Migrate `/docker/certificates/cloudflare.{crt,key}` into `data/traefik/certificates/` with the private key mode set to `600`.
+- [x] Pre-stage copied current core and app data into `/home/github/homelab/data`; database-backed services still need a final stopped sync during their service cutover.
 - [ ] Verify the Cloudflare origin certificate remains the default Traefik certificate for `*.betz.coffee`; it currently expires in 2040.
 - [ ] Verify the Cloudflare ACME token can issue a certificate for the retained `fotos.fabian-und-kristina.de` Immich route.
 - [ ] Rotate Cloudflare token and write it to `secrets/cloudflare_api_token`.
@@ -22,6 +23,7 @@ Keep this list current while porting services. Check items only after they are v
 - [ ] Decide whether to regenerate production Step CA data for the final `STEP_CA_INIT_NAME`.
 - [ ] Verify production DNS for `*.home` through AdGuard/hosts and `*.betz.coffee` through Cloudflare/DDNS.
 - [x] Validate the staged production configuration with `docker compose --env-file .env --profile external config --quiet`.
+- [x] Re-validate GitHub Actions staging deployment after adding legacy Homepage and Immich hostnames.
 - [ ] Run `docker compose --profile external up -d cloudflare-ddns` only on production.
 - [x] Deploy the repository to `/home/github/homelab`; preserve `.env`, `secrets/`, `data/`, and `backups/` during code synchronization.
 - [x] Configure GitHub Actions deployment secrets, including the pinned `SSH_KNOWN_HOSTS`, production `.env`, and Cloudflare API token.
