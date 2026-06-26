@@ -425,6 +425,8 @@ chown -R github:github "$BASE/data/n8n"
 EOF
 ```
 
+The Git-managed n8n service runs as the deploy user, but explicitly sets `HOME=/home/node` and `N8N_USER_FOLDER=/home/node/.n8n` so n8n uses the mounted data directory instead of trying to create `/.n8n`.
+
 Then run the GitHub Actions deploy workflow with:
 
 ```text

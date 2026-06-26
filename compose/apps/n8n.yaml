@@ -6,6 +6,8 @@ services:
     user: ${N8N_UID}:${N8N_GID}
     environment:
       TZ: ${TZ}
+      HOME: /home/node
+      N8N_USER_FOLDER: /home/node/.n8n
       GENERIC_TIMEZONE: ${TZ}
       N8N_HOST: ${N8N_HOST}
       N8N_PROTOCOL: https
