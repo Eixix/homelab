@@ -4,6 +4,7 @@ services:
     container_name: cloudflare-ddns
     profiles: [external]
     restart: unless-stopped
+    user: ${DEPLOY_UID}:${DEPLOY_GID}
     network_mode: host
     read_only: true
     cap_drop: [all]
@@ -12,8 +13,6 @@ services:
     secrets:
       - cloudflare_api_token
     environment:
-      PUID: ${DEPLOY_UID}
-      PGID: ${DEPLOY_GID}
       IP6_PROVIDER: local
       CF_API_TOKEN_FILE: /run/secrets/cloudflare_api_token
       DOMAINS: ${CLOUDFLARE_DDNS_DOMAINS}
