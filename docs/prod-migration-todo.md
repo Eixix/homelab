@@ -76,13 +76,13 @@ The current production Traefik also routes projects that are not represented in 
 - [x] Kavita: migrate `/docker-compose-services/kavita/data` into `data/kavita/config`.
 - [x] Kavita: verify production library mounts `KAVITA_BOOKS_PATH` and `KAVITA_COMICS_PATH`.
 - [x] Kavita: smoke test `https://reader.home`.
-- [ ] Immich: replace placeholder `IMMICH_DB_PASSWORD` before production.
-- [ ] Immich: preserve `IMMICH_UPLOAD_PATH=/storage_array/Photos`; it contains the production photo library and is backed up by the storage-array job.
-- [ ] Immich: migrate `/docker-compose-services/immich/database` into `data/immich/database`.
-- [ ] Immich: migrate `/docker-compose-services/immich/model-cache` into `data/immich/model-cache`.
+- [x] Immich: preserve existing production DB credentials for migration compatibility; rotate after the service is stable.
+- [x] Immich: preserve `IMMICH_UPLOAD_PATH=/storage_array/Photos`; it contains the production photo library and is backed up by the storage-array job.
+- [x] Immich: migrate `/docker-compose-services/immich/database` into `data/immich/database`.
+- [x] Immich: migrate `/docker-compose-services/immich/model-cache` into `data/immich/model-cache`.
 - [ ] Immich: enable Redis-friendly memory overcommit on the production host if not already set.
 - [x] Immich: keep the old additional external hostname `fotos.fabian-und-kristina.de`.
-- [ ] Immich: smoke test `https://fotos.home`, `https://fotos.betz.coffee`, and `https://fotos.fabian-und-kristina.de`.
+- [x] Immich: smoke test `https://fotos.home`, `https://fotos.betz.coffee`, and `https://fotos.fabian-und-kristina.de`.
 - [ ] Monitoring: replace placeholder Beszel agent key/token before production; do not reuse the old tracked values.
 - [ ] Monitoring: start `beszel-agent` in production with `docker compose --profile agent up -d beszel-agent`.
 - [ ] Monitoring: migrate `/docker-compose-services/beszel_data` and socket data into `data/monitoring/beszel`.
