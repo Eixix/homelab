@@ -104,11 +104,11 @@ The current production Traefik also routes projects that are not represented in 
 - [ ] Paperless-ngx: enable Redis-friendly memory overcommit on the production host if not already set.
 - [ ] Paperless-ngx: re-create Outlook OAuth settings from rotated credentials; do not reuse the old tracked secret.
 - [ ] Paperless-ngx: smoke test `https://dokumente.home`.
-- [ ] Home Assistant: migrate `/docker-compose-services/homeassistant` into `data/homeassistant`.
-- [ ] Home Assistant: preserve `.storage` authentication data, users, roles, MFA settings, and long-lived access tokens during the data migration.
-- [ ] Home Assistant: verify `http:` trusted proxy settings for Traefik in `configuration.yaml`.
-- [ ] Home Assistant: smoke test full UI at `https://hass.home`.
-- [ ] Home Assistant: smoke test actual Alexa/auth flow at `https://hass.betz.coffee`; local fresh config only verifies routing.
+- [x] Home Assistant: migrate `/docker-compose-services/homeassistant` into `data/homeassistant`.
+- [x] Home Assistant: preserve `.storage` authentication data, users, roles, MFA settings, and long-lived access tokens during the data migration.
+- [x] Home Assistant: verify `http:` trusted proxy settings for Traefik in `configuration.yaml`.
+- [x] Home Assistant: smoke test full UI at `https://hass.home`.
+- [x] Home Assistant: smoke test actual Alexa/auth flow at `https://hass.betz.coffee`; local fresh config only verifies routing.
 
 ## Production Core Verification
 
