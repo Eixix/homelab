@@ -10,7 +10,11 @@ services:
     security_opt:
       - no-new-privileges:true
     secrets:
-      - cloudflare_api_token
+      - source: cloudflare_api_token
+        target: cloudflare_api_token
+        uid: "1000"
+        gid: "1000"
+        mode: 0400
     environment:
       IP6_PROVIDER: local
       CF_API_TOKEN_FILE: /run/secrets/cloudflare_api_token
