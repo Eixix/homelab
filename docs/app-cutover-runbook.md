@@ -425,12 +425,25 @@ chown -R github:github "$BASE/data/n8n"
 EOF
 ```
 
-The Git-managed n8n service runs as the deploy user, but explicitly sets `HOME=/home/node` and `N8N_USER_FOLDER=/home/node/.n8n` so n8n uses the mounted data directory instead of trying to create `/.n8n`.
+The Git-managed n8n service runs as the deploy user and explicitly sets `HOME=/home/node` so n8n uses the mounted default data directory at `/home/node/.n8n` instead of trying to create `/.n8n`.
 
 Then run the GitHub Actions deploy workflow with:
 
 ```text
 services = n8n
+```
+
+If an earlier failed start created a nested fresh database at `data/n8n/.n8n`, move it aside before recreating the service:
+
+```bash
+sudo bash -euxo pipefail <<'EOF'
+BASE=/home/github/homelab
+TS=$(date +%Y%m%d-%H%M%S)
+docker compose --env-file "$BASE/.env" --profile external stop n8n || true
+if [ -d "$BASE/data/n8n/.n8n" ]; then
+  mv "$BASE/data/n8n/.n8n" "$BASE/data/n8n/.n8n.empty-$TS"
+fi
+EOF
 ```
 
 ### Checks
