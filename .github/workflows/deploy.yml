@@ -95,6 +95,48 @@ jobs:
             esac
             test -s .env
             test -s secrets/cloudflare_api_token
+            required_env="
+            TZ
+            DOMAIN_EXTERNAL
+            DOMAIN_INTERNAL
+            TRAEFIK_HOST
+            HOMEPAGE_LEGACY_HOST
+            HOMEPAGE_HOST
+            ADGUARD_HOST
+            STEP_CA_HOST
+            TRAEFIK_EXTERNAL_CERTIFICATE_CONFIG_PATH
+            VAULTWARDEN_HOST
+            SHLINK_HOST
+            SHLINK_WEB_HOST
+            ACTUAL_HOST
+            N8N_HOST
+            GO2RTC_HOST
+            KITCHENOWL_HOST
+            PAPERLESS_HOST
+            HOMEASSISTANT_HOST
+            HOMEASSISTANT_EXTERNAL_HOST
+            KAVITA_HOST
+            IMMICH_HOST
+            IMMICH_ADDITIONAL_EXTERNAL_HOST
+            IMMICH_INTERNAL_HOST
+            BESZEL_HOST
+            LAN_CIDR
+            DEPLOY_UID
+            DEPLOY_GID
+            ADGUARD_DNS_BIND_IP
+            ADGUARD_WEB_PORT
+            TRAEFIK_ACME_EMAIL
+            "
+            missing_env=""
+            for key in $required_env; do
+              if ! grep -Eq "^${key}=" .env; then
+                missing_env="$missing_env $key"
+              fi
+            done
+            if [ -n "$missing_env" ]; then
+              echo "ENV_FILE is incomplete; missing required keys:$missing_env" >&2
+              exit 1
+            fi
             docker network inspect external_network >/dev/null 2>&1 || docker network create external_network
             docker network inspect internal_network >/dev/null 2>&1 || docker network create internal_network
             docker compose --env-file .env --profile external config --quiet
