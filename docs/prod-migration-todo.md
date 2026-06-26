@@ -115,6 +115,13 @@ The current production Traefik also routes projects that are not represented in 
 - [x] AdGuard Home UI works through Traefik at `https://adguard.home` using the migrated web port `3125`.
 - [x] Cloudflare DDNS runs from the Git-managed stack and reports `*.betz.coffee` and `betz.coffee` records are up to date.
 
+## Production App Verification
+
+- [ ] Homepage: rename the legacy Portainer-managed `homepage` container to `homepage_legacy_git_cutover`.
+- [ ] Homepage: start the Git-managed `homepage` service through the deploy workflow.
+- [ ] Homepage: smoke test `https://homepage.home`.
+- [ ] Homepage: smoke test `https://dashboard.home` redirects to `https://homepage.home`.
+
 ## Production Cutover
 
 - [ ] Stop old container for a service before starting the new one on the same hostname.
