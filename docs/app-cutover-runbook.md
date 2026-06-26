@@ -671,3 +671,78 @@ done
 docker start paperless-paperless-broker-1 paperless-paperless-db-1 paperless-paperless-web-1
 EOF
 ```
+
+## Immich
+
+Immich uses Postgres, Redis, machine learning cache, and the photo library under `/storage_array/Photos`. Stop all old Immich containers before the final database sync. The upload/photo library is not copied into `data/`; it remains mounted from `/storage_array/Photos` and is backed up by the storage-array job.
+
+The existing production database currently depends on the existing Immich DB credentials. Preserve them for this cutover and rotate later as a separate maintenance task. The old `/docker-compose-services/immich/typesense` directory is not mounted by the current Immich stack.
+
+### Handover
+
+Run on the production host:
+
+```bash
+sudo bash -euxo pipefail <<'EOF'
+BASE=/home/github/homelab
+
+for container in immich_server immich_machine_learning immich_postgres immich_redis; do
+  if docker container inspect "${container}_legacy_git_cutover" >/dev/null 2>&1; then
+    echo "${container}_legacy_git_cutover already exists" >&2
+    exit 1
+  fi
+done
+
+docker stop immich_server immich_machine_learning immich_postgres immich_redis
+docker rename immich_server immich_server_legacy_git_cutover
+docker rename immich_machine_learning immich_machine_learning_legacy_git_cutover
+docker rename immich_postgres immich_postgres_legacy_git_cutover
+docker rename immich_redis immich_redis_legacy_git_cutover
+
+install -d "$BASE/data/immich/database" "$BASE/data/immich/model-cache"
+rsync -a --delete /docker-compose-services/immich/database/ "$BASE/data/immich/database/"
+rsync -a --delete /docker-compose-services/immich/model-cache/ "$BASE/data/immich/model-cache/"
+chown -R 999:0 "$BASE/data/immich/database"
+EOF
+```
+
+Then run the GitHub Actions deploy workflow with:
+
+```text
+services = immich-redis immich-postgres immich-machine-learning immich-server
+```
+
+### Checks
+
+```bash
+docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}' | grep immich
+docker logs --tail=120 immich_postgres
+docker logs --tail=120 immich_redis
+docker logs --tail=120 immich_machine_learning
+docker logs --tail=180 immich_server
+```
+
+From a client:
+
+- `https://fotos.home`
+- `https://fotos.betz.coffee`
+- `https://fotos.fabian-und-kristina.de`
+- Existing users, albums, assets, thumbnails, and mobile app access are present.
+- Upload mount points at `/storage_array/Photos`.
+
+### Rollback
+
+```bash
+sudo bash -euxo pipefail <<'EOF'
+cd /home/github/homelab
+docker compose --env-file .env --profile external rm -sf immich-server immich-machine-learning immich-postgres immich-redis || true
+
+for container in immich_redis immich_postgres immich_machine_learning immich_server; do
+  if docker container inspect "${container}_legacy_git_cutover" >/dev/null 2>&1; then
+    docker rename "${container}_legacy_git_cutover" "$container"
+  fi
+done
+
+docker start immich_redis immich_postgres immich_machine_learning immich_server
+EOF
+```
