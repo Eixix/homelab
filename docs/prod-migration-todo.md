@@ -11,20 +11,20 @@ Keep this list current while porting services. Check items only after they are v
 - [x] Remove Authelia: no app router used it, and application-local authentication remains the chosen model.
 - [x] Move mounted Homepage and Traefik dynamic config under `config/`.
 - [ ] Remove stale ignored runtime files left from the old `compose/traefik/letsencrypt` path after confirming they are not needed.
-- [ ] Migrate `/docker/step-ca` into `data/step-ca` and preserve the existing CA identity unless a deliberate regeneration is approved.
-- [ ] Migrate `/docker/letsencrypt` into `data/traefik/letsencrypt`.
-- [ ] Migrate `/docker/adguardhome` into `data/adguardhome/{work,conf}`.
-- [ ] Migrate `/docker/certificates/cloudflare.{crt,key}` into `data/traefik/certificates/` with the private key mode set to `600`.
+- [x] Migrate `/docker/step-ca` into `data/step-ca` and preserve the existing CA identity unless a deliberate regeneration is approved.
+- [x] Migrate `/docker/letsencrypt` into `data/traefik/letsencrypt`.
+- [x] Migrate `/docker/adguardhome` into `data/adguardhome/{work,conf}`.
+- [x] Migrate `/docker/certificates/cloudflare.{crt,key}` into `data/traefik/certificates/` with the private key mode set to `600`.
 - [x] Pre-stage copied current core and app data into `/home/github/homelab/data`; database-backed services still need a final stopped sync during their service cutover.
 - [ ] Verify the Cloudflare origin certificate remains the default Traefik certificate for `*.betz.coffee`; it currently expires in 2040.
 - [ ] Verify the Cloudflare ACME token can issue a certificate for the retained `fotos.fabian-und-kristina.de` Immich route.
 - [ ] Rotate Cloudflare token and write it to `secrets/cloudflare_api_token`.
 - [ ] Replace all placeholder DB/app secrets in production `.env`.
 - [ ] Decide whether to regenerate production Step CA data for the final `STEP_CA_INIT_NAME`.
-- [ ] Verify production DNS for `*.home` through AdGuard/hosts and `*.betz.coffee` through Cloudflare/DDNS.
+- [x] Verify production DNS for `*.home` through AdGuard/hosts and `*.betz.coffee` through Cloudflare/DDNS.
 - [x] Validate the staged production configuration with `docker compose --env-file .env --profile external config --quiet`.
 - [x] Re-validate GitHub Actions staging deployment after adding legacy Homepage and Immich hostnames.
-- [ ] Run `docker compose --profile external up -d cloudflare-ddns` only on production.
+- [x] Run `docker compose --profile external up -d cloudflare-ddns` only on production.
 - [x] Deploy the repository to `/home/github/homelab`; preserve `.env`, `secrets/`, `data/`, and `backups/` during code synchronization.
 - [x] Configure GitHub Actions deployment secrets, including the pinned `SSH_KNOWN_HOSTS`, production `.env`, and Cloudflare API token.
 - [x] Keep the GitHub Actions production deployment manual-only until the staged migration is complete.
@@ -106,6 +106,14 @@ The current production Traefik also routes projects that are not represented in 
 - [ ] Home Assistant: verify `http:` trusted proxy settings for Traefik in `configuration.yaml`.
 - [ ] Home Assistant: smoke test full UI at `https://hass.home`.
 - [ ] Home Assistant: smoke test actual Alexa/auth flow at `https://hass.betz.coffee`; local fresh config only verifies routing.
+
+## Production Core Verification
+
+- [x] Step CA is running from the Git-managed stack and reports healthy.
+- [x] Traefik is running from the Git-managed stack on ports `80` and `443`.
+- [x] AdGuard Home DNS is running on `10.0.0.2:53`.
+- [x] AdGuard Home UI works through Traefik at `https://adguard.home` using the migrated web port `3125`.
+- [x] Cloudflare DDNS runs from the Git-managed stack and reports `*.betz.coffee` and `betz.coffee` records are up to date.
 
 ## Production Cutover
 
