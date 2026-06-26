@@ -88,7 +88,7 @@ The current production Traefik also routes projects that are not represented in 
 - [ ] Monitoring: migrate `/docker-compose-services/beszel_data` and socket data into `data/monitoring/beszel`.
 - [ ] Monitoring: verify `BESZEL_EXTRA_FILESYSTEM_PATH` on production.
 - [ ] Monitoring: smoke test `https://beszel.home`.
-- [ ] Actual Budget: migrate `/docker-compose-services/actual/data` into `data/actual`.
+- [ ] Actual Budget: stop legacy container, final-sync `/docker-compose-services/actual/data` into `data/actual`, and start the Git-managed service.
 - [ ] Actual Budget: smoke test `https://budget.home`.
 - [ ] n8n: migrate `/docker-compose-services/n8n` into `data/n8n`.
 - [ ] n8n: verify webhook/editor URLs after prod hostname cutover.

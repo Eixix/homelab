@@ -219,3 +219,60 @@ done
 docker start shlink_database shlink shlink-web
 EOF
 ```
+
+## Actual Budget
+
+Actual Budget stores its state under `/data`. Stop the old container before the final sync.
+
+### Handover
+
+Run on the production host:
+
+```bash
+sudo bash -euxo pipefail <<'EOF'
+BASE=/home/github/homelab
+
+if docker container inspect actual-server_legacy_git_cutover >/dev/null 2>&1; then
+  echo "actual-server_legacy_git_cutover already exists" >&2
+  exit 1
+fi
+
+docker stop actual-server
+docker rename actual-server actual-server_legacy_git_cutover
+
+install -d "$BASE/data/actual"
+rsync -a --delete /docker-compose-services/actual/data/ "$BASE/data/actual/"
+EOF
+```
+
+Then run the GitHub Actions deploy workflow with:
+
+```text
+services = actual-server
+```
+
+### Checks
+
+```bash
+docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}' | grep actual-server
+docker logs --tail=80 actual-server
+```
+
+From a LAN client:
+
+- `https://budget.home`
+
+### Rollback
+
+```bash
+sudo bash -euxo pipefail <<'EOF'
+cd /home/github/homelab
+docker compose --env-file .env --profile external rm -sf actual-server || true
+
+if docker container inspect actual-server_legacy_git_cutover >/dev/null 2>&1; then
+  docker rename actual-server_legacy_git_cutover actual-server
+fi
+
+docker start actual-server
+EOF
+```
