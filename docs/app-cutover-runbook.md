@@ -276,3 +276,61 @@ fi
 docker start actual-server
 EOF
 ```
+
+## go2rtc
+
+go2rtc stores its configuration under `/config`. The old and Git-managed containers both run privileged.
+
+### Handover
+
+Run on the production host:
+
+```bash
+sudo bash -euxo pipefail <<'EOF'
+BASE=/home/github/homelab
+
+if docker container inspect go2rtc_legacy_git_cutover >/dev/null 2>&1; then
+  echo "go2rtc_legacy_git_cutover already exists" >&2
+  exit 1
+fi
+
+docker stop go2rtc
+docker rename go2rtc go2rtc_legacy_git_cutover
+
+install -d "$BASE/data/go2rtc"
+rsync -a --delete /docker-compose-services/go2rtc/ "$BASE/data/go2rtc/"
+EOF
+```
+
+Then run the GitHub Actions deploy workflow with:
+
+```text
+services = go2rtc
+```
+
+### Checks
+
+```bash
+docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}' | grep go2rtc
+docker logs --tail=80 go2rtc
+```
+
+From a LAN client:
+
+- `https://go2rtc.home`
+- Camera streams used by Home Assistant
+
+### Rollback
+
+```bash
+sudo bash -euxo pipefail <<'EOF'
+cd /home/github/homelab
+docker compose --env-file .env --profile external rm -sf go2rtc || true
+
+if docker container inspect go2rtc_legacy_git_cutover >/dev/null 2>&1; then
+  docker rename go2rtc_legacy_git_cutover go2rtc
+fi
+
+docker start go2rtc
+EOF
+```

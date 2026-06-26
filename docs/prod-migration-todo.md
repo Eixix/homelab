@@ -93,7 +93,7 @@ The current production Traefik also routes projects that are not represented in 
 - [ ] n8n: migrate `/docker-compose-services/n8n` into `data/n8n`.
 - [ ] n8n: verify webhook/editor URLs after prod hostname cutover.
 - [ ] n8n: decide whether production needs external task runners for Python-capable executions.
-- [ ] go2rtc: migrate `/docker-compose-services/go2rtc` into `data/go2rtc`.
+- [ ] go2rtc: stop legacy container, final-sync `/docker-compose-services/go2rtc` into `data/go2rtc`, and start the Git-managed service.
 - [ ] go2rtc: verify camera config, WebRTC/RTSP access, and whether privileged mode is still required.
 - [ ] go2rtc: smoke test `https://go2rtc.home`.
 - [ ] KitchenOwl: migrate `/docker-compose-services/kitchenowl-data` into `data/kitchenowl`.
