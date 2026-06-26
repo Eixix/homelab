@@ -73,9 +73,9 @@ The current production Traefik also routes projects that are not represented in 
 
 ## Newly Ported, Needs Production Verification
 
-- [ ] Kavita: migrate `/docker-compose-services/kavita/data` into `data/kavita/config`.
-- [ ] Kavita: verify production library mounts `KAVITA_BOOKS_PATH` and `KAVITA_COMICS_PATH`.
-- [ ] Kavita: smoke test `https://reader.home`.
+- [x] Kavita: migrate `/docker-compose-services/kavita/data` into `data/kavita/config`.
+- [x] Kavita: verify production library mounts `KAVITA_BOOKS_PATH` and `KAVITA_COMICS_PATH`.
+- [x] Kavita: smoke test `https://reader.home`.
 - [ ] Immich: replace placeholder `IMMICH_DB_PASSWORD` before production.
 - [ ] Immich: preserve `IMMICH_UPLOAD_PATH=/storage_array/Photos`; it contains the production photo library and is backed up by the storage-array job.
 - [ ] Immich: migrate `/docker-compose-services/immich/database` into `data/immich/database`.
