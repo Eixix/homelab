@@ -51,8 +51,9 @@ Keep this list current while porting services. Check items only after they are v
 - [x] Vaultwarden: stop legacy container, final-sync `/docker-compose-services/vaultwarden` into `data/vaultwarden`, and start the Git-managed service.
 - [x] Vaultwarden: smoke test `https://passwort.betz.coffee` through Traefik.
 - [x] Vaultwarden: verify browser extension/mobile sync after the Git-managed cutover.
-- [ ] Shlink: replace `SHLINK_DB_PASSWORD` and `SHLINK_DB_ROOT_PASSWORD` before production.
-- [ ] Shlink: migrate existing `/docker-compose-services/shlink/db_data` into `data/shlink/db`.
+- [x] Shlink: preserve existing production DB credentials for the migration; rotate after the service is stable.
+- [ ] Shlink: stop legacy containers, final-sync `/docker-compose-services/shlink/db_data` into `data/shlink/db`, and start the Git-managed API/web/database services.
+- [ ] Shlink: smoke test `https://l.betz.coffee` and `https://shlink.home`.
 - [ ] Shlink: create/verify API key for Shlink web client access.
 
 ## Other Running Projects

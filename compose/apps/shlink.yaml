@@ -10,8 +10,8 @@ services:
       DB_DRIVER: maria
       DB_HOST: shlink-database
       DB_NAME: shlink
-      DB_USER: shlink
-      DB_PASSWORD: ${SHLINK_DB_PASSWORD}
+      DB_USER: root
+      DB_PASSWORD: ${SHLINK_DB_ROOT_PASSWORD}
     depends_on:
       - shlink-database
     networks:

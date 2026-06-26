@@ -151,3 +151,71 @@ fi
 docker start vaultwarden
 EOF
 ```
+
+## Shlink
+
+Shlink uses a MariaDB data directory. Stop the old API, web client, and database before the final sync. The existing API used the MariaDB `root` account, so the Git-managed service intentionally connects with `SHLINK_DB_ROOT_PASSWORD` during this migration.
+
+### Handover
+
+Run on the production host:
+
+```bash
+sudo bash -euxo pipefail <<'EOF'
+BASE=/home/github/homelab
+
+for container in shlink shlink-web shlink_database; do
+  if docker container inspect "${container}_legacy_git_cutover" >/dev/null 2>&1; then
+    echo "${container}_legacy_git_cutover already exists" >&2
+    exit 1
+  fi
+done
+
+docker stop shlink shlink-web shlink_database
+docker rename shlink shlink_legacy_git_cutover
+docker rename shlink-web shlink-web_legacy_git_cutover
+docker rename shlink_database shlink_database_legacy_git_cutover
+
+install -d "$BASE/data/shlink/db"
+rsync -a --delete /docker-compose-services/shlink/db_data/ "$BASE/data/shlink/db/"
+chown -R 999:999 "$BASE/data/shlink/db"
+EOF
+```
+
+Then run the GitHub Actions deploy workflow with:
+
+```text
+services = shlink-database shlink shlink-web
+```
+
+### Checks
+
+```bash
+docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}' | grep -E 'shlink|shlink-database'
+docker logs --tail=80 shlink-database
+docker logs --tail=80 shlink
+docker logs --tail=80 shlink-web
+```
+
+From a client:
+
+- `https://l.betz.coffee`
+- `https://shlink.home`
+- Create or verify the API key used by the web client.
+
+### Rollback
+
+```bash
+sudo bash -euxo pipefail <<'EOF'
+cd /home/github/homelab
+docker compose --env-file .env --profile external rm -sf shlink shlink-web shlink-database || true
+
+for container in shlink shlink-web shlink_database; do
+  if docker container inspect "${container}_legacy_git_cutover" >/dev/null 2>&1; then
+    docker rename "${container}_legacy_git_cutover" "$container"
+  fi
+done
+
+docker start shlink_database shlink shlink-web
+EOF
+```
