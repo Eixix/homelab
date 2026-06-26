@@ -15,6 +15,8 @@ This is the first production handover from the old Portainer-managed core to the
 sudo bash -euxo pipefail <<'EOF'
 BASE=/home/github/homelab
 
+sudo -u github bash -lc "cd '$BASE' && docker compose --env-file .env --profile external pull step-ca reverse-proxy adguardhome cloudflare-ddns"
+
 for container in traefik cloudflare-ddns adguardhome step-ca; do
   if docker container inspect "${container}_legacy_git_cutover" >/dev/null 2>&1; then
     echo "Legacy cutover container already exists: ${container}_legacy_git_cutover" >&2
@@ -35,7 +37,7 @@ rsync -a /docker/adguardhome/conf/ "$BASE/data/adguardhome/conf/"
 rsync -a /docker/certificates/cloudflare.crt "$BASE/data/traefik/certificates/cloudflare.crt"
 rsync -a /docker/certificates/cloudflare.key "$BASE/data/traefik/certificates/cloudflare.key"
 
-chown -R github:github "$BASE/data"
+chown -R 1000:1000 "$BASE/data/step-ca"
 chmod 600 "$BASE/data/traefik/certificates/cloudflare.key"
 
 sudo -u github bash -lc "cd '$BASE' && docker compose --env-file .env --profile external up -d step-ca reverse-proxy adguardhome cloudflare-ddns"
@@ -57,6 +59,11 @@ From a LAN client, check:
 - `https://adguard.home`
 - `https://homepage.home` after Homepage is started
 - `https://dashboard.home` redirects to `https://homepage.home`
+
+## Troubleshooting
+
+- If `docker compose ... up` cannot resolve `registry-1.docker.io`, rollback or start old AdGuard again, then run the pull step before stopping DNS.
+- If Step CA logs `defaults.json failed: permission denied`, restore the copied Step CA data ownership with `sudo chown -R 1000:1000 /home/github/homelab/data/step-ca` and recreate the container.
 
 ## Rollback
 
