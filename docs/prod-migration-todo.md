@@ -102,7 +102,7 @@ The current production Traefik also routes projects that are not represented in 
 - [ ] Paperless-ngx: migrate `/docker-compose-services/paperless-*` data into `data/paperless/*`.
 - [ ] Paperless-ngx: verify production consume mount points `PAPERLESS_CONSUME_PATH` at `/storage_array/documents`.
 - [ ] Paperless-ngx: enable Redis-friendly memory overcommit on the production host if not already set.
-- [ ] Paperless-ngx: re-create Outlook OAuth settings from rotated credentials; do not reuse the old tracked secret.
+- [x] Paperless-ngx: retire the old Outlook OAuth integration during migration.
 - [ ] Paperless-ngx: smoke test `https://dokumente.home`.
 - [x] Home Assistant: migrate `/docker-compose-services/homeassistant` into `data/homeassistant`.
 - [x] Home Assistant: preserve `.storage` authentication data, users, roles, MFA settings, and long-lived access tokens during the data migration.
