@@ -16,6 +16,7 @@ services:
       WEBHOOK_URL: https://${N8N_HOST}
     volumes:
       - ../../data/n8n:/home/node/.n8n
+      - ../../data/n8n/.cache:/home/node/.cache
     networks:
       - internal_network
     labels:
