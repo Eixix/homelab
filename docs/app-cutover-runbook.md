@@ -532,3 +532,65 @@ fi
 docker start kavita
 EOF
 ```
+
+## Home Assistant
+
+Home Assistant stores its config, `.storage` auth state, recorder database, custom components, secrets, and local tokens under `/config`. Stop the old container before the final sync. The Git-managed service intentionally keeps `network_mode: host`, `privileged: true`, `/run/dbus`, and `/etc/localtime` to match the existing production container.
+
+Before cutover, verify `/docker-compose-services/homeassistant/configuration.yaml` includes `http.use_x_forwarded_for: true` and a `trusted_proxies` range that covers Traefik's Docker source address.
+
+### Handover
+
+Run on the production host:
+
+```bash
+sudo bash -euxo pipefail <<'EOF'
+BASE=/home/github/homelab
+
+if docker container inspect homeassistant_legacy_git_cutover >/dev/null 2>&1; then
+  echo "homeassistant_legacy_git_cutover already exists" >&2
+  exit 1
+fi
+
+docker stop homeassistant
+docker rename homeassistant homeassistant_legacy_git_cutover
+
+install -d "$BASE/data/homeassistant"
+rsync -a --delete /docker-compose-services/homeassistant/ "$BASE/data/homeassistant/"
+EOF
+```
+
+Then run the GitHub Actions deploy workflow with:
+
+```text
+services = homeassistant
+```
+
+### Checks
+
+```bash
+docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}' | grep homeassistant
+docker logs --tail=160 homeassistant
+```
+
+From a LAN client:
+
+- `https://hass.home`
+- Existing users, roles, MFA settings, integrations, and dashboards are present.
+- Long-lived tokens and mobile app sessions still work.
+- Actual Alexa/auth flow still reaches `https://hass.betz.coffee/auth` and `/api/alexa`.
+
+### Rollback
+
+```bash
+sudo bash -euxo pipefail <<'EOF'
+cd /home/github/homelab
+docker compose --env-file .env --profile external rm -sf homeassistant || true
+
+if docker container inspect homeassistant_legacy_git_cutover >/dev/null 2>&1; then
+  docker rename homeassistant_legacy_git_cutover homeassistant
+fi
+
+docker start homeassistant
+EOF
+```
