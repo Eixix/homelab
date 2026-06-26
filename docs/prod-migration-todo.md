@@ -118,9 +118,9 @@ The current production Traefik also routes projects that are not represented in 
 ## Production App Verification
 
 - [x] Homepage: rename the legacy Portainer-managed `homepage` container to `homepage_legacy_git_cutover`.
-- [ ] Homepage: start the Git-managed `homepage` service through the deploy workflow.
-- [ ] Homepage: smoke test `https://homepage.home`.
-- [ ] Homepage: smoke test `https://dashboard.home` redirects to `https://homepage.home`.
+- [x] Homepage: start the Git-managed `homepage` service through the deploy workflow.
+- [x] Homepage: smoke test `https://homepage.home`.
+- [x] Homepage: smoke test `https://dashboard.home` redirects to `https://homepage.home`.
 
 ## Production Cutover
 
