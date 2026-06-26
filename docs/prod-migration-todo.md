@@ -48,8 +48,9 @@ Keep this list current while porting services. Check items only after they are v
 - [x] Immich: local external route tested.
 - [x] Beszel monitoring: local route tested.
 - [ ] Vaultwarden: decide/admin-token handling for production admin page.
-- [ ] Vaultwarden: stop legacy container, final-sync `/docker-compose-services/vaultwarden` into `data/vaultwarden`, and start the Git-managed service.
-- [ ] Vaultwarden: smoke test `https://passwort.betz.coffee` and browser/mobile sync.
+- [x] Vaultwarden: stop legacy container, final-sync `/docker-compose-services/vaultwarden` into `data/vaultwarden`, and start the Git-managed service.
+- [x] Vaultwarden: smoke test `https://passwort.betz.coffee` through Traefik.
+- [ ] Vaultwarden: verify browser extension/mobile sync after the Git-managed cutover.
 - [ ] Shlink: replace `SHLINK_DB_PASSWORD` and `SHLINK_DB_ROOT_PASSWORD` before production.
 - [ ] Shlink: migrate existing `/docker-compose-services/shlink/db_data` into `data/shlink/db`.
 - [ ] Shlink: create/verify API key for Shlink web client access.
