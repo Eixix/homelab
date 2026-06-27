@@ -20,7 +20,7 @@ Keep this list current while porting services. Check items only after they are v
 - [x] Verify the Cloudflare origin certificate remains the default Traefik certificate for `*.betz.coffee`; it currently expires in 2040.
 - [x] Verify the Cloudflare ACME token cannot issue a certificate for `fotos.fabian-und-kristina.de`; keep that route off the Cloudflare DNS resolver unless that zone is added.
 - [ ] Rotate Cloudflare token and write it to `secrets/cloudflare_api_token`.
-- [ ] Replace all placeholder DB/app secrets in production `.env`.
+- [ ] Replace or rotate simple migration-preserved DB/app credentials in production `.env` after each dependent service has stayed stable.
 - [ ] Decide whether to regenerate production Step CA data for the final `STEP_CA_INIT_NAME`.
 - [x] Verify production DNS for `*.home` through AdGuard/hosts and `*.betz.coffee` through Cloudflare/DDNS.
 - [x] Validate the staged production configuration with `docker compose --env-file .env --profile external config --quiet`.
@@ -45,6 +45,7 @@ Keep this list current while porting services. Check items only after they are v
 - [x] Clean up repository-local stale runtime/data artifacts that are no longer needed after the migration.
 - [x] Clean up production server legacy containers, old Compose directories, old backup scripts, and abandoned mount data after each retained service has an explicit owner or rollback window has expired.
 - [x] Create a Docusaurus documentation service that collects architecture decisions, runbooks, and migration notes in one place.
+- [x] Smoke test the Docusaurus documentation service at `https://docs.home`.
 - [x] Add `AGENTS.md` to this repo.
 - [x] Investigate if segretating the networks more would make sense (I guess it will)
 
