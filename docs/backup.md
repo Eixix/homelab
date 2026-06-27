@@ -57,6 +57,24 @@ Keep the existing outer storage-array backup job, including its notification web
 
 After one successful encrypted homelab backup and one restore drill, archive or remove `/docker-compose-services/backup-script.sh` as part of the production server cleanup.
 
+If you keep the existing wrapper shape, its Docker-backup section should look like this:
+
+```sh
+####################################
+# Homelab Docker backup
+####################################
+/home/github/homelab/backup.sh
+EXIT_CODE=$?
+
+if [ "$EXIT_CODE" -eq 0 ]; then
+  notify "homelab-backup" "success" 0 "Homelab backup completed"
+else
+  notify "homelab-backup" "failure" "$EXIT_CODE" "Homelab backup failed"
+fi
+```
+
+Keep the existing `/storage_array` S3 sync section after this block.
+
 Use an S3 lifecycle policy for retention. Deep Archive is unsuitable for frequent restore drills, so periodically restore an archive into a temporary location and verify the encrypted archive checksum recorded in its S3 object metadata.
 
 ## Restore Outline
