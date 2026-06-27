@@ -131,9 +131,73 @@ EOF
 
 Use an S3 lifecycle policy for retention. Deep Archive is unsuitable for frequent restore drills, so periodically restore an archive into a temporary location and verify the encrypted archive checksum recorded in its S3 object metadata.
 
-## Restore Outline
+## Restore Drill
 
-1. Restore and decrypt the archive into an empty `/home/github/homelab` directory.
+Run this drill without touching the live `/home/github/homelab` directory. The goal is to prove that the latest encrypted archive can be retrieved, decrypted, unpacked, and understood before an emergency restore is needed.
+
+If the object was stored with Deep Archive, restore it in S3 first and wait until AWS reports that the temporary restored copy is available:
+
+```bash
+aws s3api restore-object \
+  --bucket REPLACE_BUCKET_NAME \
+  --key homelab/REPLACE_BACKUP_ID.tar.gz.gpg \
+  --restore-request '{"Days":7,"GlacierJobParameters":{"Tier":"Standard"}}'
+```
+
+Then run the local verification on a machine with AWS credentials, Docker, `gpg`, `sha256sum`, and `tar`:
+
+```bash
+sudo bash -euxo pipefail <<'EOF'
+BACKUP_ID=REPLACE_BACKUP_ID
+S3_URI=s3://REPLACE_BUCKET_NAME/homelab/${BACKUP_ID}.tar.gz.gpg
+PASSPHRASE_FILE=/etc/homelab-backup.passphrase
+WORK=/tmp/homelab-restore-drill-${BACKUP_ID}
+
+rm -rf "$WORK"
+install -d -m 700 "$WORK"
+
+aws s3 cp "$S3_URI" "$WORK/${BACKUP_ID}.tar.gz.gpg"
+aws s3api head-object \
+  --bucket REPLACE_BUCKET_NAME \
+  --key "homelab/${BACKUP_ID}.tar.gz.gpg" \
+  --query 'Metadata.sha256' \
+  --output text >"$WORK/expected.sha256"
+
+gpg --batch --yes --pinentry-mode loopback \
+  --passphrase-file "$PASSPHRASE_FILE" \
+  --decrypt "$WORK/${BACKUP_ID}.tar.gz.gpg" \
+  >"$WORK/${BACKUP_ID}.tar.gz"
+
+printf '%s  %s\n' "$(cat "$WORK/expected.sha256")" "$WORK/${BACKUP_ID}.tar.gz" \
+  | sha256sum --check -
+
+install -d "$WORK/extracted"
+tar --extract --gzip --file "$WORK/${BACKUP_ID}.tar.gz" --directory "$WORK/extracted"
+
+test -s "$WORK/extracted/.env"
+test -s "$WORK/extracted/compose.yaml"
+test -s "$WORK/extracted/database/paperless.sql"
+test -s "$WORK/extracted/database/shlink.sql"
+test -s "$WORK/extracted/database/immich.dump"
+
+docker compose \
+  --project-directory "$WORK/extracted" \
+  --env-file "$WORK/extracted/.env" \
+  --profile external \
+  config --quiet
+
+tar --list --gzip --file "$WORK/${BACKUP_ID}.tar.gz" | sort | sed -n '1,80p'
+EOF
+```
+
+That drill proves the archive is readable and internally coherent. It does not prove application-level restore behavior.
+
+## Full Restore Outline
+
+Use this only during a real restore or a planned restore rehearsal on an isolated host:
+
+1. Restore and decrypt the archive into an empty homelab directory.
 2. Restore the database dumps with `mariadb` for Paperless/Shlink and `pg_restore` for Immich.
-3. Start the stack with `docker compose --env-file .env --profile external up -d`.
-4. Smoke-test each restored application before directing traffic to it.
+3. Restore or recreate external assets intentionally excluded from this archive, especially `/storage_array`.
+4. Start the stack with `docker compose --env-file .env --profile external up -d`.
+5. Smoke-test each restored application before directing traffic to it.
