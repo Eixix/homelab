@@ -80,7 +80,7 @@ The current production Traefik also routes projects that are not represented in 
 - [x] Immich: preserve `IMMICH_UPLOAD_PATH=/storage_array/Photos`; it contains the production photo library and is backed up by the storage-array job.
 - [x] Immich: migrate `/docker-compose-services/immich/database` into `data/immich/database`.
 - [x] Immich: migrate `/docker-compose-services/immich/model-cache` into `data/immich/model-cache`.
-- [ ] Immich: enable Redis-friendly memory overcommit on the production host if not already set.
+- [x] Immich: enable Redis-friendly memory overcommit on the production host if not already set.
 - [x] Immich: keep the old additional external hostname `fotos.fabian-und-kristina.de`.
 - [x] Immich: smoke test `https://fotos.home`, `https://fotos.betz.coffee`, and `https://fotos.fabian-und-kristina.de`.
 - [x] Monitoring: use non-placeholder Beszel agent key/token for migration; rotate exposed values after the service is stable.
@@ -101,7 +101,7 @@ The current production Traefik also routes projects that are not represented in 
 - [x] Paperless-ngx: replace placeholder DB, secret key, and admin password values.
 - [x] Paperless-ngx: migrate `/docker-compose-services/paperless-*` data into `data/paperless/*`.
 - [x] Paperless-ngx: verify production consume mount points `PAPERLESS_CONSUME_PATH` at `/storage_array/documents`.
-- [ ] Paperless-ngx: enable Redis-friendly memory overcommit on the production host if not already set.
+- [x] Paperless-ngx: enable Redis-friendly memory overcommit on the production host if not already set.
 - [x] Paperless-ngx: retire the old Outlook OAuth integration during migration.
 - [x] Paperless-ngx: smoke test `https://dokumente.home`.
 - [x] Home Assistant: migrate `/docker-compose-services/homeassistant` into `data/homeassistant`.
