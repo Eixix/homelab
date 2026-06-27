@@ -29,7 +29,8 @@ Keep this list current while porting services. Check items only after they are v
 - [x] Deploy the repository to `/home/github/homelab`; preserve `.env`, `secrets/`, `data/`, and `backups/` during code synchronization.
 - [x] Configure GitHub Actions deployment secrets, including the pinned `SSH_KNOWN_HOSTS`, production `.env`, and Cloudflare API token.
 - [x] Keep the GitHub Actions production deployment manual-only until the staged migration is complete.
-- [ ] Configure `/etc/homelab-backup.env` and a protected GPG passphrase file, then test a backup and restore of the new `backup.sh`.
+- [x] Configure `/etc/homelab-backup.env` and a protected GPG passphrase file, then complete one encrypted S3 upload with the new `backup.sh`.
+- [ ] Schedule `/home/github/homelab/backup.sh` periodically with systemd or the host backup wrapper.
 - [ ] Update the host backup job to invoke `/home/github/homelab/backup.sh` instead of `/docker-compose-services/backup-script.sh`; retain the separate `/storage_array` backup job.
 - [ ] Backup verification: run a restore drill from the new encrypted homelab backup and confirm database/app state before relying on it.
 - [ ] Check `/storage_array` ZFS pool and dataset configuration for hardening, correctness, backup behavior, and alerting.
