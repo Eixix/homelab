@@ -4,13 +4,11 @@ services:
     image: node:22-alpine
     restart: unless-stopped
     working_dir: /docs
-    command: sh -c "npm ci --omit=optional && npm run start -- --host 0.0.0.0 --port 3000"
+    command: sh -c "rm -rf node_modules .docusaurus && npm ci && npm run start -- --host 0.0.0.0 --port 3000"
     environment:
       TZ: ${TZ}
     volumes:
       - ../../docs:/docs
-      - /docs/node_modules
-      - /docs/.docusaurus
     networks:
       - internal_network
     labels:

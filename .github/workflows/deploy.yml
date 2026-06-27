@@ -67,6 +67,9 @@ jobs:
             --exclude='/data/' \
             --exclude='/secrets/' \
             --exclude='/backups/' \
+            --exclude='/docs/.docusaurus/' \
+            --exclude='/docs/build/' \
+            --exclude='/docs/node_modules/' \
             --exclude='/.git/' \
             ./ "$DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_PATH/"
 
