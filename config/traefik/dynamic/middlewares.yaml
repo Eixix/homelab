@@ -1,4 +1,13 @@
 http:
+  routers:
+    external-blackhole:
+      rule: HostRegexp(`^.+\.betz\.coffee$`)
+      entryPoints:
+        - websecure
+      priority: 1
+      tls: {}
+      service: external-blackhole
+
   middlewares:
     lan-only:
       ipAllowList:
@@ -31,3 +40,9 @@ http:
           - lan-only
           - internal-error-pages
           - security-headers
+
+  services:
+    external-blackhole:
+      loadBalancer:
+        servers:
+          - url: http://10.255.255.1
