@@ -19,6 +19,11 @@ const links = [
     description: 'ZFS pool review, hardening options, scrub cadence, and alerting notes.',
   },
   {
+    title: 'Remaining Projects',
+    href: '/docs/remaining-projects',
+    description: 'Live services still outside this repo, their routes, data paths, and next decisions.',
+  },
+  {
     title: 'Cutover Runbooks',
     href: '/docs/app-cutover-runbook',
     description: 'Service-by-service production migration notes and rollback commands.',
