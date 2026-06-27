@@ -746,3 +746,72 @@ done
 docker start immich_redis immich_postgres immich_machine_learning immich_server
 EOF
 ```
+
+## Beszel
+
+Beszel stores hub data in `/beszel_data`, socket state in `/beszel_socket`, and the local agent fingerprint under `/var/lib/beszel-agent`. Stop both old containers before the final sync. The agent keeps host networking, read-only Docker socket access, and the extra filesystem mount at `/storage_array/.beszel`.
+
+Before cutover, confirm the production `.env` contains the real `BESZEL_AGENT_KEY` and `BESZEL_AGENT_TOKEN` values. They are sensitive and should be rotated later because earlier examples may have exposed old values.
+
+### Handover
+
+Run on the production host:
+
+```bash
+sudo bash -euxo pipefail <<'EOF'
+BASE=/home/github/homelab
+
+for container in beszel beszel-agent; do
+  if docker container inspect "${container}_legacy_git_cutover" >/dev/null 2>&1; then
+    echo "${container}_legacy_git_cutover already exists" >&2
+    exit 1
+  fi
+done
+
+docker stop beszel-agent beszel
+docker rename beszel beszel_legacy_git_cutover
+docker rename beszel-agent beszel-agent_legacy_git_cutover
+
+install -d "$BASE/data/monitoring/beszel/data" "$BASE/data/monitoring/beszel/socket" "$BASE/data/monitoring/beszel-agent"
+rsync -a --delete /docker-compose-services/beszel_data/ "$BASE/data/monitoring/beszel/data/"
+rsync -a --delete /docker-compose-services/beszel_socket/ "$BASE/data/monitoring/beszel/socket/"
+rsync -a --delete /data/compose/7/beszel_agent_data/ "$BASE/data/monitoring/beszel-agent/"
+EOF
+```
+
+Then run the GitHub Actions deploy workflow with:
+
+```text
+services = beszel beszel-agent
+```
+
+### Checks
+
+```bash
+docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}' | grep beszel
+docker logs --tail=120 beszel
+docker logs --tail=120 beszel-agent
+```
+
+From a LAN client:
+
+- `https://beszel.home`
+- Existing hub login and monitored host data are present.
+- The agent reports Docker and `/storage_array/.beszel` filesystem data.
+
+### Rollback
+
+```bash
+sudo bash -euxo pipefail <<'EOF'
+cd /home/github/homelab
+docker compose --env-file .env --profile external --profile agent rm -sf beszel beszel-agent || true
+
+for container in beszel beszel-agent; do
+  if docker container inspect "${container}_legacy_git_cutover" >/dev/null 2>&1; then
+    docker rename "${container}_legacy_git_cutover" "$container"
+  fi
+done
+
+docker start beszel beszel-agent
+EOF
+```
