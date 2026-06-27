@@ -30,6 +30,14 @@ Keep this list current while porting services. Check items only after they are v
 - [x] Keep the GitHub Actions production deployment manual-only until the staged migration is complete.
 - [ ] Configure `/etc/homelab-backup.env` and a protected GPG passphrase file, then test a backup and restore of the new `backup.sh`.
 - [ ] Update the host backup job to invoke `/home/github/homelab/backup.sh`; retain the separate `/storage_array` backup job.
+- [ ] Backup verification: run a restore drill from the new encrypted homelab backup and confirm database/app state before relying on it.
+
+## Post-Migration Cleanup
+
+- [ ] Add custom internal-only Traefik error pages with a clean minimalist design.
+- [ ] Configure external unmatched `*.betz.coffee` traffic to time out or otherwise not respond instead of showing a default/not-found response.
+- [ ] Clean up repository-local stale runtime/data artifacts that are no longer needed after the migration.
+- [ ] Clean up production server legacy containers, old Compose directories, and abandoned mount data after each retained service has an explicit owner or rollback window has expired.
 
 ## Ported Services
 
