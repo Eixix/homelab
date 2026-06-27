@@ -31,7 +31,7 @@ Keep this list current while porting services. Check items only after they are v
 - [x] Keep the GitHub Actions production deployment manual-only until the staged migration is complete.
 - [x] Configure `/etc/homelab-backup.env` and a protected GPG passphrase file, then complete one encrypted S3 upload with the new `backup.sh`.
 - [x] Schedule `/home/github/homelab/backup.sh` weekly with systemd or the host backup wrapper.
-- [ ] Remove `/docker-compose-services/backup-script.sh` from `/etc/cron.weekly/aws-docker-backup`; keep that wrapper storage-array-only because `homelab-backup.timer` now owns the Docker/app backup.
+- [x] Remove `/docker-compose-services/backup-script.sh` from `/etc/cron.weekly/aws-docker-backup`; keep that wrapper storage-array-only because `homelab-backup.timer` now owns the Docker/app backup.
 - [ ] Backup verification: run a restore drill from the new encrypted homelab backup and confirm database/app state before relying on it.
 - [x] Check `/storage_array` ZFS pool and dataset configuration for hardening, correctness, backup behavior, and alerting; findings are in `docs/storage-array-zfs.md`.
 - [ ] Decide and apply `/storage_array` ZFS hardening: `compression=lz4`, `atime=off`, dataset separation, and `exec`/`setuid`/`devices` policy where safe.
@@ -43,7 +43,7 @@ Keep this list current while porting services. Check items only after they are v
 - [x] Deploy and smoke test the custom internal-only Traefik error pages with a clean minimalist design.
 - [x] Configure external unmatched `*.betz.coffee` traffic to time out or otherwise not respond instead of showing a default/not-found response.
 - [x] Clean up repository-local stale runtime/data artifacts that are no longer needed after the migration.
-- [ ] Clean up production server legacy containers, old Compose directories, old backup scripts, and abandoned mount data after each retained service has an explicit owner or rollback window has expired.
+- [x] Clean up production server legacy containers, old Compose directories, old backup scripts, and abandoned mount data after each retained service has an explicit owner or rollback window has expired.
 - [ ] Create a Docusaurus documentation service that collects architecture decisions, runbooks, and migration notes in one place.
 - [x] Add `AGENTS.md` to this repo.
 
@@ -76,16 +76,16 @@ Keep this list current while porting services. Check items only after they are v
 
 The current production Traefik also routes projects that are not represented in this repository. Do not retire it until each retained route has an explicit owner and proxy path.
 
-- [ ] Validate a replacement Traefik can discover the still-running legacy containers attached to `internal_network` or `external_network` before the port 80/443 handover.
+- [x] Validate a replacement Traefik can discover the still-running legacy containers attached to `internal_network` or `external_network` before the port 80/443 handover.
 - [x] Migrate Home Assistant in the same cutover window instead of adding a temporary legacy host-network router.
 - [x] Keep the legacy `fotos.fabian-und-kristina.de` Immich hostname; it now uses the external ACME resolver.
 - [x] Exclude Wedding from this repository migration; it is deployed through its own GitHub pipeline.
 - [x] Redirect the old `dashboard.home` Homepage hostname to `homepage.home`.
 - [x] Remove or disable Traefik labels on legacy Wedding containers after confirming the separate GitHub deployment owns those routes; the old containers are stopped and renamed to `*_legacy_git_cutover`.
-- [ ] Intentionally retire the old Portainer, Grafana, Prometheus, and WUD routes during the cutover.
+- [x] Intentionally retire the old Portainer, Grafana, Prometheus, and WUD routes during the cutover.
 - [ ] Decide the future of the currently separate Mealie, Leantime, Stirling PDF, Audiobookshelf, EVCC, Ghostfolio, Scrypted, Uptime Kuma, Open WebUI, Ollama, Docker Registry, and WUD projects.
 - [ ] Decide the future of independent GitHub-user projects currently behind the old proxy, including MTG, SplitLedger, and FollowUp.
-- [ ] Keep the old Traefik running until every retained service above has migrated to the new proxy or another explicit ingress.
+- [x] Keep the old Traefik running until every retained service above has migrated to the new proxy or another explicit ingress.
 
 ## Newly Ported, Needs Production Verification
 
