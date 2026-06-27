@@ -1,6 +1,6 @@
 # Backups
 
-The production backup script is [`backup.sh`](../backup.sh). It backs up the repository-managed state under `/home/github/homelab`, including `data/`, `config/`, `secrets/`, and `.env`. It makes logical dumps of the Paperless, Shlink, and Immich databases instead of archiving live database files.
+The production backup script is [`backup.sh`](../backup.sh). It backs up the repository-managed state under `/home/github/homelab`, including Compose files, `config/`, `data/`, `docs/`, `secrets/`, `.env`, and the backup script itself. It makes logical dumps of the Paperless, Shlink, and Immich databases instead of archiving live database files.
 
 `/storage_array` is intentionally not part of this script. Keep its existing S3 sync job as the separate backup path for Immich photos, media, libraries, and Paperless consumption.
 
@@ -46,7 +46,7 @@ Run the job as a user that can read `/home/github/homelab`, `/etc/homelab-backup
 
 ## Replacing the Old Docker Backup
 
-The old production Docker backup entry point is `/docker-compose-services/backup-script.sh`. It belongs to the pre-migration bind-mount layout and should not remain the authoritative Docker backup after the Git-managed stack is verified.
+The old production Docker backup entry point is `/docker-compose-services/backup-script.sh`. It belongs to the pre-migration bind-mount layout and should not remain the authoritative Docker backup after the Git-managed stack is verified. Keep it untouched until the new encrypted backup has succeeded and a restore drill has proven the archive.
 
 Keep the existing outer storage-array backup job, including its notification webhook and `/storage_array` S3 sync, but replace only the Docker backup call:
 

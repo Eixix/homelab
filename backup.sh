@@ -81,7 +81,7 @@ tar --create --gzip --file "$ARCHIVE" \
   --exclude='data/immich/database' \
   --exclude='data/paperless/db' \
   --exclude='data/shlink/db' \
-  compose.yaml compose config data secrets .env \
+  .env .env.example .github backup.sh compose.yaml compose config data docs README.md secrets \
   --directory "$STAGING_DIR" database
 
 ARCHIVE_SHA256="$(sha256sum "$ARCHIVE" | awk '{print $1}')"
