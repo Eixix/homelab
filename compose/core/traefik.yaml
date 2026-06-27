@@ -78,5 +78,5 @@ services:
       - traefik.http.routers.traefik.tls=true
       - traefik.http.routers.traefik.tls.certresolver=internalresolver
       - traefik.http.routers.traefik.service=api@internal
-      - traefik.http.routers.traefik.middlewares=lan-only@file,security-headers@file
+      - traefik.http.routers.traefik.middlewares=internal-app@file
       - traefik.docker.network=internal_network

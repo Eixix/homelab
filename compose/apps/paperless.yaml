@@ -61,6 +61,6 @@ services:
       - traefik.http.routers.paperless.entrypoints=websecure
       - traefik.http.routers.paperless.tls=true
       - traefik.http.routers.paperless.tls.certresolver=internalresolver
-      - traefik.http.routers.paperless.middlewares=lan-only@file,security-headers@file
+      - traefik.http.routers.paperless.middlewares=internal-app@file
       - traefik.http.services.paperless.loadbalancer.server.port=8000
       - traefik.docker.network=internal_network

@@ -17,3 +17,17 @@ http:
         contentTypeNosniff: true
         browserXssFilter: true
         referrerPolicy: same-origin
+
+    internal-error-pages:
+      errors:
+        status:
+          - "400-599"
+        service: error-pages@docker
+        query: /index.html
+
+    internal-app:
+      chain:
+        middlewares:
+          - lan-only
+          - internal-error-pages
+          - security-headers

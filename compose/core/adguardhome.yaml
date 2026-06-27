@@ -17,6 +17,6 @@ services:
       - traefik.http.routers.adguardhome.entrypoints=websecure
       - traefik.http.routers.adguardhome.tls=true
       - traefik.http.routers.adguardhome.tls.certresolver=internalresolver
-      - traefik.http.routers.adguardhome.middlewares=lan-only@file,security-headers@file
+      - traefik.http.routers.adguardhome.middlewares=internal-app@file
       - traefik.http.services.adguardhome.loadbalancer.server.port=${ADGUARD_WEB_PORT}
       - traefik.docker.network=internal_network

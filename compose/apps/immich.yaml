@@ -39,7 +39,7 @@ services:
       - traefik.http.routers.immich-internal.entrypoints=websecure
       - traefik.http.routers.immich-internal.tls=true
       - traefik.http.routers.immich-internal.tls.certresolver=internalresolver
-      - traefik.http.routers.immich-internal.middlewares=lan-only@file,security-headers@file
+      - traefik.http.routers.immich-internal.middlewares=internal-app@file
       - traefik.http.routers.immich-internal.service=immich
 
       - traefik.http.services.immich.loadbalancer.server.port=2283

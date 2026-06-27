@@ -1,0 +1,21 @@
+services:
+  error-pages:
+    container_name: error-pages
+    image: nginxinc/nginx-unprivileged:alpine
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [all]
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp
+      - /var/cache/nginx
+      - /var/run
+    volumes:
+      - ../../config/error-pages:/usr/share/nginx/html:ro
+    networks:
+      - internal_network
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.error-pages.loadbalancer.server.port=8080
+      - traefik.docker.network=internal_network

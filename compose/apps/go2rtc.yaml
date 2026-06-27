@@ -16,6 +16,6 @@ services:
       - traefik.http.routers.go2rtc.entrypoints=websecure
       - traefik.http.routers.go2rtc.tls=true
       - traefik.http.routers.go2rtc.tls.certresolver=internalresolver
-      - traefik.http.routers.go2rtc.middlewares=lan-only@file,security-headers@file
+      - traefik.http.routers.go2rtc.middlewares=internal-app@file
       - traefik.http.services.go2rtc.loadbalancer.server.port=1984
       - traefik.docker.network=internal_network

@@ -19,7 +19,7 @@ services:
       - traefik.http.routers.homeassistant-internal.entrypoints=websecure
       - traefik.http.routers.homeassistant-internal.tls=true
       - traefik.http.routers.homeassistant-internal.tls.certresolver=internalresolver
-      - traefik.http.routers.homeassistant-internal.middlewares=lan-only@file,security-headers@file
+      - traefik.http.routers.homeassistant-internal.middlewares=internal-app@file
       - traefik.http.routers.homeassistant-internal.service=homeassistant
 
       - traefik.http.routers.homeassistant-alexa.rule=Host(`${HOMEASSISTANT_EXTERNAL_HOST}`) && (PathPrefix(`/api/alexa`) || PathPrefix(`/auth`))

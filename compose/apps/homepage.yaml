@@ -34,12 +34,12 @@ services:
       - traefik.http.routers.homepage.entrypoints=websecure
       - traefik.http.routers.homepage.tls=true
       - traefik.http.routers.homepage.tls.certresolver=internalresolver
-      - traefik.http.routers.homepage.middlewares=lan-only@file,security-headers@file
+      - traefik.http.routers.homepage.middlewares=internal-app@file
       - traefik.http.routers.homepage-legacy.rule=Host(`${HOMEPAGE_LEGACY_HOST}`)
       - traefik.http.routers.homepage-legacy.entrypoints=websecure
       - traefik.http.routers.homepage-legacy.tls=true
       - traefik.http.routers.homepage-legacy.tls.certresolver=internalresolver
-      - traefik.http.routers.homepage-legacy.middlewares=lan-only@file,homepage-legacy-redirect,security-headers@file
+      - traefik.http.routers.homepage-legacy.middlewares=lan-only@file,homepage-legacy-redirect,internal-error-pages@file,security-headers@file
       - traefik.http.routers.homepage-legacy.service=homepage
       - traefik.http.middlewares.homepage-legacy-redirect.redirectregex.regex=^https?://${HOMEPAGE_LEGACY_HOST}/(.*)
       - traefik.http.middlewares.homepage-legacy-redirect.redirectregex.replacement=https://${HOMEPAGE_HOST}/$${1}

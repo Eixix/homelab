@@ -15,6 +15,6 @@ services:
       - traefik.http.routers.actual-server.entrypoints=websecure
       - traefik.http.routers.actual-server.tls=true
       - traefik.http.routers.actual-server.tls.certresolver=internalresolver
-      - traefik.http.routers.actual-server.middlewares=lan-only@file,security-headers@file
+      - traefik.http.routers.actual-server.middlewares=internal-app@file
       - traefik.http.services.actual-server.loadbalancer.server.port=5006
       - traefik.docker.network=internal_network

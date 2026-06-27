@@ -14,7 +14,7 @@ services:
       - traefik.http.routers.beszel.entrypoints=websecure
       - traefik.http.routers.beszel.tls=true
       - traefik.http.routers.beszel.tls.certresolver=internalresolver
-      - traefik.http.routers.beszel.middlewares=lan-only@file,security-headers@file
+      - traefik.http.routers.beszel.middlewares=internal-app@file
       - traefik.http.services.beszel.loadbalancer.server.port=8090
       - traefik.docker.network=internal_network
 

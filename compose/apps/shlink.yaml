@@ -40,7 +40,7 @@ services:
       - traefik.http.routers.shlink-web.entrypoints=websecure
       - traefik.http.routers.shlink-web.tls=true
       - traefik.http.routers.shlink-web.tls.certresolver=internalresolver
-      - traefik.http.routers.shlink-web.middlewares=lan-only@file,security-headers@file
+      - traefik.http.routers.shlink-web.middlewares=internal-app@file
       - traefik.http.services.shlink-web.loadbalancer.server.port=8080
       - traefik.docker.network=internal_network
 

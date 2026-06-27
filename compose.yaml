@@ -3,6 +3,7 @@ name: homelab
 include:
   - ./compose/core/step-ca.yaml
   - ./compose/core/traefik.yaml
+  - ./compose/core/error-pages.yaml
   - ./compose/core/adguardhome.yaml
   - ./compose/core/cloudflare-ddns.yaml
   - ./compose/apps/homepage.yaml

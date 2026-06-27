@@ -17,6 +17,6 @@ services:
       - traefik.http.routers.kavita.entrypoints=websecure
       - traefik.http.routers.kavita.tls=true
       - traefik.http.routers.kavita.tls.certresolver=internalresolver
-      - traefik.http.routers.kavita.middlewares=lan-only@file,security-headers@file
+      - traefik.http.routers.kavita.middlewares=internal-app@file
       - traefik.http.services.kavita.loadbalancer.server.port=5000
       - traefik.docker.network=internal_network
