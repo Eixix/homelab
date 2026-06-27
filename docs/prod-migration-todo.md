@@ -2,6 +2,10 @@
 
 Keep this list current while porting services. Check items only after they are validated against the production host, not just local compose rendering.
 
+## Migration Status
+
+The production migration is complete for the homelab-owned stack. Core services and ported apps are running from `/home/github/homelab`; retired services have been removed while their old data directories remain preserved until explicit purge decisions. Remaining open items are post-migration operations, credential rotation, backup restore verification, and independent-project deployment hygiene.
+
 ## Core
 
 - [x] Use top-level `data/<service>` paths for new services.
@@ -152,15 +156,17 @@ The current production Traefik also routes projects that are not represented in 
 - [x] Homepage: smoke test `https://homepage.home`.
 - [x] Homepage: smoke test `https://dashboard.home` redirects to `https://homepage.home`.
 
-## Production Cutover
+## Future Cutover Checklist
 
-- [ ] Stop old container for a service before starting the new one on the same hostname.
-- [ ] Back up old service data before migration.
-- [ ] Restore/copy data into the matching `data/<service>` folder.
-- [ ] Set copied bind-mount ownership to the UID/GID required by the new service before starting it; the production deployment user is `github` (`1003:1003`).
-- [ ] Start only the migrated service and its dependencies.
-- [ ] Smoke test local/internal route.
-- [ ] Smoke test external route where applicable.
-- [ ] Verify Traefik serves the intended certificate.
-- [ ] Verify logs have no startup migration errors.
-- [ ] Only then remove or archive old service definition.
+Use this checklist only for future services that are added to the Git-managed stack:
+
+- Stop old container for a service before starting the new one on the same hostname.
+- Back up old service data before migration.
+- Restore/copy data into the matching `data/<service>` folder.
+- Set copied bind-mount ownership to the UID/GID required by the new service before starting it; the production deployment user is `github` (`1003:1003`).
+- Start only the migrated service and its dependencies.
+- Smoke test local/internal route.
+- Smoke test external route where applicable.
+- Verify Traefik serves the intended certificate.
+- Verify logs have no startup migration errors.
+- Only then remove or archive old service definition.
