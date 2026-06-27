@@ -10,14 +10,14 @@ Keep this list current while porting services. Check items only after they are v
 - [x] Keep prod internal routes on `*.home` and prod external routes on `*.betz.coffee`.
 - [x] Remove Authelia: no app router used it, and application-local authentication remains the chosen model.
 - [x] Move mounted Homepage and Traefik dynamic config under `config/`.
-- [ ] Remove stale ignored runtime files left from the old `compose/traefik/letsencrypt` path after confirming they are not needed.
+- [x] Remove stale ignored runtime files left from the old `compose/traefik/letsencrypt` path after confirming they are not needed.
 - [x] Migrate `/docker/step-ca` into `data/step-ca` and preserve the existing CA identity unless a deliberate regeneration is approved.
 - [x] Migrate `/docker/letsencrypt` into `data/traefik/letsencrypt`.
 - [x] Migrate `/docker/adguardhome` into `data/adguardhome/{work,conf}`.
 - [x] Migrate `/docker/certificates/cloudflare.{crt,key}` into `data/traefik/certificates/` with the private key mode set to `600`.
 - [x] Pre-stage copied current core and app data into `/home/github/homelab/data`; database-backed services still need a final stopped sync during their service cutover.
-- [ ] Verify the Cloudflare origin certificate remains the default Traefik certificate for `*.betz.coffee`; it currently expires in 2040.
-- [ ] Verify the Cloudflare ACME token can issue a certificate for the retained `fotos.fabian-und-kristina.de` Immich route.
+- [x] Verify the Cloudflare origin certificate remains the default Traefik certificate for `*.betz.coffee`; it currently expires in 2040.
+- [x] Verify the Cloudflare ACME token cannot issue a certificate for `fotos.fabian-und-kristina.de`; keep that route off the Cloudflare DNS resolver unless that zone is added.
 - [ ] Rotate Cloudflare token and write it to `secrets/cloudflare_api_token`.
 - [ ] Replace all placeholder DB/app secrets in production `.env`.
 - [ ] Decide whether to regenerate production Step CA data for the final `STEP_CA_INIT_NAME`.
