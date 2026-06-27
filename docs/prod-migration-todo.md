@@ -35,7 +35,7 @@ Keep this list current while porting services. Check items only after they are v
 - [ ] Backup verification: run a restore drill from the new encrypted homelab backup and confirm database/app state before relying on it.
 - [x] Check `/storage_array` ZFS pool and dataset configuration for hardening, correctness, backup behavior, and alerting; findings are in `docs/storage-array-zfs.md`.
 - [x] Apply the first-pass `/storage_array` ZFS hardening: `compression=lz4` and `atime=off`; defer `exec`/`setuid`/`devices` until dataset separation or a service-aware maintenance window.
-- [ ] Verify ZFS/ZED alerts reach a monitored notification path instead of only local root mail.
+- [x] Verify ZFS/ZED alerts reach a monitored notification path instead of only local root mail; a minimal n8n webhook payload using `body.message` was tested successfully.
 
 ## Post-Migration Cleanup
 

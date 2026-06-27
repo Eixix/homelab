@@ -87,7 +87,7 @@ Recommended sequence:
 
 ## ZED n8n Notifications
 
-The host currently has `zfs-zed.service` active, but no local `mail`/`sendmail` binary was found. `ZED_EMAIL_ADDR="root"` therefore should not be treated as a monitored alert path.
+The host currently has `zfs-zed.service` active, but no local `mail`/`sendmail` binary was found. `ZED_EMAIL_ADDR="root"` therefore should not be treated as a monitored alert path. A minimal n8n webhook payload with `body.message` was tested successfully on 2026-06-27.
 
 Use a local ZED hook that reuses the existing optional `N8N_WEBHOOK` value from `/etc/homelab-backup.env`. Keep the webhook only on the server; do not commit it.
 
@@ -109,31 +109,12 @@ json_escape() {
   sed 's/\\/\\\\/g; s/"/\\"/g'
 }
 
-HOST="$(hostname)"
-SUBJECT="ZFS ${ZEVENT_SUBCLASS:-event} on ${HOST}"
-MESSAGE="$(cat <<MSG
-eid=${ZEVENT_EID:-unknown}
-class=${ZEVENT_SUBCLASS:-unknown}
-pool=${ZEVENT_POOL:-unknown}
-time=${ZEVENT_TIME_STRING:-unknown}
-vdev=${ZEVENT_VDEV_PATH:-}
-MSG
-)"
-
-SUBJECT_JSON="$(printf '%s' "$SUBJECT" | json_escape)"
+MESSAGE="ZFS ${ZEVENT_SUBCLASS:-event} on $(hostname): pool=${ZEVENT_POOL:-unknown}, eid=${ZEVENT_EID:-unknown}, time=${ZEVENT_TIME_STRING:-unknown}"
 MESSAGE_JSON="$(printf '%s' "$MESSAGE" | json_escape)"
 
 curl -fsS -X POST "$N8N_WEBHOOK" \
   -H "Content-Type: application/json" \
-  -d "{
-    \"job\": \"zfs-zed\",
-    \"status\": \"event\",
-    \"host\": \"$HOST\",
-    \"event_class\": \"${ZEVENT_SUBCLASS:-unknown}\",
-    \"pool\": \"${ZEVENT_POOL:-unknown}\",
-    \"subject\": \"$SUBJECT_JSON\",
-    \"message\": \"$MESSAGE_JSON\"
-  }" >/dev/null
+  -d "{\"message\":\"$MESSAGE_JSON\"}" >/dev/null
 SCRIPT
 
 chmod 755 /etc/zfs/zed.d/all-n8n.sh
