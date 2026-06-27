@@ -93,7 +93,8 @@ The current production Traefik also routes projects that are not represented in 
 - [x] Keep MTG tournament and MTG hand oracle independent in their own GitHub/org deployment paths; inventory is in `docs/remaining-projects.md`.
 - [x] Keep SplitLedger independent like MTG; inventory is in `docs/remaining-projects.md`.
 - [ ] Restore or verify the separate SplitLedger deployment checkout/pipeline because the live containers reference `/home/github/splitledger/docker-compose.yml`, but that directory was not present during inventory.
-- [ ] Decide the future of currently observed independent GitHub-user project FollowUp; inventory is in `docs/remaining-projects.md`.
+- [x] Keep FollowUp independent in `Eixix/followup`; inventory is in `docs/remaining-projects.md`.
+- [ ] Restore or verify the separate FollowUp deployment checkout/pipeline because the live containers reference `/home/github/followup/dockerfiles/compose.yml`, but that directory was not present during inventory.
 - [x] Confirm Audiobookshelf, EVCC, Ghostfolio, Scrypted, Uptime Kuma, Open WebUI, Ollama, Docker Registry, and WUD are not currently running on the production Docker host.
 - [x] Keep the old Traefik running until every retained service above has migrated to the new proxy or another explicit ingress.
 
