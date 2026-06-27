@@ -2,6 +2,25 @@
 
 Use this after the Git-managed core stack is healthy. Migrate one app at a time.
 
+## Shared Host Settings
+
+Redis-backed services such as Paperless and Immich expect Linux memory overcommit to be enabled. Configure this once on the production host:
+
+```bash
+sudo bash -euxo pipefail <<'EOF'
+printf 'vm.overcommit_memory = 1\n' >/etc/sysctl.d/99-homelab-redis.conf
+sysctl --system
+EOF
+```
+
+Verify:
+
+```bash
+cat /proc/sys/vm/overcommit_memory
+```
+
+The expected value is `1`.
+
 ## Homepage
 
 Homepage is the first app cutover because it has no database state. The old container is named `homepage` and was created by the old Portainer stack, so its name must be freed before the Git-managed Compose service can start.
