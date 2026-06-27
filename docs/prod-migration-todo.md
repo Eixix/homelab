@@ -31,7 +31,7 @@ Keep this list current while porting services. Check items only after they are v
 - [x] Keep the GitHub Actions production deployment manual-only until the staged migration is complete.
 - [x] Configure `/etc/homelab-backup.env` and a protected GPG passphrase file, then complete one encrypted S3 upload with the new `backup.sh`.
 - [x] Schedule `/home/github/homelab/backup.sh` weekly with systemd or the host backup wrapper.
-- [ ] Update the host backup job to invoke `/home/github/homelab/backup.sh` instead of `/docker-compose-services/backup-script.sh`; retain the separate `/storage_array` backup job.
+- [ ] Remove `/docker-compose-services/backup-script.sh` from `/etc/cron.weekly/aws-docker-backup`; keep that wrapper storage-array-only because `homelab-backup.timer` now owns the Docker/app backup.
 - [ ] Backup verification: run a restore drill from the new encrypted homelab backup and confirm database/app state before relying on it.
 - [x] Check `/storage_array` ZFS pool and dataset configuration for hardening, correctness, backup behavior, and alerting; findings are in `docs/storage-array-zfs.md`.
 - [ ] Decide and apply `/storage_array` ZFS hardening: `compression=lz4`, `atime=off`, dataset separation, and `exec`/`setuid`/`devices` policy where safe.
@@ -45,6 +45,7 @@ Keep this list current while porting services. Check items only after they are v
 - [x] Clean up repository-local stale runtime/data artifacts that are no longer needed after the migration.
 - [ ] Clean up production server legacy containers, old Compose directories, old backup scripts, and abandoned mount data after each retained service has an explicit owner or rollback window has expired.
 - [ ] Create a Docusaurus documentation service that collects architecture decisions, runbooks, and migration notes in one place.
+- [x] Add `AGENTS.md` to this repo.
 
 ## Ported Services
 

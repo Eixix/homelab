@@ -119,6 +119,16 @@ If you keep the existing wrapper shape, its Docker-backup section can either kee
 
 Keep the existing `/storage_array` S3 sync section after this block.
 
+If `homelab-backup.timer` is enabled, do not also run the repo backup from the old weekly cron wrapper. Convert the old wrapper into storage-array-only on the server:
+
+```bash
+sudo bash -euxo pipefail <<'EOF'
+cp /etc/cron.weekly/aws-docker-backup /etc/cron.weekly/aws-docker-backup.pre-homelab-systemd
+perl -0pi -e 's/\n####################################\n# Docker backup\n####################################\n.*?(?=\n####################################\n# AWS S3 sync)/\n####################################\n# Homelab Docker backup\n####################################\n# Handled by homelab-backup.timer.\n/s' /etc/cron.weekly/aws-docker-backup
+grep -n -E 'backup-script|homelab-backup|AWS S3 sync|storage_array' /etc/cron.weekly/aws-docker-backup
+EOF
+```
+
 Use an S3 lifecycle policy for retention. Deep Archive is unsuitable for frequent restore drills, so periodically restore an archive into a temporary location and verify the encrypted archive checksum recorded in its S3 object metadata.
 
 ## Restore Outline

@@ -1,5 +1,15 @@
 http:
   routers:
+    internal-not-found:
+      rule: HostRegexp(`^.+\.home$`)
+      entryPoints:
+        - websecure
+      priority: 1
+      tls: {}
+      service: error-pages@docker
+      middlewares:
+        - internal-app
+
     external-blackhole:
       rule: HostRegexp(`^.+\.betz\.coffee$`)
       entryPoints:
