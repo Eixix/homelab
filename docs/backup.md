@@ -53,7 +53,7 @@ Run the job as a user that can read `/home/github/homelab`, `/etc/homelab-backup
 
 Use a systemd timer for the repo-managed homelab backup. This keeps the Docker/app backup independent from the separate `/storage_array` S3 sync and gives a clear status surface with `systemctl`.
 
-Example daily 23:00 setup:
+Example weekly Sunday 23:00 setup:
 
 ```bash
 sudo bash -euxo pipefail <<'EOF'
@@ -70,10 +70,10 @@ SERVICE
 
 cat >/etc/systemd/system/homelab-backup.timer <<'TIMER'
 [Unit]
-Description=Run Homelab encrypted Docker/app backup daily
+Description=Run Homelab encrypted Docker/app backup weekly
 
 [Timer]
-OnCalendar=*-*-* 23:00:00
+OnCalendar=Sun *-*-* 23:00:00
 Persistent=true
 RandomizedDelaySec=10m
 
