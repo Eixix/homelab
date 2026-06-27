@@ -139,6 +139,9 @@ tar --create --gzip --file "$ARCHIVE" \
   --exclude='data/immich/database' \
   --exclude='data/paperless/db' \
   --exclude='data/shlink/db' \
+  --exclude='data/homeassistant/.ha_run.lock' \
+  --exclude='data/homeassistant/home-assistant.log*' \
+  --exclude='data/homeassistant/home-assistant_v2.db*' \
   .env .env.example .github backup.sh compose.yaml compose config data docs README.md secrets \
   --directory "$STAGING_DIR" database
 

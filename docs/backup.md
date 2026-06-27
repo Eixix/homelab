@@ -4,6 +4,8 @@ The production backup script is [`backup.sh`](../backup.sh). It backs up the rep
 
 `/storage_array` is intentionally not part of this script. Keep its existing S3 sync job as the separate backup path for Immich photos, media, libraries, and Paperless consumption.
 
+Home Assistant recorder history files (`home-assistant_v2.db*`), runtime locks, and logs are excluded because they change continuously while Home Assistant is running. Home Assistant config, `.storage`, auth state, and YAML files remain in the archive.
+
 ## Production Setup
 
 Create `/etc/homelab-backup.env` with mode `600`:
