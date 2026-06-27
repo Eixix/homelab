@@ -88,7 +88,8 @@ The current production Traefik also routes projects that are not represented in 
 - [x] Retire Mealie by removing the running container and `food.home` router while preserving `/docker-compose-services/mealie-data` until an explicit purge decision.
 - [x] Retire Leantime by removing the app/database containers and `projekt.betz.coffee` router while preserving `/docker-compose-services/leantime` until an explicit purge decision.
 - [x] Retire Stirling PDF by removing the running container and `pdf.home` router while preserving `/docker-compose-data/stirling-data` until an explicit purge decision.
-- [ ] Decide the future of currently observed separate app container Sili bot; inventory is in `docs/remaining-projects.md`.
+- [x] Keep Sili bot independent in `Eixix/sili-telegram-bot`; its deploy workflow still exists and owns the `sili-bot` container plus `silibotvolume`.
+- [ ] Fix the Sili bot deploy workflow in `Eixix/sili-telegram-bot` so `docker run --restart unless-stopped` is passed before the image name; the current live container reports `restart=no`.
 - [ ] Decide the future of currently observed independent GitHub-user projects: MTG, SplitLedger, and FollowUp; inventory is in `docs/remaining-projects.md`.
 - [x] Confirm Audiobookshelf, EVCC, Ghostfolio, Scrypted, Uptime Kuma, Open WebUI, Ollama, Docker Registry, and WUD are not currently running on the production Docker host.
 - [x] Keep the old Traefik running until every retained service above has migrated to the new proxy or another explicit ingress.

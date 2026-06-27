@@ -6,7 +6,7 @@ These services are still running on the production Docker host but are not fully
 
 | Project | Containers | Route | State | Data | Recommended next action |
 | --- | --- | --- | --- | --- | --- |
-| Sili bot | `sili-bot` | None observed | Running | Docker volume `silibotvolume` | Decide ownership first. It has no Traefik route, so it may belong outside the web stack. |
+| Sili bot | `sili-bot` | None observed | Running | Docker volume `silibotvolume` | Keep independent in `Eixix/sili-telegram-bot`; its deploy workflow still exists. Fix that repo's `docker run` command so `--restart unless-stopped` is passed before the image name. |
 
 ## Retired During Migration
 
