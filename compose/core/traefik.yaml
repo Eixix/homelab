@@ -40,7 +40,7 @@ services:
       - 443:443
       # Dashboard deliberately not exposed on :8080 anymore.
     volumes:
-      - ../../config/traefik/dynamic/middlewares.yaml:/etc/traefik/dynamic/middlewares.yaml:ro
+      - ../../config/traefik/dynamic:/etc/traefik/dynamic:ro
       - ${TRAEFIK_EXTERNAL_CERTIFICATE_CONFIG_PATH}:/etc/traefik/dynamic/99-external-certificate.yaml:ro
       - ../../data/step-ca/certs/root_ca.crt:/etc/ssl/certs/ca-certificates.crt:ro
       - ../../data/traefik/letsencrypt:/letsencrypt
