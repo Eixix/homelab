@@ -80,11 +80,11 @@ exec > >(tee -a "$LOG_FILE") 2>&1
 
 printf '%s Starting backup %s\n' "$(date -u +%FT%TZ)" "$BACKUP_ID"
 
-docker exec -e MARIADB_PWD="$PAPERLESS_DB_ROOT_PASSWORD" paperless-db \
+docker exec -e MYSQL_PWD="$PAPERLESS_DB_ROOT_PASSWORD" paperless-db \
   mariadb-dump --user=root --single-transaction --routines --events --databases paperless \
   > "$STAGING_DIR/database/paperless.sql"
 
-docker exec -e MARIADB_PWD="$SHLINK_DB_ROOT_PASSWORD" shlink-database \
+docker exec -e MYSQL_PWD="$SHLINK_DB_ROOT_PASSWORD" shlink-database \
   mariadb-dump --user=root --single-transaction --routines --events --databases shlink \
   > "$STAGING_DIR/database/shlink.sql"
 
