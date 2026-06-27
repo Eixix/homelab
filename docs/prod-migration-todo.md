@@ -10,7 +10,7 @@ Keep this list current while porting services. Check items only after they are v
 - [x] Keep prod internal routes on `*.home` and prod external routes on `*.betz.coffee`.
 - [x] Remove Authelia: no app router used it, and application-local authentication remains the chosen model.
 - [x] Move mounted Homepage and Traefik dynamic config under `config/`.
-- [x] Mount Traefik dynamic config as a directory so rsync updates are visible to the running container.
+- [x] Mount Traefik dynamic config as a directory so rsync updates are visible to the running container; keep it writable so Docker can create the extra production certificate-config file mount inside it.
 - [x] Remove stale ignored runtime files left from the old `compose/traefik/letsencrypt` path after confirming they are not needed.
 - [x] Migrate `/docker/step-ca` into `data/step-ca` and preserve the existing CA identity unless a deliberate regeneration is approved.
 - [x] Migrate `/docker/letsencrypt` into `data/traefik/letsencrypt`.
