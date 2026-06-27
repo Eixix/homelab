@@ -44,6 +44,19 @@ Update the existing host backup job to call:
 
 Run the job as a user that can read `/home/github/homelab`, `/etc/homelab-backup.env`, and `/etc/homelab-backup.passphrase`, and can access Docker plus AWS credentials. Root is the simplest fit for the current production layout because `/home/github` is not world-readable.
 
+## Replacing the Old Docker Backup
+
+The old production Docker backup entry point is `/docker-compose-services/backup-script.sh`. It belongs to the pre-migration bind-mount layout and should not remain the authoritative Docker backup after the Git-managed stack is verified.
+
+Keep the existing outer storage-array backup job, including its notification webhook and `/storage_array` S3 sync, but replace only the Docker backup call:
+
+```diff
+- /docker-compose-services/backup-script.sh
++ /home/github/homelab/backup.sh
+```
+
+After one successful encrypted homelab backup and one restore drill, archive or remove `/docker-compose-services/backup-script.sh` as part of the production server cleanup.
+
 Use an S3 lifecycle policy for retention. Deep Archive is unsuitable for frequent restore drills, so periodically restore an archive into a temporary location and verify the encrypted archive checksum recorded in its S3 object metadata.
 
 ## Restore Outline
