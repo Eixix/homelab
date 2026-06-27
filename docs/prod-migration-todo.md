@@ -39,7 +39,7 @@ Keep this list current while porting services. Check items only after they are v
 
 ## Post-Migration Cleanup
 
-- [ ] Fix Homepage resource widget: production currently displays the wrong RAM value; decide whether to use host mounts/socket access or remove/replace the widget.
+- [x] Fix Homepage resource widget: remove the misleading container-scoped resources widget and use Beszel for host RAM/CPU monitoring.
 - [x] Deploy and smoke test the custom internal-only Traefik error pages with a clean minimalist design.
 - [x] Configure external unmatched `*.betz.coffee` traffic to time out or otherwise not respond instead of showing a default/not-found response.
 - [x] Clean up repository-local stale runtime/data artifacts that are no longer needed after the migration.
