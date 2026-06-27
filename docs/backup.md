@@ -13,9 +13,10 @@ S3_BUCKET=s3://docker-compose-backup
 S3_PREFIX=homelab
 AWS_STORAGE_CLASS=DEEP_ARCHIVE
 GPG_PASSPHRASE_FILE=/etc/homelab-backup.passphrase
+N8N_WEBHOOK=https://n8n.home/webhook/REPLACE_ME
 ```
 
-Store the GPG passphrase in `/etc/homelab-backup.passphrase` with mode `600`. AWS credentials remain configured for the account that runs the job.
+Store the GPG passphrase in `/etc/homelab-backup.passphrase` with mode `600`. AWS credentials remain configured for the account that runs the job. `N8N_WEBHOOK` is optional; when set, `backup.sh` posts success and failure notifications itself.
 
 The host needs `aws`, `docker`, `gpg`, `sha256sum`, and `tar`. Database dump clients do not need to be installed on the host because `backup.sh` runs `mariadb-dump` and `pg_dump` inside the running database containers. The Compose `.env` file is not shell-sourced; values such as `STEP_CA_INIT_NAME=Homelab Internal CA` can stay in Compose dotenv format.
 
@@ -29,6 +30,8 @@ S3_BUCKET=s3://REPLACE_ME
 S3_PREFIX=homelab
 AWS_STORAGE_CLASS=DEEP_ARCHIVE
 GPG_PASSPHRASE_FILE=/etc/homelab-backup.passphrase
+# Optional:
+# N8N_WEBHOOK=https://n8n.home/webhook/REPLACE_ME
 ENV
 
 install -m 600 -o root -g root /dev/null /etc/homelab-backup.passphrase
@@ -57,20 +60,13 @@ Keep the existing outer storage-array backup job, including its notification web
 
 After one successful encrypted homelab backup and one restore drill, archive or remove `/docker-compose-services/backup-script.sh` as part of the production server cleanup.
 
-If you keep the existing wrapper shape, its Docker-backup section should look like this:
+If you keep the existing wrapper shape, its Docker-backup section can either keep wrapping notifications or simply call the repo script. When `N8N_WEBHOOK` is set in `/etc/homelab-backup.env`, this is enough:
 
 ```sh
 ####################################
 # Homelab Docker backup
 ####################################
 /home/github/homelab/backup.sh
-EXIT_CODE=$?
-
-if [ "$EXIT_CODE" -eq 0 ]; then
-  notify "homelab-backup" "success" 0 "Homelab backup completed"
-else
-  notify "homelab-backup" "failure" "$EXIT_CODE" "Homelab backup failed"
-fi
 ```
 
 Keep the existing `/storage_array` S3 sync section after this block.

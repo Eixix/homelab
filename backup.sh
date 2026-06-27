@@ -32,6 +32,32 @@ load_env_key() {
   printf -v "$key" '%s' "$value"
 }
 
+json_escape() {
+  sed 's/\\/\\\\/g; s/"/\\"/g'
+}
+
+notify_backup() {
+  local status="$1"
+  local exit_code="$2"
+  local message="$3"
+  local escaped_message
+
+  [[ -n "${N8N_WEBHOOK:-}" ]] || return 0
+  command -v curl >/dev/null 2>&1 || return 0
+
+  escaped_message="$(printf '%s' "$message" | json_escape)"
+  curl -fsS -X POST "$N8N_WEBHOOK" \
+    -H "Content-Type: application/json" \
+    -d "{
+      \"job\": \"homelab-backup\",
+      \"status\": \"$status\",
+      \"exit_code\": $exit_code,
+      \"host\": \"$(hostname)\",
+      \"timestamp\": \"$(date -u +%FT%TZ)\",
+      \"message\": \"$escaped_message\"
+    }" >/dev/null || true
+}
+
 for command in aws docker gpg sha256sum tar; do
   require_command "$command"
 done
@@ -73,7 +99,16 @@ LOG_FILE="$LOG_DIR/$BACKUP_ID.log"
 cleanup() {
   rm -rf "$STAGING_DIR"
 }
-trap cleanup EXIT
+on_exit() {
+  local exit_code="$?"
+
+  if [[ "$exit_code" -ne 0 ]]; then
+    notify_backup "failure" "$exit_code" "Homelab backup failed"
+  fi
+
+  cleanup
+}
+trap on_exit EXIT
 
 mkdir -p "$LOG_DIR" "$STAGING_DIR/database"
 exec > >(tee -a "$LOG_FILE") 2>&1
@@ -118,3 +153,4 @@ aws s3 cp "$ENCRYPTED_ARCHIVE" "$S3_BUCKET/${S3_PREFIX:-homelab}/$BACKUP_ID.tar.
   --metadata "sha256=$ARCHIVE_SHA256"
 
 printf '%s Backup completed: %s\n' "$(date -u +%FT%TZ)" "$BACKUP_ID"
+notify_backup "success" 0 "Homelab backup completed: $BACKUP_ID"

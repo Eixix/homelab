@@ -1,5 +1,7 @@
 # local configuration / secrets
 .env
+backup-old.sh
+old-cron.sh
 secrets/*
 !secrets/.gitkeep
 config/homepage/logs/

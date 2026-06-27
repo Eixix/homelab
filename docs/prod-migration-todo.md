@@ -31,6 +31,7 @@ Keep this list current while porting services. Check items only after they are v
 - [ ] Configure `/etc/homelab-backup.env` and a protected GPG passphrase file, then test a backup and restore of the new `backup.sh`.
 - [ ] Update the host backup job to invoke `/home/github/homelab/backup.sh` instead of `/docker-compose-services/backup-script.sh`; retain the separate `/storage_array` backup job.
 - [ ] Backup verification: run a restore drill from the new encrypted homelab backup and confirm database/app state before relying on it.
+- [ ] Check `/storage_array` ZFS pool and dataset configuration for hardening, correctness, backup behavior, and alerting.
 
 ## Post-Migration Cleanup
 
