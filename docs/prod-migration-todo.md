@@ -90,7 +90,8 @@ The current production Traefik also routes projects that are not represented in 
 - [x] Retire Stirling PDF by removing the running container and `pdf.home` router while preserving `/docker-compose-data/stirling-data` until an explicit purge decision.
 - [x] Keep Sili bot independent in `Eixix/sili-telegram-bot`; its deploy workflow still exists and owns the `sili-bot` container plus `silibotvolume`.
 - [x] Fix the Sili bot deploy workflow in `Eixix/sili-telegram-bot` so `docker run --restart unless-stopped` is passed before the image name; committed there as `33e3116`.
-- [ ] Decide the future of currently observed independent GitHub-user projects: MTG, SplitLedger, and FollowUp; inventory is in `docs/remaining-projects.md`.
+- [x] Keep MTG tournament and MTG hand oracle independent in their own GitHub/org deployment paths; inventory is in `docs/remaining-projects.md`.
+- [ ] Decide the future of currently observed independent GitHub-user projects: SplitLedger and FollowUp; inventory is in `docs/remaining-projects.md`.
 - [x] Confirm Audiobookshelf, EVCC, Ghostfolio, Scrypted, Uptime Kuma, Open WebUI, Ollama, Docker Registry, and WUD are not currently running on the production Docker host.
 - [x] Keep the old Traefik running until every retained service above has migrated to the new proxy or another explicit ingress.
 

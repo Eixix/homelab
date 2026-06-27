@@ -22,8 +22,8 @@ These already appear to live under `/home/github/<project>` and may be better ke
 
 | Project | Containers | Route | State | Data | Recommended next action |
 | --- | --- | --- | --- | --- | --- |
-| MTG tournament | `magic_tournament` | `https://mtg.betz.coffee` and websocket path `/app` | Running | `/docker-compose-services/mtg/database/database.sqlite`, `/docker-compose-services/mtg/storage/app` | Keep as independent GitHub deployment unless the app is now homelab-owned. It has a BasicAuth Traefik label; do not copy that hash into this public repo. |
-| MTG hand oracle | `mtg-hand-oracle` | `https://mtg-oracle.betz.coffee` | Running | No mounts observed | Keep independent; no persistent data was observed. |
+| MTG tournament | `magic_tournament` | `https://mtg.betz.coffee` and websocket path `/app` | Running | `/docker-compose-services/mtg/database/database.sqlite`, `/docker-compose-services/mtg/storage/app` | Keep independent in its own GitHub/org deployment. It has a BasicAuth Traefik label; do not copy that hash into this public repo. |
+| MTG hand oracle | `mtg-hand-oracle` | `https://mtg-oracle.betz.coffee` | Running | No mounts observed | Keep independent in `Tobael/mtg-hand-oracle`; its deploy workflow uses `docker compose up -d --build --remove-orphans` and Compose already sets `restart: unless-stopped`. |
 | SplitLedger | `splitledger-web`, `splitledger-relay` | `https://money.betz.coffee`, `https://relay.betz.coffee` | Running | `/docker-compose-services/splitledger-data` | Keep independent unless backups should move into the homelab repo model. If kept independent, document its backup owner. |
 | FollowUp | `followup_frontend`, `followup_tor_frontend` | No Traefik route observed in the new proxy | Running | `/home/github/followup-tor-frontend-data` | Verify whether it is intentionally route-less or exposed elsewhere. If it is not used, retire it after data review. |
 
