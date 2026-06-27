@@ -83,11 +83,11 @@ The current production Traefik also routes projects that are not represented in 
 - [ ] Immich: enable Redis-friendly memory overcommit on the production host if not already set.
 - [x] Immich: keep the old additional external hostname `fotos.fabian-und-kristina.de`.
 - [x] Immich: smoke test `https://fotos.home`, `https://fotos.betz.coffee`, and `https://fotos.fabian-und-kristina.de`.
-- [ ] Monitoring: replace placeholder Beszel agent key/token before production; do not reuse the old tracked values.
-- [ ] Monitoring: start `beszel-agent` in production with `docker compose --profile agent up -d beszel-agent`.
-- [ ] Monitoring: migrate `/docker-compose-services/beszel_data` and socket data into `data/monitoring/beszel`.
-- [ ] Monitoring: verify `BESZEL_EXTRA_FILESYSTEM_PATH` on production.
-- [ ] Monitoring: smoke test `https://beszel.home`.
+- [x] Monitoring: use non-placeholder Beszel agent key/token for migration; rotate exposed values after the service is stable.
+- [x] Monitoring: start `beszel-agent` in production with `docker compose --profile agent up -d beszel-agent`.
+- [x] Monitoring: migrate `/docker-compose-services/beszel_data` and socket data into `data/monitoring/beszel`.
+- [x] Monitoring: verify `BESZEL_EXTRA_FILESYSTEM_PATH` on production.
+- [x] Monitoring: smoke test `https://beszel.home`.
 - [x] Actual Budget: stop legacy container, final-sync `/docker-compose-services/actual/data` into `data/actual`, and start the Git-managed service.
 - [x] Actual Budget: smoke test `https://budget.home`.
 - [x] n8n: stop legacy container, final-sync `/docker-compose-services/n8n` into `data/n8n`, and start the Git-managed service.
