@@ -111,7 +111,7 @@ The current production Traefik also routes projects that are not represented in 
 - [x] Actual Budget: smoke test `https://budget.home`.
 - [x] n8n: stop legacy container, final-sync `/docker-compose-services/n8n` into `data/n8n`, and start the Git-managed service.
 - [x] n8n: verify webhook/editor URLs after prod hostname cutover.
-- [ ] n8n: decide whether production needs external task runners for Python-capable executions.
+- [ ] n8n: decide whether production needs external task runners for Python-capable executions; current logs show the internal Python runner fails because Python 3 is missing, and official n8n docs recommend external runners for production.
 - [x] go2rtc: stop legacy container, final-sync `/docker-compose-services/go2rtc` into `data/go2rtc`, and start the Git-managed service.
 - [x] go2rtc: verify camera config, WebRTC/RTSP access, and whether privileged mode is still required.
 - [x] go2rtc: smoke test `https://go2rtc.home`.

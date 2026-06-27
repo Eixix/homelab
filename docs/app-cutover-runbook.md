@@ -477,6 +477,7 @@ From a LAN client:
 - `https://n8n.home`
 - Editor loads existing workflows.
 - Webhook/test webhook URLs use `https://n8n.home`.
+- If workflows need Python Code node execution, add an external task runner sidecar with a shared `N8N_RUNNERS_AUTH_TOKEN`. Current production logs show the internal Python task runner cannot start because Python 3 is not present in the main n8n image, and n8n recommends external runners for production.
 
 ### Rollback
 
