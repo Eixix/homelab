@@ -53,6 +53,7 @@ services:
           - ${TRAEFIK_HOST}
           - ${HOMEPAGE_LEGACY_HOST}
           - ${HOMEPAGE_HOST}
+          - ${DOCS_HOST}
           - ${ADGUARD_HOST}
           - ${VAULTWARDEN_HOST}
           - ${SHLINK_HOST}

@@ -142,6 +142,9 @@ tar --create --gzip --file "$ARCHIVE" \
   --exclude='data/homeassistant/.ha_run.lock' \
   --exclude='data/homeassistant/home-assistant.log*' \
   --exclude='data/homeassistant/home-assistant_v2.db*' \
+  --exclude='docs/.docusaurus' \
+  --exclude='docs/build' \
+  --exclude='docs/node_modules' \
   .env .env.example .github backup.sh compose.yaml compose config data docs README.md secrets \
   --directory "$STAGING_DIR" database
 

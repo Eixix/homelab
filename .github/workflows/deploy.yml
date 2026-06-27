@@ -102,6 +102,7 @@ jobs:
             TRAEFIK_HOST
             HOMEPAGE_LEGACY_HOST
             HOMEPAGE_HOST
+            DOCS_HOST
             ADGUARD_HOST
             STEP_CA_HOST
             TRAEFIK_EXTERNAL_CERTIFICATE_CONFIG_PATH

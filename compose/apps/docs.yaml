@@ -1,0 +1,24 @@
+services:
+  docs:
+    container_name: docs
+    image: node:22-alpine
+    restart: unless-stopped
+    working_dir: /docs
+    command: sh -c "npm ci --omit=optional && npm run start -- --host 0.0.0.0 --port 3000"
+    environment:
+      TZ: ${TZ}
+    volumes:
+      - ../../docs:/docs
+      - /docs/node_modules
+      - /docs/.docusaurus
+    networks:
+      - internal_network
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.docs.rule=Host(`${DOCS_HOST}`)
+      - traefik.http.routers.docs.entrypoints=websecure
+      - traefik.http.routers.docs.tls=true
+      - traefik.http.routers.docs.tls.certresolver=internalresolver
+      - traefik.http.routers.docs.middlewares=internal-app@file
+      - traefik.http.services.docs.loadbalancer.server.port=3000
+      - traefik.docker.network=internal_network

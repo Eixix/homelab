@@ -1,0 +1,15 @@
+// @ts-check
+
+/** @type {import('@docusaurus/plugin-content-docs').SidebarsConfig} */
+const sidebars = {
+  homelabSidebar: [
+    'prod-migration-todo',
+    'backup',
+    'storage-array-zfs',
+    'core-cutover-runbook',
+    'app-cutover-runbook',
+    'service-template',
+  ],
+};
+
+export default sidebars;

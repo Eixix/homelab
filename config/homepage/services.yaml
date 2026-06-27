@@ -13,6 +13,10 @@
         href: "{{HOMEPAGE_VAR_HOMEPAGE_URL}}"
         description: Homelab dashboard
         icon: homepage.png
+    - Docs:
+        href: "{{HOMEPAGE_VAR_DOCS_URL}}"
+        description: Runbooks and decisions
+        icon: docusaurus.png
     - Vaultwarden:
         href: "{{HOMEPAGE_VAR_VAULTWARDEN_URL}}"
         description: Password vault

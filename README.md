@@ -22,6 +22,7 @@ Lokale URLs werden aus `.env` gebaut. Interne lokale Hosts nutzen eine punktiert
 
 ```text
 https://homepage.home.localhost
+https://docs.home.localhost
 https://traefik.home.localhost
 https://adguard.home.localhost
 https://budget.home.localhost

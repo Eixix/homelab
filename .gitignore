@@ -5,6 +5,9 @@ old-cron.sh
 secrets/*
 !secrets/.gitkeep
 config/homepage/logs/
+docs/.docusaurus/
+docs/build/
+docs/node_modules/
 
 # runtime data
 data/

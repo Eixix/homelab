@@ -44,8 +44,9 @@ Keep this list current while porting services. Check items only after they are v
 - [x] Configure external unmatched `*.betz.coffee` traffic to time out or otherwise not respond instead of showing a default/not-found response.
 - [x] Clean up repository-local stale runtime/data artifacts that are no longer needed after the migration.
 - [x] Clean up production server legacy containers, old Compose directories, old backup scripts, and abandoned mount data after each retained service has an explicit owner or rollback window has expired.
-- [ ] Create a Docusaurus documentation service that collects architecture decisions, runbooks, and migration notes in one place.
+- [x] Create a Docusaurus documentation service that collects architecture decisions, runbooks, and migration notes in one place.
 - [x] Add `AGENTS.md` to this repo.
+- [x] Investigate if segretating the networks more would make sense (I guess it will)
 
 ## Ported Services
 
