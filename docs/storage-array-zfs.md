@@ -85,6 +85,74 @@ Recommended sequence:
 3. During dataset separation, set stricter properties on pure media/document datasets, for example `exec=off`, `setuid=off`, and `devices=off`.
 4. Replace or test ZED root mail delivery with a monitored notification path.
 
+## ZED n8n Notifications
+
+The host currently has `zfs-zed.service` active, but no local `mail`/`sendmail` binary was found. `ZED_EMAIL_ADDR="root"` therefore should not be treated as a monitored alert path.
+
+Use a local ZED hook that reuses the existing optional `N8N_WEBHOOK` value from `/etc/homelab-backup.env`. Keep the webhook only on the server; do not commit it.
+
+```bash
+sudo bash -euxo pipefail <<'EOF'
+cat >/etc/zfs/zed.d/all-n8n.sh <<'SCRIPT'
+#!/bin/sh
+set -eu
+
+BACKUP_ENV=/etc/homelab-backup.env
+[ -r "$BACKUP_ENV" ] || exit 2
+
+# shellcheck disable=SC1090
+. "$BACKUP_ENV"
+[ -n "${N8N_WEBHOOK:-}" ] || exit 2
+command -v curl >/dev/null 2>&1 || exit 2
+
+json_escape() {
+  sed 's/\\/\\\\/g; s/"/\\"/g'
+}
+
+HOST="$(hostname)"
+SUBJECT="ZFS ${ZEVENT_SUBCLASS:-event} on ${HOST}"
+MESSAGE="$(cat <<MSG
+eid=${ZEVENT_EID:-unknown}
+class=${ZEVENT_SUBCLASS:-unknown}
+pool=${ZEVENT_POOL:-unknown}
+time=${ZEVENT_TIME_STRING:-unknown}
+vdev=${ZEVENT_VDEV_PATH:-}
+MSG
+)"
+
+SUBJECT_JSON="$(printf '%s' "$SUBJECT" | json_escape)"
+MESSAGE_JSON="$(printf '%s' "$MESSAGE" | json_escape)"
+
+curl -fsS -X POST "$N8N_WEBHOOK" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"job\": \"zfs-zed\",
+    \"status\": \"event\",
+    \"host\": \"$HOST\",
+    \"event_class\": \"${ZEVENT_SUBCLASS:-unknown}\",
+    \"pool\": \"${ZEVENT_POOL:-unknown}\",
+    \"subject\": \"$SUBJECT_JSON\",
+    \"message\": \"$MESSAGE_JSON\"
+  }" >/dev/null
+SCRIPT
+
+chmod 755 /etc/zfs/zed.d/all-n8n.sh
+systemctl restart zfs-zed.service
+systemctl status zfs-zed.service --no-pager -n 20
+EOF
+```
+
+Manual hook test without generating a ZFS fault:
+
+```bash
+sudo env \
+  ZEVENT_EID=manual \
+  ZEVENT_SUBCLASS=test \
+  ZEVENT_POOL=storage_array \
+  ZEVENT_TIME_STRING="$(date -u +%FT%TZ)" \
+  /etc/zfs/zed.d/all-n8n.sh
+```
+
 ## Verification Commands
 
 ```bash
