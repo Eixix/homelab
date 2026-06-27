@@ -40,14 +40,23 @@ Snapshot/scrub scheduling:
 - Old daily snapshots from 2023 are still present and should be reviewed before deletion.
 - ZED is enabled and configured to notify `root`; confirm root mail is actually delivered to a monitored mailbox or replace it with the existing n8n notification path.
 
+Rechecked on 2026-06-27:
+
+- Pool remains `ONLINE`; last scrub still reports `0` errors.
+- `compression=off` and `atime=on` are still inherited from defaults.
+- A bounded scan found no setuid files or device nodes in the sample, but many media/document files have executable bits set. Treat `exec=off` as desirable for future media/document datasets, but do not flip it on the root dataset without a service-aware maintenance window.
+- ZED still only targets `root` mail through `ZED_EMAIL_ADDR="root"`.
+
 ## Recommended Changes
 
-Review and apply deliberately:
+First low-risk pass:
 
 ```bash
 sudo zfs set compression=lz4 storage_array
 sudo zfs set atime=off storage_array
 ```
+
+Those changes affect new writes and metadata behavior without moving data or changing service-visible paths. They are the safest immediate hardening/performance win for the current single-dataset layout.
 
 Consider dataset separation instead of keeping everything on the root dataset:
 
@@ -68,6 +77,13 @@ sudo zfs set exec=off storage_array
 ```
 
 Those settings are good defaults for pure media/document datasets, but they can break workloads if anything on `/storage_array` needs executable files, device nodes, or setuid behavior.
+
+Recommended sequence:
+
+1. Apply `compression=lz4` and `atime=off` on `storage_array`.
+2. Leave `exec`, `setuid`, and `devices` unchanged on the root dataset for now.
+3. During dataset separation, set stricter properties on pure media/document datasets, for example `exec=off`, `setuid=off`, and `devices=off`.
+4. Replace or test ZED root mail delivery with a monitored notification path.
 
 ## Verification Commands
 

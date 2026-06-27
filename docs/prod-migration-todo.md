@@ -34,7 +34,7 @@ Keep this list current while porting services. Check items only after they are v
 - [x] Remove `/docker-compose-services/backup-script.sh` from `/etc/cron.weekly/aws-docker-backup`; keep that wrapper storage-array-only because `homelab-backup.timer` now owns the Docker/app backup.
 - [ ] Backup verification: run a restore drill from the new encrypted homelab backup and confirm database/app state before relying on it.
 - [x] Check `/storage_array` ZFS pool and dataset configuration for hardening, correctness, backup behavior, and alerting; findings are in `docs/storage-array-zfs.md`.
-- [ ] Decide and apply `/storage_array` ZFS hardening: `compression=lz4`, `atime=off`, dataset separation, and `exec`/`setuid`/`devices` policy where safe.
+- [ ] Apply the first-pass `/storage_array` ZFS hardening: `compression=lz4` and `atime=off`; defer `exec`/`setuid`/`devices` until dataset separation or a service-aware maintenance window.
 - [ ] Verify ZFS/ZED alerts reach a monitored notification path instead of only local root mail.
 
 ## Post-Migration Cleanup
