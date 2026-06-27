@@ -17,11 +17,32 @@ GPG_PASSPHRASE_FILE=/etc/homelab-backup.passphrase
 
 Store the GPG passphrase in `/etc/homelab-backup.passphrase` with mode `600`. AWS credentials remain configured for the account that runs the job.
 
+The host needs `aws`, `docker`, `gpg`, `sha256sum`, and `tar`. Database dump clients do not need to be installed on the host because `backup.sh` runs `mariadb-dump` and `pg_dump` inside the running database containers.
+
+Example setup:
+
+```bash
+sudo bash -euxo pipefail <<'EOF'
+install -m 600 -o root -g root /dev/null /etc/homelab-backup.env
+cat >/etc/homelab-backup.env <<'ENV'
+S3_BUCKET=s3://REPLACE_ME
+S3_PREFIX=homelab
+AWS_STORAGE_CLASS=DEEP_ARCHIVE
+GPG_PASSPHRASE_FILE=/etc/homelab-backup.passphrase
+ENV
+
+install -m 600 -o root -g root /dev/null /etc/homelab-backup.passphrase
+openssl rand -base64 48 >/etc/homelab-backup.passphrase
+EOF
+```
+
 Update the existing host backup job to call:
 
 ```bash
 /home/github/homelab/backup.sh
 ```
+
+Run the job as a user that can read `/home/github/homelab`, `/etc/homelab-backup.env`, and `/etc/homelab-backup.passphrase`, and can access Docker plus AWS credentials. Root is the simplest fit for the current production layout because `/home/github` is not world-readable.
 
 Use an S3 lifecycle policy for retention. Deep Archive is unsuitable for frequent restore drills, so periodically restore an archive into a temporary location and verify the encrypted archive checksum recorded in its S3 object metadata.
 
