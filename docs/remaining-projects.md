@@ -6,7 +6,6 @@ These services are still running on the production Docker host but are not fully
 
 | Project | Containers | Route | State | Data | Recommended next action |
 | --- | --- | --- | --- | --- | --- |
-| Stirling PDF | `stirling` | `https://pdf.home` | Running but reported unhealthy during inventory | `/docker-compose-data/stirling-data/*` | Either retire it or port with a health-check fix; do not treat the current unhealthy state as a clean baseline. |
 | Sili bot | `sili-bot` | None observed | Running | Docker volume `silibotvolume` | Decide ownership first. It has no Traefik route, so it may belong outside the web stack. |
 
 ## Retired During Migration
@@ -15,6 +14,7 @@ These services are still running on the production Docker host but are not fully
 | --- | --- | --- | --- |
 | Mealie | `https://food.home` | Container removed; Traefik no longer exposes the `food` router. | `/docker-compose-services/mealie-data` is preserved until an explicit data purge decision. |
 | Leantime | `https://projekt.betz.coffee` | App and MySQL containers removed; Traefik no longer exposes the `leantime` router, and the hostname now falls through to the external blackhole. | `/docker-compose-services/leantime` is preserved until an explicit data purge decision. |
+| Stirling PDF | `https://pdf.home` | Container removed; Traefik no longer exposes the `stirling` router. | `/docker-compose-data/stirling-data` is preserved until an explicit data purge decision. |
 
 ## Independent GitHub-User Projects
 

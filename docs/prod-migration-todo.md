@@ -87,7 +87,8 @@ The current production Traefik also routes projects that are not represented in 
 - [x] Intentionally retire the old Portainer, Grafana, Prometheus, and WUD routes during the cutover.
 - [x] Retire Mealie by removing the running container and `food.home` router while preserving `/docker-compose-services/mealie-data` until an explicit purge decision.
 - [x] Retire Leantime by removing the app/database containers and `projekt.betz.coffee` router while preserving `/docker-compose-services/leantime` until an explicit purge decision.
-- [ ] Decide the future of currently observed separate app containers: Stirling PDF and Sili bot; inventory is in `docs/remaining-projects.md`.
+- [x] Retire Stirling PDF by removing the running container and `pdf.home` router while preserving `/docker-compose-data/stirling-data` until an explicit purge decision.
+- [ ] Decide the future of currently observed separate app container Sili bot; inventory is in `docs/remaining-projects.md`.
 - [ ] Decide the future of currently observed independent GitHub-user projects: MTG, SplitLedger, and FollowUp; inventory is in `docs/remaining-projects.md`.
 - [x] Confirm Audiobookshelf, EVCC, Ghostfolio, Scrypted, Uptime Kuma, Open WebUI, Ollama, Docker Registry, and WUD are not currently running on the production Docker host.
 - [x] Keep the old Traefik running until every retained service above has migrated to the new proxy or another explicit ingress.
