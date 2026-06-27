@@ -30,7 +30,7 @@ Keep this list current while porting services. Check items only after they are v
 - [x] Configure GitHub Actions deployment secrets, including the pinned `SSH_KNOWN_HOSTS`, production `.env`, and Cloudflare API token.
 - [x] Keep the GitHub Actions production deployment manual-only until the staged migration is complete.
 - [x] Configure `/etc/homelab-backup.env` and a protected GPG passphrase file, then complete one encrypted S3 upload with the new `backup.sh`.
-- [ ] Schedule `/home/github/homelab/backup.sh` weekly with systemd or the host backup wrapper.
+- [x] Schedule `/home/github/homelab/backup.sh` weekly with systemd or the host backup wrapper.
 - [ ] Update the host backup job to invoke `/home/github/homelab/backup.sh` instead of `/docker-compose-services/backup-script.sh`; retain the separate `/storage_array` backup job.
 - [ ] Backup verification: run a restore drill from the new encrypted homelab backup and confirm database/app state before relying on it.
 - [ ] Check `/storage_array` ZFS pool and dataset configuration for hardening, correctness, backup behavior, and alerting.
@@ -38,8 +38,8 @@ Keep this list current while porting services. Check items only after they are v
 ## Post-Migration Cleanup
 
 - [ ] Fix Homepage resource widget: production currently displays the wrong RAM value; decide whether to use host mounts/socket access or remove/replace the widget.
-- [ ] Deploy and smoke test the custom internal-only Traefik error pages with a clean minimalist design.
-- [ ] Configure external unmatched `*.betz.coffee` traffic to time out or otherwise not respond instead of showing a default/not-found response.
+- [x] Deploy and smoke test the custom internal-only Traefik error pages with a clean minimalist design.
+- [x] Configure external unmatched `*.betz.coffee` traffic to time out or otherwise not respond instead of showing a default/not-found response.
 - [ ] Clean up repository-local stale runtime/data artifacts that are no longer needed after the migration.
 - [ ] Clean up production server legacy containers, old Compose directories, old backup scripts, and abandoned mount data after each retained service has an explicit owner or rollback window has expired.
 
