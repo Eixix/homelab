@@ -12,6 +12,26 @@ require_command() {
   }
 }
 
+load_env_key() {
+  local key="$1"
+  local line value
+
+  line="$(grep -E "^${key}=" "$HOMELAB_ROOT/.env" | tail -n 1)" || {
+    printf 'Missing required environment value: %s\n' "$key" >&2
+    exit 1
+  }
+  value="${line#*=}"
+  value="${value%$'\r'}"
+
+  if [[ "$value" == \"*\" && "$value" == *\" ]]; then
+    value="${value:1:${#value}-2}"
+  elif [[ "$value" == \'*\' && "$value" == *\' ]]; then
+    value="${value:1:${#value}-2}"
+  fi
+
+  printf -v "$key" '%s' "$value"
+}
+
 for command in aws docker gpg sha256sum tar; do
   require_command "$command"
 done
@@ -34,11 +54,14 @@ source "$BACKUP_CONFIG"
   exit 1
 }
 
-# Compose secrets are sourced only to create consistent database dumps.
-set -a
-# shellcheck disable=SC1090
-source "$HOMELAB_ROOT/.env"
-set +a
+for key in \
+  PAPERLESS_DB_ROOT_PASSWORD \
+  SHLINK_DB_ROOT_PASSWORD \
+  IMMICH_DB_PASSWORD \
+  IMMICH_DB_USERNAME \
+  IMMICH_DB_DATABASE_NAME; do
+  load_env_key "$key"
+done
 
 BACKUP_ID="$(hostname -s)-$(date -u +%Y%m%dT%H%M%SZ)"
 STAGING_DIR="$(mktemp -d "$BACKUP_WORK_DIR/homelab-backup.XXXXXX")"

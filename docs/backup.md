@@ -17,7 +17,7 @@ GPG_PASSPHRASE_FILE=/etc/homelab-backup.passphrase
 
 Store the GPG passphrase in `/etc/homelab-backup.passphrase` with mode `600`. AWS credentials remain configured for the account that runs the job.
 
-The host needs `aws`, `docker`, `gpg`, `sha256sum`, and `tar`. Database dump clients do not need to be installed on the host because `backup.sh` runs `mariadb-dump` and `pg_dump` inside the running database containers.
+The host needs `aws`, `docker`, `gpg`, `sha256sum`, and `tar`. Database dump clients do not need to be installed on the host because `backup.sh` runs `mariadb-dump` and `pg_dump` inside the running database containers. The Compose `.env` file is not shell-sourced; values such as `STEP_CA_INIT_NAME=Homelab Internal CA` can stay in Compose dotenv format.
 
 Example setup:
 
