@@ -27,6 +27,23 @@ These already appear to live under `/home/github/<project>` and may be better ke
 | SplitLedger | `splitledger-web`, `splitledger-relay` | `https://money.betz.coffee`, `https://relay.betz.coffee` | Running | `/docker-compose-services/splitledger-data` | Keep independent like MTG. The live containers still reference `/home/github/splitledger/docker-compose.yml`, but that checkout was not present during inventory, so restore or verify its separate deployment path before changing it. |
 | FollowUp | `followup_frontend`, `followup_tor_frontend` | No Traefik route observed in the new proxy; Tor frontend container is running | Running | `/home/github/followup-tor-frontend-data` | Keep independent in `Eixix/followup`. The local repo has a deploy workflow and Compose restart policies, but the live containers reference `/home/github/followup/dockerfiles/compose.yml` and that checkout was not present during inventory, so restore or verify the separate deployment path before changing it. |
 
+## Independent Checkout Recovery
+
+The SplitLedger and FollowUp containers are healthy enough to keep running, but their deployment checkouts were not present under `/home/github` during inventory. Because `/home/github` is owned by the `github` deployment user, restore those paths through their own deploy pipelines instead of hand-copying files with the `tobias` SSH account.
+
+For FollowUp, trigger `Eixix/followup`'s deploy workflow. A no-code deploy-trigger commit is enough when using a workstation with push access:
+
+```bash
+cd /home/tobias/Projects/followup
+git status --short
+git commit --allow-empty -m "Trigger FollowUp redeploy"
+git push
+```
+
+The workflow rsyncs the repo to `/home/github/followup/` and runs `docker compose up -d --build --remove-orphans` from `dockerfiles/`.
+
+For SplitLedger, first identify or restore the owning repo/deploy workflow, then trigger that pipeline so `/home/github/splitledger/docker-compose.yml` exists again. Do not recreate the path from this public homelab repo unless SplitLedger is deliberately moved under homelab ownership.
+
 ## Already Confirmed Absent
 
 The following were not observed as running containers during the production inventory: Audiobookshelf, EVCC, Ghostfolio, Scrypted, Uptime Kuma, Open WebUI, Ollama, Docker Registry, and WUD.
