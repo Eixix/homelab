@@ -43,13 +43,13 @@ Snapshot/scrub scheduling:
 Rechecked on 2026-06-27:
 
 - Pool remains `ONLINE`; last scrub still reports `0` errors.
-- `compression=off` and `atime=on` are still inherited from defaults.
+- First-pass hardening is applied: `compression=lz4` and `atime=off` are set locally on `storage_array`.
 - A bounded scan found no setuid files or device nodes in the sample, but many media/document files have executable bits set. Treat `exec=off` as desirable for future media/document datasets, but do not flip it on the root dataset without a service-aware maintenance window.
 - ZED still only targets `root` mail through `ZED_EMAIL_ADDR="root"`.
 
 ## Recommended Changes
 
-First low-risk pass:
+Applied first low-risk pass:
 
 ```bash
 sudo zfs set compression=lz4 storage_array
