@@ -55,7 +55,7 @@ Keep this list current while porting services. Check items only after they are v
 - [x] Immich: local internal route tested.
 - [x] Immich: local external route tested.
 - [x] Beszel monitoring: local route tested.
-- [ ] Vaultwarden: decide/admin-token handling for production admin page.
+- [x] Vaultwarden: keep the admin page disabled in production by omitting `ADMIN_TOKEN`; use config/data changes for maintenance unless an explicit admin-window is needed.
 - [x] Vaultwarden: stop legacy container, final-sync `/docker-compose-services/vaultwarden` into `data/vaultwarden`, and start the Git-managed service.
 - [x] Vaultwarden: smoke test `https://passwort.betz.coffee` through Traefik.
 - [x] Vaultwarden: verify browser extension/mobile sync after the Git-managed cutover.
