@@ -14,6 +14,11 @@ const links = [
     description: 'Encrypted homelab backups, scheduling, storage-array sync, and restore outline.',
   },
   {
+    title: 'Post-Migration Ops',
+    href: '/docs/post-migration-ops',
+    description: 'Restore drill, credential rotation, Step CA choice, and independent project follow-ups.',
+  },
+  {
     title: 'Storage Array',
     href: '/docs/storage-array-zfs',
     description: 'ZFS pool review, hardening options, scrub cadence, and alerting notes.',

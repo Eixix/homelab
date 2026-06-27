@@ -5,6 +5,7 @@ const sidebars = {
   homelabSidebar: [
     'prod-migration-todo',
     'backup',
+    'post-migration-ops',
     'storage-array-zfs',
     'remaining-projects',
     'core-cutover-runbook',

@@ -23,9 +23,9 @@ The production migration is complete for the homelab-owned stack. Core services 
 - [x] Pre-stage copied current core and app data into `/home/github/homelab/data`; database-backed services still need a final stopped sync during their service cutover.
 - [x] Verify the Cloudflare origin certificate remains the default Traefik certificate for `*.betz.coffee`; it currently expires in 2040.
 - [x] Verify the Cloudflare ACME token cannot issue a certificate for `fotos.fabian-und-kristina.de`; keep that route off the Cloudflare DNS resolver unless that zone is added.
-- [ ] Rotate Cloudflare token and write it to `secrets/cloudflare_api_token`.
-- [ ] Replace or rotate simple migration-preserved DB/app credentials in production `.env` after each dependent service has stayed stable.
-- [ ] Decide whether to regenerate production Step CA data for the final `STEP_CA_INIT_NAME`.
+- [ ] Rotate Cloudflare token and write it to `secrets/cloudflare_api_token`; sequence is in `docs/post-migration-ops.md`.
+- [ ] Replace or rotate simple migration-preserved DB/app credentials in production `.env` after each dependent service has stayed stable; sequence is in `docs/post-migration-ops.md`.
+- [ ] Decide whether to regenerate production Step CA data for the final `STEP_CA_INIT_NAME`; current recommendation is to keep the migrated CA unless doing a deliberate trust reset.
 - [x] Verify production DNS for `*.home` through AdGuard/hosts and `*.betz.coffee` through Cloudflare/DDNS.
 - [x] Validate the staged production configuration with `docker compose --env-file .env --profile external config --quiet`.
 - [x] Re-validate GitHub Actions staging deployment after adding legacy Homepage and Immich hostnames.
@@ -36,7 +36,7 @@ The production migration is complete for the homelab-owned stack. Core services 
 - [x] Configure `/etc/homelab-backup.env` and a protected GPG passphrase file, then complete one encrypted S3 upload with the new `backup.sh`.
 - [x] Schedule `/home/github/homelab/backup.sh` weekly with systemd or the host backup wrapper.
 - [x] Remove `/docker-compose-services/backup-script.sh` from `/etc/cron.weekly/aws-docker-backup`; keep that wrapper storage-array-only because `homelab-backup.timer` now owns the Docker/app backup.
-- [ ] Backup verification: run a restore drill from the new encrypted homelab backup and confirm database/app state before relying on it.
+- [ ] Backup verification: run the restore drill in `docs/backup.md` / `docs/post-migration-ops.md` from the new encrypted homelab backup and confirm database/app state before relying on it.
 - [x] Check `/storage_array` ZFS pool and dataset configuration for hardening, correctness, backup behavior, and alerting; findings are in `docs/storage-array-zfs.md`.
 - [x] Apply the first-pass `/storage_array` ZFS hardening: `compression=lz4` and `atime=off`; defer `exec`/`setuid`/`devices` until dataset separation or a service-aware maintenance window.
 - [x] Verify ZFS/ZED alerts reach a monitored notification path instead of only local root mail; a minimal n8n webhook payload using `body.message` was tested successfully.
@@ -96,9 +96,9 @@ The current production Traefik also routes projects that are not represented in 
 - [x] Fix the Sili bot deploy workflow in `Eixix/sili-telegram-bot` so `docker run --restart unless-stopped` is passed before the image name; committed there as `33e3116`.
 - [x] Keep MTG tournament and MTG hand oracle independent in their own GitHub/org deployment paths; inventory is in `docs/remaining-projects.md`.
 - [x] Keep SplitLedger independent like MTG; inventory is in `docs/remaining-projects.md`.
-- [ ] Restore or verify the separate SplitLedger deployment checkout/pipeline because the live containers reference `/home/github/splitledger/docker-compose.yml`, but that directory was not present during inventory.
+- [ ] Restore or verify the separate SplitLedger deployment checkout/pipeline because the live containers reference `/home/github/splitledger/docker-compose.yml`, but that directory was not present during inventory; see `docs/post-migration-ops.md`.
 - [x] Keep FollowUp independent in `Eixix/followup`; inventory is in `docs/remaining-projects.md`.
-- [ ] Restore or verify the separate FollowUp deployment checkout/pipeline because the live containers reference `/home/github/followup/dockerfiles/compose.yml`, but that directory was not present during inventory.
+- [ ] Restore or verify the separate FollowUp deployment checkout/pipeline because the live containers reference `/home/github/followup/dockerfiles/compose.yml`, but that directory was not present during inventory; see `docs/post-migration-ops.md`.
 - [x] Confirm Audiobookshelf, EVCC, Ghostfolio, Scrypted, Uptime Kuma, Open WebUI, Ollama, Docker Registry, and WUD are not currently running on the production Docker host.
 - [x] Keep the old Traefik running until every retained service above has migrated to the new proxy or another explicit ingress.
 
@@ -123,7 +123,7 @@ The current production Traefik also routes projects that are not represented in 
 - [x] Actual Budget: smoke test `https://budget.home`.
 - [x] n8n: stop legacy container, final-sync `/docker-compose-services/n8n` into `data/n8n`, and start the Git-managed service.
 - [x] n8n: verify webhook/editor URLs after prod hostname cutover.
-- [ ] n8n: decide whether production needs external task runners for Python-capable executions; current logs show the internal Python runner fails because Python 3 is missing, and official n8n docs recommend external runners for production.
+- [ ] n8n: decide whether production needs external task runners for Python-capable executions; current logs show the internal Python runner fails because Python 3 is missing, and the decision criteria are in `docs/post-migration-ops.md`.
 - [x] go2rtc: stop legacy container, final-sync `/docker-compose-services/go2rtc` into `data/go2rtc`, and start the Git-managed service.
 - [x] go2rtc: verify camera config, WebRTC/RTSP access, and whether privileged mode is still required.
 - [x] go2rtc: smoke test `https://go2rtc.home`.
