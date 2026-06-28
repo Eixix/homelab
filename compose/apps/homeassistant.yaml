@@ -22,7 +22,7 @@ services:
       - traefik.http.routers.homeassistant-internal.middlewares=internal-app@file
       - traefik.http.routers.homeassistant-internal.service=homeassistant
 
-      - traefik.http.routers.homeassistant-alexa.rule=Host(`${HOMEASSISTANT_EXTERNAL_HOST}`) && (PathPrefix(`/api/alexa`) || PathPrefix(`/auth`))
+      - traefik.http.routers.homeassistant-alexa.rule=Host(`${HOMEASSISTANT_EXTERNAL_HOST}`) && (PathPrefix(`/api/alexa`) || PathPrefix(`/auth`) || PathPrefix(`/.well-known/oauth`))
       - traefik.http.routers.homeassistant-alexa.entrypoints=websecure
       - traefik.http.routers.homeassistant-alexa.tls=true
       - traefik.http.routers.homeassistant-alexa.middlewares=security-headers@file
