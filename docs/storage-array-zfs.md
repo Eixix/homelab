@@ -91,6 +91,8 @@ The host currently has `zfs-zed.service` active, but no local `mail`/`sendmail` 
 
 Use a local ZED hook that reuses the existing optional `N8N_WEBHOOK` value from `/etc/homelab-backup.env`. Keep the webhook only on the server; do not commit it.
 
+Routine `history_event` notifications are not faults. They are generated for normal ZFS history activity such as administrative commands, snapshots, or property changes. Ignore them in the hook so n8n only receives events that deserve attention.
+
 ```bash
 sudo bash -euxo pipefail <<'EOF'
 cat >/etc/zfs/zed.d/all-n8n.sh <<'SCRIPT'
@@ -104,6 +106,12 @@ BACKUP_ENV=/etc/homelab-backup.env
 . "$BACKUP_ENV"
 [ -n "${N8N_WEBHOOK:-}" ] || exit 2
 command -v curl >/dev/null 2>&1 || exit 2
+
+case "${ZEVENT_SUBCLASS:-}" in
+  history_event|historyevent)
+    exit 0
+    ;;
+esac
 
 json_escape() {
   sed 's/\\/\\\\/g; s/"/\\"/g'

@@ -51,7 +51,8 @@ The production migration is complete for the homelab-owned stack. Core services 
 - [x] Create a Docusaurus documentation service that collects architecture decisions, runbooks, and migration notes in one place.
 - [x] Smoke test the Docusaurus documentation service at `https://docs.home`.
 - [x] Add `AGENTS.md` to this repo.
-- [x] Investigate if segregating the networks more would make sense (I guess it will).
+- [x] Investigate if segregating the networks more would make sense; current and target models are documented in `docs/network-isolation.md`.
+- [ ] Network hardening: move multi-container apps from the shared `internal_network` / `external_network` model to per-app backend networks where it reduces lateral movement.
 
 ## Ported Services
 

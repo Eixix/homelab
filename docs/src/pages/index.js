@@ -24,6 +24,11 @@ const links = [
     description: 'ZFS pool review, hardening options, scrub cadence, and alerting notes.',
   },
   {
+    title: 'Network Isolation',
+    href: '/docs/network-isolation',
+    description: 'Current Docker network boundaries and the target per-stack hardening model.',
+  },
+  {
     title: 'Remaining Projects',
     href: '/docs/remaining-projects',
     description: 'Live services still outside this repo, their routes, data paths, and next decisions.',

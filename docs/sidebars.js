@@ -6,6 +6,7 @@ const sidebars = {
     'prod-migration-todo',
     'backup',
     'post-migration-ops',
+    'network-isolation',
     'storage-array-zfs',
     'remaining-projects',
     'core-cutover-runbook',
