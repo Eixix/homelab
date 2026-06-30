@@ -42,6 +42,16 @@ http:
         browserXssFilter: true
         referrerPolicy: same-origin
 
+    vaultwarden-security-headers:
+      headers:
+        stsSeconds: 31536000
+        stsIncludeSubdomains: true
+        stsPreload: false
+        customFrameOptionsValue: SAMEORIGIN
+        contentTypeNosniff: true
+        browserXssFilter: true
+        referrerPolicy: same-origin
+
     internal-error-pages:
       errors:
         status:
