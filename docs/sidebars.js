@@ -7,6 +7,7 @@ const sidebars = {
     'backup',
     'post-migration-ops',
     'network-isolation',
+    'presentations/homelab-onboarding',
     'storage-array-zfs',
     'remaining-projects',
     'core-cutover-runbook',

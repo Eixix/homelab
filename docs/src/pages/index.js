@@ -29,6 +29,11 @@ const links = [
     description: 'Current Docker network boundaries and the target per-stack hardening model.',
   },
   {
+    title: 'Onboarding',
+    href: '/docs/presentations/homelab-onboarding',
+    description: 'Deutschsprachige Marp-Schulung fuer neue Homelab-Nutzer mit leichtem Corporate-Augenzwinkern.',
+  },
+  {
     title: 'Remaining Projects',
     href: '/docs/remaining-projects',
     description: 'Live services still outside this repo, their routes, data paths, and next decisions.',
