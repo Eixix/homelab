@@ -240,7 +240,7 @@ Du musst sie nicht kennen.
 Wenn du sie zufällig siehst:  
 **nichts ändern, kurz fragen.**
 
-Sehr professionell. Sehr ISO-gefühlvoll.
+Das ist meistens die beste Lösung.
 
 ---
 
@@ -271,7 +271,7 @@ So ist es hilfreich:
 > Uhrzeit: 17:30.
 
 Das ist fast schon ein Support-Ticket.  
-Wir sind stolz.
+Damit kann jemand gezielt helfen.
 
 ---
 
@@ -301,6 +301,98 @@ Von unterwegs möglich.
 ## `homepage.home`
 
 Startpunkt für alles.
+
+---
+
+# Falls etwas passiert
+
+Es gibt auch einen Plan für den Notfall.
+
+Du musst ihn nicht auswendig können.
+
+Wichtig ist nur:
+
+## Nicht allein herumprobieren.
+
+Erst Hilfe holen.
+
+---
+
+# Wer kann helfen?
+
+Michael oder Fabian können technisch unterstützen.
+
+Einer von beiden kann mit dem YubiKey auf den Server.
+
+Der YubiKey ist ein kleiner Sicherheitsschlüssel.
+
+Er sorgt dafür, dass nicht jeder einfach an die wichtigen Stellen kommt.
+
+---
+
+# Was macht Michael oder Fabian?
+
+Sie können:
+
+- auf den Server zugreifen
+- die Dokumentation lesen
+- prüfen, was gerade funktioniert
+- Dinge wieder in Ordnung bringen
+- bei einer Wiederherstellung helfen
+
+Du musst das nicht selbst machen.
+
+---
+
+# Wo steht die Anleitung?
+
+## `https://docs.home`
+
+Dort stehen die technischen Notizen.
+
+Wenn du nicht selbst hineinkommst:
+
+Michael oder Fabian können die Doku nutzen und die nötigen Schritte prüfen.
+
+---
+
+# Passwörter im Notfall
+
+Die Passwörter kommen über Bitwarden.
+
+Dort heißt das **Notfallzugriff**.
+
+Das bedeutet:
+
+- du bekommst nicht einfach heute alle Passwörter
+- im Notfall kannst du Zugriff anfordern
+- nach der festgelegten Wartezeit wird der Zugriff freigegeben
+
+---
+
+# So rufst du die Passwörter ab
+
+1. Öffne Bitwarden.
+2. Melde dich mit deinem eigenen Konto an.
+3. Öffne **Einstellungen**.
+4. Öffne **Notfallzugriff**.
+5. Fordere dort den Zugriff an.
+
+Bitwarden zeigt dir danach die nächsten Schritte.
+
+---
+
+# Wenn der Zugriff freigegeben ist
+
+Bitwarden kann dir dann den Tresor anzeigen.
+
+Je nach Einstellung kannst du:
+
+- Passwörter ansehen
+- wichtige Zugänge finden
+- Michael oder Fabian gezielt dazuholen
+
+Bitte nichts löschen oder ändern, bevor ihr euch abgestimmt habt.
 
 ---
 
@@ -346,7 +438,7 @@ A. Du brauchst VPN.
 
 B. Die Doku wurde gelöscht.
 
-C. Das Internet ist persönlich enttäuscht.
+C. Die Adresse hat heute frei.
 
 ---
 
@@ -368,7 +460,7 @@ A. `homepage.home`
 
 B. In irgendeinem alten Chat
 
-C. Gar nicht, du rätst mutig
+C. Gar nicht, du suchst zufällig
 
 ---
 
@@ -426,13 +518,35 @@ Damit kann man den Fehler finden.
 
 ---
 
+# Frage 6
+
+Es ist ein echter Notfall und du brauchst Zugriff auf Passwörter.
+
+Was machst du zuerst?
+
+A. Bitwarden öffnen und Notfallzugriff anfordern.
+
+B. Irgendwelche Dateien auf dem Server löschen.
+
+C. Alle Passwörter neu erfinden.
+
+---
+
+# Antwort 6
+
+## A. Bitwarden öffnen und Notfallzugriff anfordern.
+
+Danach Michael oder Fabian dazuholen, wenn technische Hilfe nötig ist.
+
+---
+
 # Bestanden
 
 Du hast bestanden, wenn du diese drei Dinge weißt:
 
 1. `.home` braucht zuhause oder VPN.
 2. `homepage.home` ist der Startpunkt.
-3. Probleme bitte mit Adresse und Fehlermeldung melden.
+3. Im Notfall helfen Bitwarden, Doku, Michael oder Fabian.
 
 Willkommen im Homelab.
 
