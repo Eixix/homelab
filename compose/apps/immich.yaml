@@ -24,6 +24,7 @@ services:
 
       - traefik.http.routers.immich-external.rule=Host(`${IMMICH_HOST}`)
       - traefik.http.routers.immich-external.entrypoints=websecure
+      - traefik.http.routers.immich-external.priority=100
       - traefik.http.routers.immich-external.tls=true
       - traefik.http.routers.immich-external.tls.certresolver=externalresolver
       - traefik.http.routers.immich-external.middlewares=security-headers@file

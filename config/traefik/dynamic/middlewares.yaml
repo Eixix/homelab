@@ -15,7 +15,12 @@ http:
       entryPoints:
         - websecure
       priority: 1
-      tls: {}
+      tls:
+        certResolver: externalresolver
+        domains:
+          - main: betz.coffee
+            sans:
+              - "*.betz.coffee"
       service: external-blackhole
 
   middlewares:
