@@ -5,6 +5,7 @@ const sidebars = {
   homelabSidebar: [
     'prod-migration-todo',
     'backup',
+    'digital-legacy',
     'post-migration-ops',
     'network-isolation',
     'presentations/homelab-onboarding',

@@ -14,6 +14,11 @@ const links = [
     description: 'Encrypted homelab backups, scheduling, storage-array sync, and restore outline.',
   },
   {
+    title: 'Digital Legacy',
+    href: '/docs/digital-legacy',
+    description: 'Emergency plan, Bitwarden Emergency Access, and technical points of contact.',
+  },
+  {
     title: 'Post-Migration Ops',
     href: '/docs/post-migration-ops',
     description: 'Restore drill, credential rotation, Step CA choice, and independent project follow-ups.',
