@@ -1,7 +1,7 @@
 ---
 marp: true
 title: Homelab Onboarding
-description: Eine freundliche Einfuehrung in unsere privaten Dienste, Domains und Zugriffswege.
+description: Eine einfache Einführung in unsere privaten Webseiten.
 theme: default
 paginate: true
 ---
@@ -12,151 +12,92 @@ _class: lead
 
 # Homelab Onboarding
 
-Willkommen in der internen IT-Abteilung.
+Willkommen im privaten Firmen-Intranet.
 
-Sie besteht aus erstaunlich wenig Personal, erstaunlich vielen Containern und mindestens einem Menschen, der sagt: "Das ist gleich behoben."
-
----
-
-# Ziel dieser Schulung
-
-Nach diesem kurzen Onboarding kannst du:
-
-- die wichtigsten Webseiten finden
-- verstehen, warum manche Adressen auf `.home` enden
-- wissen, wann du im WLAN/VPN sein musst
-- grob einordnen, welcher Dienst wofuer da ist
-- eine sinnvolle Fehlermeldung schicken, statt "geht nicht"
+Nur ohne Firma.  
+Und mit besserer Einkaufsliste.
 
 ---
 
-# Die 30-Sekunden-Version
+# Worum geht es?
 
-Der beste Startpunkt ist:
+Wir haben ein paar eigene Webseiten für Zuhause.
+
+Damit kannst du zum Beispiel:
+
+- Fotos ansehen
+- Passwörter sicher nutzen
+- Dokumente finden
+- Einkäufe planen
+- Smart-Home-Dinge steuern
+
+---
+
+# Der wichtigste Link
 
 ## `https://homepage.home`
 
-Dort findest du die wichtigsten Dienste als Dashboard.
+Das ist die Startseite.
 
-Wenn diese Seite nicht geht, bist du sehr wahrscheinlich nicht im Heimnetz oder nicht per VPN verbunden.
-
----
-
-# Zwei Welten, zwei Domain-Endungen
-
-## `.home`
-
-Interne Dienste. Nur im Heimnetz oder per VPN erreichbar.
-
-## `.betz.coffee`
-
-Externe Dienste. Von unterwegs erreichbar, wenn sie bewusst freigegeben sind.
-
-Das ist Absicht. Nicht alles, was praktisch ist, muss im Internet stehen. Ja, diese Folie wurde von der Abteilung "Vernuenftige Paranoia" freigegeben.
+Wenn du nicht weißt, wo etwas ist:  
+**immer zuerst dort schauen.**
 
 ---
 
-# Zugriff: Bin ich drin?
+# Warum gibt es verschiedene Adressen?
 
-Du bist "drin", wenn mindestens eins davon stimmt:
+Es gibt zwei Arten von Webseiten:
 
-- du bist im heimischen WLAN/LAN
-- du bist per VPN verbunden
-- dein Geraet nutzt das interne DNS
+## Zuhause
 
-Ohne das funktionieren `.home`-Adressen normalerweise nicht.
+Nur im Heimnetz oder mit VPN.
 
-Wenn dein Browser also sagt: "Adresse nicht gefunden", ist das oft kein Weltuntergang. Es ist nur DNS mit einem kleinen Drama.
+## Unterwegs
+
+Auch von außerhalb erreichbar.
 
 ---
 
-# Was braucht VPN?
+# Was bedeutet `.home`?
 
-## VPN oder Heimnetz noetig
+Adressen mit `.home` sind **nur intern**.
+
+Beispiele:
 
 - `homepage.home`
-- `docs.home`
 - `dokumente.home`
 - `budget.home`
 - `hass.home`
-- `fotos.home`
-- `reader.home`
-- `n8n.home`
-- `go2rtc.home`
-- `shlink.home`
-- `beszel.home`
-- Admin-/Infrastruktur-Seiten wie `traefik.home` und `adguard.home`
+
+Wenn du nicht zuhause bist, brauchst du dafür VPN.
 
 ---
 
-# Was geht von unterwegs?
+# Was bedeutet `.betz.coffee`?
 
-Diese Dienste sind bewusst extern erreichbar:
+Adressen mit `.betz.coffee` können von unterwegs erreichbar sein.
 
-- `https://passwort.betz.coffee`  
-  Passwort-Tresor
+Beispiele:
 
-- `https://fotos.betz.coffee`  
-  Fotos und Videos
+- `passwort.betz.coffee`
+- `fotos.betz.coffee`
+- `shopping.betz.coffee`
 
-- `https://shopping.betz.coffee`  
-  Einkauf und Kueche
-
-- `https://l.betz.coffee`  
-  Kurzlinks
-
-Home Assistant hat zusaetzlich externe Spezialpfade fuer Integrationen:
-
-- `https://hass.betz.coffee/auth`
-- `https://hass.betz.coffee/api/alexa`
+Diese Seiten sind bewusst nach außen freigegeben.
 
 ---
 
-# Warum ist nicht alles extern?
+# Wann brauche ich VPN?
 
-Weil "geht von ueberall" auch heisst:
+Du brauchst VPN, wenn:
 
-- erreichbar fuer Bots
-- erreichbar fuer Scanner
-- erreichbar fuer Fehlkonfigurationen
-- erreichbar fuer das Internet, und das Internet ist... motiviert
+- du nicht zuhause bist
+- die Adresse auf `.home` endet
+- dein Gerät die Seite nicht findet
 
-Darum gilt:
+Kurz gesagt:
 
-## Intern, wenn moeglich. Extern nur, wenn sinnvoll.
-
----
-
-# Der Wegweiser: Homepage
-
-## `https://homepage.home`
-
-Homepage ist unser internes Startmenue.
-
-Dort findest du:
-
-- Apps
-- Monitoring
-- interne Dokumentation
-- technische Oberflaechen
-
-Wenn du nicht weisst, wo etwas ist: erst Homepage, dann fragen.
-
----
-
-# Dokumentation
-
-## `https://docs.home`
-
-Hier wohnen:
-
-- Runbooks
-- Betriebsnotizen
-- Migrationsentscheidungen
-- Backup- und Restore-Infos
-- Dinge, die wir einmal schmerzhaft gelernt haben
-
-Kurz: das Gedaechtnis. Nicht perfekt, aber deutlich besser als "stand irgendwo im Chat".
+## `.home` = zuhause oder VPN
 
 ---
 
@@ -164,37 +105,30 @@ Kurz: das Gedaechtnis. Nicht perfekt, aber deutlich besser als "stand irgendwo i
 
 ## `https://passwort.betz.coffee`
 
-Vaultwarden ist der Passwort-Tresor.
+Hier liegen Passwörter sicher.
 
-Verwendung:
+Bitte nicht:
 
-- Passwoerter speichern
-- sichere Logins teilen
-- Browser-Erweiterung oder mobile App nutzen
+- Passwörter per Chat schicken
+- Passwörter in Notizen kopieren
+- Screenshots von Passwörtern machen
 
-Regel:
-
-## Keine Passwoerter per Chat verschicken.
-
-Auch nicht "nur kurz". Besonders nicht "nur kurz".
+Der Tresor ist dafür da. Er möchte auch mal gebraucht werden.
 
 ---
 
 # Fotos
 
-## Intern: `https://fotos.home`
-## Extern: `https://fotos.betz.coffee`
+## Zuhause: `https://fotos.home`
+## Unterwegs: `https://fotos.betz.coffee`
 
-Immich ist fuer Fotos und Videos.
+Hier findest du Fotos und Videos.
 
-Typische Nutzung:
+Typisch:
 
 - Fotos ansehen
-- Uploads vom Handy
-- Alben teilen
-- Backup-Gefuehl geniessen, ohne es mit Backup zu verwechseln
-
-Wichtig: Die eigentlichen Bilddaten liegen auf dem Storage-Array.
+- Alben öffnen
+- Bilder vom Handy sichern
 
 ---
 
@@ -202,16 +136,16 @@ Wichtig: Die eigentlichen Bilddaten liegen auf dem Storage-Array.
 
 ## `https://dokumente.home`
 
-Paperless-ngx ist das digitale Aktenregal.
+Hier findest du wichtige Dokumente.
 
-Typische Nutzung:
+Zum Beispiel:
 
-- PDFs suchen
-- Dokumente verschlagworten
-- Rechnungen, Vertraege, Briefe finden
-- weniger Papier stapeln
+- Rechnungen
+- Verträge
+- Briefe
+- andere PDFs
 
-Wenn du ein Dokument nicht findest, ist es entweder falsch benannt, falsch getaggt oder noch in der echten Welt. Leider kommt das vor.
+Nur zuhause oder per VPN.
 
 ---
 
@@ -219,49 +153,43 @@ Wenn du ein Dokument nicht findest, ist es entweder falsch benannt, falsch getag
 
 ## `https://budget.home`
 
-Actual Budget ist fuer Haushalts- und Budgetplanung.
+Hier geht es um Haushaltsbudget und Ausgaben.
 
-Typische Nutzung:
+Kurz gesagt:
 
-- Einnahmen und Ausgaben verfolgen
-- Budgets pflegen
-- Finanzueberblick behalten
+## Geld rein, Geld raus, Überblick behalten.
 
-Dies ist kein Ersatz fuer gesunden Menschenverstand, aber immerhin ein UI dafuer.
+Nur zuhause oder per VPN.
 
 ---
 
-# Einkauf und Kueche
+# Einkaufsliste
 
 ## `https://shopping.betz.coffee`
 
-KitchenOwl ist fuer:
+Hier ist die Einkaufsliste.
 
-- Einkaufsliste
-- Vorrat
-- Essensplanung
+Diese Seite geht auch unterwegs.
 
-Warum extern?
-
-Weil man meistens im Supermarkt merkt, dass die Liste zuhause liegt. Dieser Dienst darf deshalb mitkommen.
+Das ist praktisch, weil man im Supermarkt selten denkt:  
+„Ach, jetzt wäre ein VPN-Konzept schön.“
 
 ---
 
 # Smart Home
 
-## Intern: `https://hass.home`
-## Extern: Spezialpfade fuer Integrationen
+## `https://hass.home`
 
-Home Assistant steuert das Zuhause.
+Hier steuerst du Dinge im Zuhause.
 
-Typische Nutzung:
+Zum Beispiel:
 
-- Geraete steuern
-- Automationen ansehen
-- Status pruefen
-- gelegentlich akzeptieren, dass ein Sensor "gerade nachdenkt"
+- Lichter
+- Geräte
+- Automationen
+- Statusanzeigen
 
-Die volle UI ist intern. Extern sind nur die benoetigten Integrationspfade offen.
+Nur zuhause oder per VPN.
 
 ---
 
@@ -269,405 +197,244 @@ Die volle UI ist intern. Extern sind nur die benoetigten Integrationspfade offen
 
 ## `https://reader.home`
 
-Kavita ist fuer:
+Hier findest du digitale Bücher und Comics.
 
-- Buecher
-- Comics
-- digitale Bibliothek
-
-Nur intern, weil die Bibliothek nicht auf der Strasse stehen muss.
+Nur zuhause oder per VPN.
 
 ---
 
-# Automationen
+# Kurze Links
 
-## `https://n8n.home`
+## `https://l.betz.coffee`
 
-n8n ist fuer Workflows und Automationen.
+Das sind Kurzlinks.
 
-Beispiele:
+Die Verwaltungsseite ist intern:
 
-- Benachrichtigungen
-- Webhooks
-- kleine Integrationen
-- "koennte man doch automatisieren" in produktiver Form
+## `https://shlink.home`
 
-Bitte nicht wahllos Workflows aktivieren. Automationen sind wie Kaffee: nuetzlich, aber in falscher Dosierung problematisch.
+Wenn du nur einen Kurzlink öffnest, brauchst du meistens nichts weiter zu wissen.
 
 ---
 
-# Kurzlinks
+# Was ist mit der Doku?
 
-## Kurzlinks: `https://l.betz.coffee`
-## Verwaltung: `https://shlink.home`
+## `https://docs.home`
 
-Shlink erzeugt kurze Links.
+Hier stehen Anleitungen und Notizen.
 
-Wichtig:
+Für normale Nutzung brauchst du sie selten.
 
-- `l.betz.coffee` ist fuer die kurzen Links selbst
-- `shlink.home` ist die Verwaltungsoberflaeche
-- Verwaltung ist intern
-
-Wenn ein Kurzlink `404` sagt, ist das oft einfach ein nicht existierender Kurzcode.
+Aber wenn jemand sagt „steht in der Doku“, ist das der Ort.
 
 ---
 
-# Kameras
+# Was du nicht anfassen musst
 
-## `https://go2rtc.home`
+Es gibt auch technische Seiten.
 
-go2rtc ist fuer Kamera- und Stream-Themen.
+Die sind für Betrieb und Wartung gedacht.
 
-Typische Nutzung:
+Du musst sie nicht kennen.
 
-- Streams pruefen
-- Kameras debuggen
-- Smart-Home-Videowege nachvollziehen
+Wenn du sie zufällig siehst:  
+**nichts ändern, kurz fragen.**
 
-Eher Technikbereich. Nicht der Ort, um "mal eben" Einstellungen zu erkunden, ausser du magst Live-Raetsel.
-
----
-
-# Monitoring
-
-## `https://beszel.home`
-
-Beszel zeigt Serverzustand:
-
-- CPU
-- RAM
-- Speicher
-- Container
-- Systemlast
-
-Wenn etwas langsam ist, ist Beszel oft die erste Wahrheitssonde.
+Sehr professionell. Sehr ISO-gefühlvoll.
 
 ---
 
-# Infrastruktur: Nur fuer Betrieb
+# Wenn etwas nicht funktioniert
 
-Diese Seiten sind intern und eher Admin-Bereich:
+Bitte nicht nur schreiben:
 
-- `https://traefik.home`  
-  Reverse Proxy und Routing
+> Geht nicht.
 
-- `https://adguard.home`  
-  DNS und Filterung
+Besser ist:
 
-- `https://ca.home`  
-  interne Zertifikatswelt
+- welche Seite?
+- zuhause, unterwegs oder VPN?
+- was steht auf dem Bildschirm?
+- seit wann?
 
-Grundsatz: Anschauen ist okay. Aendern nur, wenn du weisst, warum.
-
----
-
-# Warum Zertifikatswarnungen intern vorkommen koennen
-
-Interne Dienste nutzen eigene Zertifikate.
-
-Damit dein Browser sie komplett vertraut, braucht dein Geraet die interne Root-CA.
-
-Wenn du neu bist:
-
-1. erst VPN/Heimnetz pruefen
-2. dann Root-CA/Browser-Vertrauen klaeren
-3. erst danach an "kaputt" denken
-
-Das klingt buerokratisch, ist aber Zertifikatsbuerokratie. Die ist international anerkannt nervig.
+Damit kann man wirklich helfen.
 
 ---
 
-# Fehler melden wie ein Profi
+# Gutes Beispiel
 
-Bitte mitschicken:
+So ist es hilfreich:
 
-- welche URL
-- intern oder unterwegs
-- WLAN, LAN oder VPN
-- Uhrzeit
-- Fehlermeldung oder Screenshot
-- ob andere Seiten gehen
+> `fotos.betz.coffee` lädt unterwegs nicht.  
+> Ich bin im Mobilfunk.  
+> Es kommt eine Fehlerseite.  
+> Uhrzeit: 17:30.
 
-Gut:
-
-> `https://passwort.betz.coffee` liefert um 17:29 Cloudflare 526, Handy im Mobilfunk.
-
-Nicht so gut:
-
-> Internet ist traurig.
-
-Obwohl: emotional nachvollziehbar.
+Das ist fast schon ein Support-Ticket.  
+Wir sind stolz.
 
 ---
 
-# Wenn eine `.home`-Seite nicht geht
+# Erste Hilfe
 
-Checkliste:
+Wenn eine Seite nicht geht:
 
-1. Bist du im Heimnetz oder VPN?
-2. Funktioniert `https://homepage.home`?
-3. Funktionieren andere `.home`-Seiten?
-4. Ist nur ein Dienst betroffen?
-5. Gab es gerade Wartung oder Deployment?
+1. Prüfe, ob du zuhause oder im VPN bist.
+2. Öffne `https://homepage.home`.
+3. Probiere eine andere Seite.
+4. Melde die genaue Adresse und Fehlermeldung.
 
-Wenn nur eine App betroffen ist: wahrscheinlich App/Container.
-
-Wenn keine `.home`-Adresse geht: wahrscheinlich VPN/DNS/Netz.
+Bitte nicht wild Einstellungen ändern.
 
 ---
 
-# Wenn eine `.betz.coffee`-Seite nicht geht
+# Kleine Merkhilfe
 
-Checkliste:
+## `.home`
 
-1. Funktioniert dieselbe App intern?
-2. Kommt eine Cloudflare-Fehlerseite?
-3. Welcher Code? `522`, `526`, `404`, `502`?
-4. Betrifft es nur eine App oder alle externen Apps?
+Zuhause oder VPN.
 
-Merksatz:
+## `.betz.coffee`
 
-- `522`: Cloudflare erreicht den Ursprung nicht sauber
-- `526`: Zertifikat am Ursprung passt nicht
-- `404`: App oder Route sagt "gibt es nicht"
+Von unterwegs möglich.
 
----
+## `homepage.home`
 
-# Was bitte nicht tun?
-
-- Passwoerter in Chats posten
-- Admin-Seiten aus Neugier umkonfigurieren
-- Zertifikatswarnungen einfach wegklicken und vergessen
-- "Ich loesche mal Cache und alles andere" als erste Massnahme
-- Produktivdaten als Testdaten verwenden
-
-Die Homelab Compliance-Abteilung besteht aus einem Stirnrunzeln, aber es ist ein wirkungsvolles Stirnrunzeln.
-
----
-
-# Goldene Regeln
-
-1. Starte bei `homepage.home`.
-2. `.home` heisst: Heimnetz oder VPN.
-3. Extern ist nur offen, was wirklich extern gebraucht wird.
-4. Fehlermeldungen mit URL, Uhrzeit und Kontext melden.
-5. Wenn du unsicher bist: fragen ist guenstiger als Restore.
+Startpunkt für alles.
 
 ---
 
 # Abschlusstest
 
-Keine Sorge: Das ist kein Examen.
+Keine Sorge.
 
-Es ist eher der Moment, in dem wir pruefen, ob du die Kaffeemaschine findest, ohne aus Versehen das Rechenzentrum neu zu starten.
+Das ist kein IT-Test.
 
-Notiere dir die Antworten oder geh sie gemeinsam durch.
+Es ist eher der offizielle Nachweis, dass du die Einkaufsliste findest.
 
 ---
 
 # Frage 1
 
-Du bist unterwegs und willst die Einkaufsliste oeffnen.
+Du bist im Supermarkt und brauchst die Einkaufsliste.
 
-Welche Adresse nimmst du?
+Welche Seite öffnest du?
 
-A. `https://shopping.betz.coffee`
+A. `shopping.betz.coffee`
 
-B. `https://shopping.home`
+B. `dokumente.home`
 
-C. `https://traefik.home`
+C. `homepage.home`
 
 ---
 
 # Antwort 1
 
-## A. `https://shopping.betz.coffee`
+## A. `shopping.betz.coffee`
 
-KitchenOwl ist extern erreichbar, damit die Einkaufsliste auch im Supermarkt funktioniert.
-
-`.home` waere nur im Heimnetz oder per VPN erreichbar.
+Die Einkaufsliste ist von unterwegs erreichbar.
 
 ---
 
 # Frage 2
 
-Du oeffnest `https://docs.home` im Mobilfunknetz und der Browser findet die Seite nicht.
+Du bist unterwegs und `docs.home` öffnet sich nicht.
 
-Was ist die wahrscheinlichste Ursache?
+Was ist wahrscheinlich los?
 
-A. Die Doku wurde geloescht.
+A. Du brauchst VPN.
 
-B. Du bist nicht im Heimnetz oder VPN.
+B. Die Doku wurde gelöscht.
 
-C. Dein Handy ist gegen Dokumentation.
+C. Das Internet ist persönlich enttäuscht.
 
 ---
 
 # Antwort 2
 
-## B. Du bist nicht im Heimnetz oder VPN.
+## A. Du brauchst VPN.
 
-Adressen mit `.home` sind interne Adressen.
-
-Das bedeutet: Heimnetz, LAN oder VPN.
+`.home` funktioniert nur zuhause oder per VPN.
 
 ---
 
 # Frage 3
 
-Wo startest du, wenn du nicht mehr weisst, welche Seite wofuer da ist?
+Du suchst eine Webseite und weißt die Adresse nicht.
 
-A. `https://homepage.home`
+Wo schaust du zuerst?
 
-B. irgendeine alte Chatnachricht
+A. `homepage.home`
 
-C. direkt beim Router
+B. In irgendeinem alten Chat
+
+C. Gar nicht, du rätst mutig
 
 ---
 
 # Antwort 3
 
-## A. `https://homepage.home`
+## A. `homepage.home`
 
-Homepage ist das interne Startmenue.
-
-Von dort findest du Apps, Doku, Monitoring und die wichtigsten Links.
+Das ist die Startseite für die wichtigsten Dienste.
 
 ---
 
 # Frage 4
 
-Du willst ein Passwort weitergeben.
+Du möchtest ein Passwort teilen.
 
-Was ist die richtige Loesung?
+Was machst du?
 
-A. Passwort in den Chat kopieren.
+A. Passwort per Chat senden
 
-B. Screenshot vom Passwort machen.
+B. Screenshot schicken
 
-C. Den Passwort-Tresor nutzen.
+C. Passwort-Tresor nutzen
 
 ---
 
 # Antwort 4
 
-## C. Den Passwort-Tresor nutzen.
+## C. Passwort-Tresor nutzen
 
-Passwoerter gehoeren nach Vaultwarden:
+Passwörter gehören in den Tresor:
 
-`https://passwort.betz.coffee`
-
-Nicht in Chat, Mail oder Screenshots.
+`passwort.betz.coffee`
 
 ---
 
 # Frage 5
 
-Eine externe Seite zeigt eine Cloudflare-Fehlerseite.
+Eine Seite funktioniert nicht.
 
-Was solltest du beim Melden mitschicken?
+Was meldest du?
 
-A. "Geht nicht."
+A. „Kaputt.“
 
-B. URL, Uhrzeit, Fehlercode und ob du im WLAN/VPN/Mobilfunk bist.
+B. Adresse, Ort, Fehlermeldung und Uhrzeit.
 
-C. Nur ein trauriges Bildschirmfoto ohne Kontext.
+C. Nur ein Bild ohne Erklärung.
 
 ---
 
 # Antwort 5
 
-## B. URL, Uhrzeit, Fehlercode und Verbindung
+## B. Adresse, Ort, Fehlermeldung und Uhrzeit.
 
-Gut ist zum Beispiel:
-
-> `https://passwort.betz.coffee` zeigt um 17:29 Cloudflare 526, Handy im Mobilfunk.
-
-Damit kann man wirklich suchen.
+Damit kann man den Fehler finden.
 
 ---
 
-# Frage 6
+# Bestanden
 
-Du willst Dokumente in Paperless suchen.
+Du hast bestanden, wenn du diese drei Dinge weißt:
 
-Welche Adresse ist richtig?
-
-A. `https://dokumente.home`
-
-B. `https://fotos.betz.coffee`
-
-C. `https://l.betz.coffee`
-
----
-
-# Antwort 6
-
-## A. `https://dokumente.home`
-
-Paperless ist das digitale Aktenregal.
-
-Es ist intern erreichbar, also im Heimnetz oder per VPN.
-
----
-
-# Frage 7
-
-Was bedeutet `.home` nochmal?
-
-A. Nur fuer zuhause oder VPN.
-
-B. Immer weltweit erreichbar.
-
-C. Eine besonders kuschelige Domain.
-
----
-
-# Antwort 7
-
-## A. Nur fuer zuhause oder VPN.
-
-`.home` ist intern.
-
-Wenn du unterwegs bist, brauchst du VPN.
-
----
-
-# Frage 8
-
-Du willst Fotos anschauen.
-
-Welche Aussage stimmt?
-
-A. Intern geht `https://fotos.home`.
-
-B. Von unterwegs geht `https://fotos.betz.coffee`.
-
-C. Beides stimmt.
-
----
-
-# Antwort 8
-
-## C. Beides stimmt.
-
-Immich hat eine interne und eine externe Adresse:
-
-- intern: `https://fotos.home`
-- extern: `https://fotos.betz.coffee`
-
----
-
-# Bestanden, wenn...
-
-Du hast bestanden, wenn du diese drei Dinge sicher sagen kannst:
-
-1. `.home` braucht Heimnetz oder VPN.
+1. `.home` braucht zuhause oder VPN.
 2. `homepage.home` ist der Startpunkt.
-3. Bei Problemen meldest du URL, Uhrzeit, Fehler und Netzwerk.
+3. Probleme bitte mit Adresse und Fehlermeldung melden.
 
-Herzlichen Glueckwunsch. Du darfst jetzt offiziell "Ich glaube, das ist DNS" sagen.
+Willkommen im Homelab.
 
 ---
 
@@ -675,10 +442,10 @@ Herzlichen Glueckwunsch. Du darfst jetzt offiziell "Ich glaube, das ist DNS" sag
 _class: lead
 -->
 
-# Willkommen im Homelab
+# Fertig
 
-Es ist kein Rechenzentrum.
+Du darfst jetzt offiziell sagen:
 
-Aber es hat Doku, Backups, Monitoring und eine Einkaufsliste.
+## „Ich schaue mal auf Homepage.“
 
-Also ehrlich gesagt: teilweise besser als ein Rechenzentrum.
+Das ist in diesem Haus ein vollständiger Arbeitsprozess.
