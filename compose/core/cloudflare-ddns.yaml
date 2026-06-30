@@ -13,7 +13,9 @@ services:
     secrets:
       - cloudflare_api_token
     environment:
-      IP6_PROVIDER: local
+      # IPv6 origin routing is currently unreliable from Cloudflare to the homelab.
+      # Keep public DNS IPv4-only until router/firewall IPv6 forwarding is verified.
+      IP6_PROVIDER: static.empty
       CF_API_TOKEN_FILE: /run/secrets/cloudflare_api_token
       DOMAINS: ${CLOUDFLARE_DDNS_DOMAINS}
       PROXIED: ${CLOUDFLARE_DDNS_PROXIED}
