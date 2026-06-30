@@ -10,6 +10,13 @@ services:
       TZ: ${TZ}
       DOMAIN: https://${VAULTWARDEN_HOST}
       SIGNUPS_ALLOWED: "false"
+      SMTP_HOST: ${SMTP_SERVER}
+      SMTP_FROM: ${SMTP_FROM:-${SMTP_USERNAME}}
+      SMTP_FROM_NAME: ${SMTP_FROM_NAME:-Vaultwarden}
+      SMTP_PORT: ${SMTP_PORT}
+      SMTP_SECURITY: ${SMTP_SECURITY:-starttls}
+      SMTP_USERNAME: ${SMTP_USERNAME}
+      SMTP_PASSWORD: ${SMTP_KEY}
     volumes:
       - ../../data/vaultwarden:/data
     networks:
