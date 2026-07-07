@@ -57,6 +57,10 @@
         href: "{{HOMEPAGE_VAR_KAVITA_URL}}"
         description: Books and comics
         icon: kavita.png
+    - EVCC:
+        href: "{{HOMEPAGE_VAR_EVCC_URL}}"
+        description: Electric vehicle charging
+        icon: evcc.png
 
 - Monitoring:
     - Beszel:
