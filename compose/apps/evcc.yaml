@@ -1,0 +1,23 @@
+services:
+  evcc:
+    container_name: evcc
+    image: evcc/evcc:latest
+    restart: unless-stopped
+    user: ${EVCC_UID}:${EVCC_GID}
+    environment:
+      TZ: ${TZ}
+    volumes:
+      - ../../data/evcc/:/home/user/.evcc
+    ports:
+      - 8887:8887
+    networks:
+      - internal_network
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.evcc.rule=Host(`${EVCC_HOST}`)
+      - traefik.http.routers.evcc.entrypoints=websecure
+      - traefik.http.routers.evcc.tls=true
+      - traefik.http.routers.evcc.tls.certresolver=internalresolver
+      - traefik.http.routers.evcc.middlewares=internal-app@file
+      - traefik.http.services.evcc.loadbalancer.server.port=7070
+      - traefik.docker.network=internal_network
