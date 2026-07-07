@@ -70,6 +70,7 @@ services:
           - ${IMMICH_ADDITIONAL_EXTERNAL_HOST}
           - ${IMMICH_INTERNAL_HOST}
           - ${BESZEL_HOST}
+          - ${EVCC_HOST}
     extra_hosts:
       - host.docker.internal:172.17.0.1
     labels:

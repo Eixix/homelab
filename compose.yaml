@@ -19,6 +19,7 @@ include:
   - ./compose/apps/kavita.yaml
   - ./compose/apps/immich.yaml
   - ./compose/apps/monitoring.yaml
+  - ./compose/apps/evcc.yaml
 
 networks:
   external_network:
