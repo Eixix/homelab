@@ -3,7 +3,6 @@ services:
     container_name: evcc
     image: evcc/evcc:latest
     restart: unless-stopped
-    user: ${EVCC_UID}:${EVCC_GID}
     environment:
       TZ: ${TZ}
     volumes:
