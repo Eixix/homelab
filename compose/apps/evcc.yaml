@@ -6,7 +6,7 @@ services:
     environment:
       TZ: ${TZ}
     volumes:
-      - ../../data/evcc/:/home/user/.evcc
+      - ../../data/evcc/:/root/.evcc
     ports:
       - 8887:8887
     networks:
