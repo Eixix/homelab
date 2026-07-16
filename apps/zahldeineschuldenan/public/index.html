@@ -7,7 +7,7 @@
         <meta name="theme-color" content="#12372a">
         <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
         <title>Zahl deine Schulden an Tobias!</title>
-        <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/style.css?v=3">
     </head>
 
     <body>
@@ -60,12 +60,13 @@
                 <h1>Wie viel schuldest du denn?</h1>
                 <p>Trage den offenen Betrag ein. Wir bauen dir die richtige Adresse.</p>
                 <form class="amount-form" id="amount-form" novalidate>
-                    <label for="amount-input">Betrag in Euro</label>
-                    <div class="amount-field">
+          <label class="amount-label" for="amount-input">Wie hoch ist die Schuld?</label>
+          <div class="amount-field">
                         <input id="amount-input" name="amount" type="text" inputmode="decimal" autocomplete="off"
                             placeholder="12,50" aria-describedby="amount-error" required>
-                        <span aria-hidden="true">€</span>
-                    </div>
+            <span class="currency-badge" aria-hidden="true">€</span>
+          </div>
+          <p class="amount-example">Zum Beispiel: 12,50</p>
                     <p class="form-error" id="amount-error" role="alert"></p>
                     <button class="button bank" type="submit">Schulden anzeigen</button>
                 </form>
@@ -73,7 +74,7 @@
             </section>
         </main>
         <script>window.PAYMENT_DATA = __PAYMENT_DATA__;</script>
-        <script src="/app.js" defer></script>
+    <script src="/app.js?v=3" defer></script>
     </body>
 
 </html>

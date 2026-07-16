@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
+import { randomBytes } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import QRCode from 'qrcode';
 import { parseAmount } from './amount.js';
@@ -22,6 +23,28 @@ const send = (res, status, type, body, cache = 'no-store') => {
   res.end(body);
 };
 
+const redirect = (res, location) => {
+  res.writeHead(303, {
+    Location: location,
+    'Cache-Control': 'no-store',
+    'X-Robots-Tag': 'noindex, nofollow, noarchive, nosnippet',
+  });
+  res.end();
+};
+
+const obfuscate = (value) => {
+  const plain = Buffer.from(value, 'utf8');
+  const key = randomBytes(plain.length);
+  const masked = Buffer.allocUnsafe(plain.length);
+  for (let index = 0; index < plain.length; index += 1) {
+    masked[index] = plain[index] ^ key[index];
+  }
+  return {
+    masked: masked.toString('base64'),
+    key: key.toString('base64'),
+  };
+};
+
 createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
   if (url.pathname === '/healthz') return send(res, 200, 'text/plain', 'ok');
@@ -31,7 +54,14 @@ createServer(async (req, res) => {
 
   if (assets.has(url.pathname)) {
     const type = url.pathname.endsWith('.css') ? 'text/css; charset=utf-8' : 'text/javascript; charset=utf-8';
-    return send(res, 200, type, assets.get(url.pathname), 'public, max-age=3600');
+    return send(res, 200, type, assets.get(url.pathname), 'no-cache');
+  }
+
+  if (url.pathname === '/' && url.searchParams.has('amount')) {
+    const submittedAmount = parseAmount(url.searchParams.get('amount'));
+    if (submittedAmount) {
+      return redirect(res, `/${submittedAmount.canonical.replace('.', ',')}/`);
+    }
   }
 
   const match = url.pathname.match(/^\/([^/]+)\/?$/);
@@ -46,12 +76,13 @@ createServer(async (req, res) => {
       amount,
     });
     const qr = await QRCode.toDataURL(payload, { errorCorrectionLevel: 'M', margin: 2, width: 420 });
+    const iban = process.env.PAYMENT_IBAN.replace(/\s/g, '').toUpperCase();
     const data = {
       amount,
       paypalUrl: `https://paypal.me/${encodeURIComponent(process.env.PAYPAL_ME_NAME || '')}/${amount.canonical}EUR`,
       bankTransfer: {
         recipient: process.env.PAYMENT_RECIPIENT_NAME,
-        iban: process.env.PAYMENT_IBAN.replace(/\s/g, '').toUpperCase(),
+        ibanObfuscated: obfuscate(iban),
         bic: (process.env.PAYMENT_BIC || '').replace(/\s/g, '').toUpperCase(),
         reference: 'Schulden begleichen',
       },

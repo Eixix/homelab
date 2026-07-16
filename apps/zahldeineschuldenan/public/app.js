@@ -2,6 +2,13 @@ const data = window.PAYMENT_DATA;
 const payment = document.querySelector('#payment');
 const error = document.querySelector('#error');
 
+const deobfuscate = ({ masked, key }) => {
+  const maskedBytes = Uint8Array.from(atob(masked), character => character.charCodeAt(0));
+  const keyBytes = Uint8Array.from(atob(key), character => character.charCodeAt(0));
+  const plain = maskedBytes.map((byte, index) => byte ^ keyBytes[index]);
+  return new TextDecoder().decode(plain);
+};
+
 document.querySelector('.money-rain').innerHTML = Array.from({ length: 18 }, (_, i) => {
   const drift = i % 2 ? 45 : -45;
   return `<span style="--x:${(i * 37) % 101}%;--delay:${i * -.73}s;--duration:${7 + (i % 6)}s;--drift:${drift}px;--spin:${300 + i * 23}deg">€</span>`;
@@ -28,11 +35,12 @@ if (!data) {
     window.location.assign(`/${encodeURIComponent(canonical)}/`);
   });
 } else {
+  const iban = deobfuscate(data.bankTransfer.ibanObfuscated);
   payment.hidden = false;
   document.querySelector('#amount').textContent = data.amount.display;
   document.querySelector('#paypal').href = data.paypalUrl;
   document.querySelector('#bank-recipient').textContent = data.bankTransfer.recipient;
-  document.querySelector('#bank-iban').textContent = data.bankTransfer.iban.replace(/(.{4})/g, '$1 ').trim();
+  document.querySelector('#bank-iban').textContent = iban.replace(/(.{4})/g, '$1 ').trim();
   document.querySelector('#bank-amount').textContent = data.amount.display;
   document.querySelector('#bank-reference').textContent = data.bankTransfer.reference;
   document.querySelector('#qr').src = data.qr;
@@ -54,10 +62,10 @@ if (!data) {
   };
 
   document.querySelector('#copy-iban').addEventListener('click', () =>
-    copy(data.bankTransfer.iban, 'IBAN kopiert. Jetzt Banking-App öffnen und einfügen.'));
+    copy(iban, 'IBAN kopiert. Jetzt Banking-App öffnen und einfügen.'));
   document.querySelector('#copy-all').addEventListener('click', () => copy([
     `Empfänger: ${data.bankTransfer.recipient}`,
-    `IBAN: ${data.bankTransfer.iban}`,
+    `IBAN: ${iban}`,
     data.bankTransfer.bic ? `BIC: ${data.bankTransfer.bic}` : null,
     `Betrag: ${data.amount.display}`,
     `Verwendungszweck: ${data.bankTransfer.reference}`,

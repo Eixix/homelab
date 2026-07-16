@@ -15,8 +15,15 @@ For same-device mobile payments, the page displays the transfer details and
 offers buttons to copy either the IBAN or the complete transfer. The QR code is
 kept behind an expandable section for scanning from a second device.
 
+The IBAN is XOR-masked with a random per-response key before it is embedded in
+the HTML and is reconstructed by the browser on load. This hides the plain IBAN
+from casual page-source inspection, but is obfuscation rather than access
+control because the browser necessarily receives everything needed to decode it.
+
 If the URL contains no valid amount, the page displays an amount field and
 redirects the visitor to the corresponding amount URL after validation.
+The server also converts the form's no-JavaScript `?amount=` fallback into the
+canonical `/<amount>/` path.
 
 ## Configuration
 
