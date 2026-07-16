@@ -24,7 +24,7 @@ services:
       start_period: 10s
     labels:
       - traefik.enable=true
-      - traefik.http.routers.zahldeineschuldenan.rule=Host(`${ZAHLDEINESCHULDENAN_HOST}`)
+      - traefik.http.routers.zahldeineschuldenan.rule=Host(`${ZAHLDEINESCHULDENAN_HOST:?Set ZAHLDEINESCHULDENAN_HOST in .env}`)
       - traefik.http.routers.zahldeineschuldenan.entrypoints=websecure
       - traefik.http.routers.zahldeineschuldenan.priority=100
       - traefik.http.routers.zahldeineschuldenan.tls=true
