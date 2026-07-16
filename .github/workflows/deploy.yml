@@ -142,6 +142,16 @@ jobs:
               exit 1
             fi
             case " $DEPLOY_SERVICES " in
+              *" zahldeineschuldenan "*)
+                for key in ZAHLDEINESCHULDENAN_HOST PAYMENT_RECIPIENT_NAME PAYMENT_IBAN PAYMENT_BIC PAYPAL_ME_NAME; do
+                  if ! grep -Eq "^${key}=.+" .env; then
+                    echo "ENV_FILE is incomplete; missing required payment-page key: $key" >&2
+                    exit 1
+                  fi
+                done
+                ;;
+            esac
+            case " $DEPLOY_SERVICES " in
               *" paperless-broker "*|*" paperless-db "*|*" paperless-web "*)
                 for key in PAPERLESS_DB_PASSWORD PAPERLESS_DB_ROOT_PASSWORD PAPERLESS_SECRET_KEY PAPERLESS_ADMIN_PASSWORD; do
                   if ! grep -Eq "^${key}=" .env; then
@@ -161,6 +171,7 @@ jobs:
             if [ -n "$DEPLOY_SERVICES" ]; then
               read -r -a services <<< "$DEPLOY_SERVICES"
               docker compose --env-file .env --profile external pull "${services[@]}"
+              docker compose --env-file .env --profile external build --pull "${services[@]}"
               docker compose --env-file .env --profile external up -d "${services[@]}"
             else
               echo 'Repository synchronized and configuration validated; no services selected for startup.'

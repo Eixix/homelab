@@ -37,3 +37,7 @@ npm --prefix apps/zahldeineschuldenan test
 docker compose --env-file .env --profile external config --quiet
 docker compose --env-file .env build zahldeineschuldenan
 ```
+
+For production, select `zahldeineschuldenan` in the manual deploy workflow.
+The workflow pulls registry-backed services and builds services with a local
+`build:` definition before recreating them.
