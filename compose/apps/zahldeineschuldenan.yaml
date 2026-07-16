@@ -1,0 +1,34 @@
+services:
+  zahldeineschuldenan:
+    container_name: zahldeineschuldenan
+    build:
+      context: ../../apps/zahldeineschuldenan
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ}
+      PAYMENT_RECIPIENT_NAME: ${PAYMENT_RECIPIENT_NAME}
+      PAYMENT_IBAN: ${PAYMENT_IBAN}
+      PAYMENT_BIC: ${PAYMENT_BIC:-}
+      PAYPAL_ME_NAME: ${PAYPAL_ME_NAME}
+    networks:
+      - external_network
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:3000/healthz').then(r => { if (!r.ok) process.exit(1) }).catch(() => process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.zahldeineschuldenan.rule=Host(`${ZAHLDEINESCHULDENAN_HOST}`)
+      - traefik.http.routers.zahldeineschuldenan.entrypoints=websecure
+      - traefik.http.routers.zahldeineschuldenan.priority=100
+      - traefik.http.routers.zahldeineschuldenan.tls=true
+      - traefik.http.routers.zahldeineschuldenan.tls.certresolver=externalresolver
+      - traefik.http.routers.zahldeineschuldenan.middlewares=security-headers@file
+      - traefik.http.services.zahldeineschuldenan.loadbalancer.server.port=3000
+      - traefik.docker.network=external_network

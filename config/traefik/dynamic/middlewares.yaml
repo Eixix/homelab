@@ -24,6 +24,11 @@ http:
       service: external-blackhole
 
   middlewares:
+    global-noindex:
+      headers:
+        customResponseHeaders:
+          X-Robots-Tag: "noindex, nofollow, noarchive, nosnippet"
+
     lan-only:
       ipAllowList:
         sourceRange:

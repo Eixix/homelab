@@ -21,6 +21,7 @@ services:
       - --entrypoints.websecure.address=:443
       - --entrypoints.web.http.redirections.entrypoint.to=websecure
       - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --entrypoints.websecure.http.middlewares=global-noindex@file
       - --entrypoints.websecure.transport.respondingTimeouts.readTimeout=0s
       - --entryPoints.name.transport.respondingTimeouts.idleTimeout=600
       - --entryPoints.name.transport.respondingTimeouts.readTimeout=600
@@ -71,6 +72,7 @@ services:
           - ${IMMICH_INTERNAL_HOST}
           - ${BESZEL_HOST}
           - ${EVCC_HOST}
+          - ${ZAHLDEINESCHULDENAN_HOST}
     extra_hosts:
       - host.docker.internal:172.17.0.1
     labels:

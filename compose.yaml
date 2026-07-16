@@ -20,6 +20,7 @@ include:
   - ./compose/apps/immich.yaml
   - ./compose/apps/monitoring.yaml
   - ./compose/apps/evcc.yaml
+  - ./compose/apps/zahldeineschuldenan.yaml
 
 networks:
   external_network:

@@ -1,0 +1,23 @@
+:root { color-scheme: light; font-family: Inter, ui-rounded, system-ui, sans-serif; }
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; overflow-x: hidden; color: #102a21; background: radial-gradient(circle at top, #f9e784 0, #f3bc42 34%, #0e5a3b 100%); }
+main { min-height: 100vh; display: grid; place-items: center; padding: 28px 16px; position: relative; z-index: 1; }
+.card { width: min(560px, 100%); padding: clamp(28px, 7vw, 52px); text-align: center; background: rgba(255,255,245,.94); border: 3px solid #173e2e; border-radius: 28px; box-shadow: 10px 12px 0 #173e2e, 0 28px 70px rgba(0,0,0,.3); transform: rotate(-.5deg); }
+.eyebrow { margin: 0 0 12px; color: #a24315; font-weight: 900; text-transform: uppercase; letter-spacing: .09em; font-size: .78rem; }
+h1 { margin: 0; font-size: clamp(2.2rem, 9vw, 4.4rem); line-height: .92; letter-spacing: -.065em; }
+.demand { margin: 28px 0 4px; font-weight: 750; }
+.amount { display: block; color: #0d7044; font-size: clamp(3rem, 13vw, 5.8rem); line-height: 1; letter-spacing: -.07em; text-shadow: 3px 3px 0 #f4d35e; }
+.hint { margin: 22px auto; max-width: 38ch; }
+.actions { display: grid; gap: 12px; }
+.button { display: block; width: 100%; padding: 15px 20px; border: 2px solid #102a21; border-radius: 14px; color: white; font: inherit; font-weight: 850; text-decoration: none; cursor: pointer; box-shadow: 4px 5px 0 #102a21; transition: transform .15s, box-shadow .15s; }
+.button:hover { transform: translate(2px, 2px); box-shadow: 2px 3px 0 #102a21; }
+.paypal { background: #126bc5; } .bank { background: #168052; }
+.qr-panel { margin-top: 24px; padding: 18px; border: 2px dashed #168052; border-radius: 18px; background: #fff; }
+.qr-panel img { display: block; width: min(100%, 320px); margin: auto; image-rendering: pixelated; }
+.qr-panel p, .fineprint { font-size: .82rem; }
+.fineprint { margin: 24px 0 0; opacity: .65; }
+code { padding: .2em .4em; border-radius: 6px; background: #e4eadf; }
+.money-rain { position: fixed; inset: 0; overflow: hidden; pointer-events: none; }
+.money-rain span { position: absolute; left: var(--x); top: -15vh; display: grid; place-items: center; width: 72px; height: 38px; color: #173e2e; background: #a9d787; border: 3px double #173e2e; font: 900 1.45rem Georgia, serif; box-shadow: 0 5px 10px rgba(0,0,0,.2); animation: fall var(--duration) linear var(--delay) infinite; }
+@keyframes fall { to { transform: translate3d(var(--drift), 125vh, 0) rotate(var(--spin)); } }
+@media (prefers-reduced-motion: reduce) { .money-rain span { animation: none; display: none; } .button { transition: none; } }
