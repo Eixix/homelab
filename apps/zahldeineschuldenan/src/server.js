@@ -49,6 +49,12 @@ createServer(async (req, res) => {
     const data = {
       amount,
       paypalUrl: `https://paypal.me/${encodeURIComponent(process.env.PAYPAL_ME_NAME || '')}/${amount.canonical}EUR`,
+      bankTransfer: {
+        recipient: process.env.PAYMENT_RECIPIENT_NAME,
+        iban: process.env.PAYMENT_IBAN.replace(/\s/g, '').toUpperCase(),
+        bic: (process.env.PAYMENT_BIC || '').replace(/\s/g, '').toUpperCase(),
+        reference: 'Schulden begleichen',
+      },
       qr,
     };
     return send(res, 200, 'text/html; charset=utf-8', index.replace('__PAYMENT_DATA__', JSON.stringify(data).replaceAll('<', '\\u003c')));

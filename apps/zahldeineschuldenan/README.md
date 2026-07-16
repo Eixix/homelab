@@ -11,6 +11,13 @@ be positive, use at most two decimal places, and are limited to `999999.99` EUR.
 Every response carries an `X-Robots-Tag` that forbids indexing, and
 `robots.txt` disallows crawling the entire host.
 
+For same-device mobile payments, the page displays the transfer details and
+offers buttons to copy either the IBAN or the complete transfer. The QR code is
+kept behind an expandable section for scanning from a second device.
+
+If the URL contains no valid amount, the page displays an amount field and
+redirects the visitor to the corresponding amount URL after validation.
+
 ## Configuration
 
 Set these only in the ignored repository-root `.env`:

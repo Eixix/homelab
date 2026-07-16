@@ -1,39 +1,79 @@
 <!doctype html>
 <html lang="de">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#12372a">
-    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
-    <title>Zahl deine Schulden an Tobias!</title>
-    <link rel="stylesheet" href="/style.css">
-  </head>
-  <body>
-    <div class="money-rain" aria-hidden="true"></div>
-    <main>
-      <section class="card" id="payment" hidden>
-        <p class="eyebrow">Die freundliche Geldeintreibungsstelle</p>
-        <h1>Zahl deine Schulden an Tobias!</h1>
-        <p class="demand">Offener Weltherrschaftsbeitrag:</p>
-        <strong class="amount" id="amount"></strong>
-        <p class="hint">Wähle dein Zahlungsmittel. Ausreden werden leider nicht unterstützt.</p>
-        <div class="actions">
-          <a class="button paypal" id="paypal" rel="noopener noreferrer">Mit PayPal zahlen</a>
-          <button class="button bank" id="show-qr" type="button">Banking-App / QR-Code</button>
-        </div>
-        <div class="qr-panel" id="qr-panel" hidden>
-          <img id="qr" alt="GiroCode für die Überweisung">
-          <p>Mit deiner Banking-App scannen. Betrag und Empfänger sind schon eingetragen.</p>
-        </div>
-        <p class="fineprint">Mit dem Bezahlen akzeptierst du, dass Tobias recht hatte.</p>
-      </section>
-      <section class="card error" id="error" hidden>
-        <p class="eyebrow">404 – Schulden nicht gefunden</p>
-        <h1>Wie viel schuldest du denn?</h1>
-        <p>Hänge den Betrag an die Adresse, zum Beispiel <code>/12,50/</code>.</p>
-      </section>
-    </main>
-    <script>window.PAYMENT_DATA = __PAYMENT_DATA__;</script>
-    <script src="/app.js" defer></script>
-  </body>
+
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#12372a">
+        <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+        <title>Zahl deine Schulden an Tobias!</title>
+        <link rel="stylesheet" href="/style.css">
+    </head>
+
+    <body>
+        <div class="money-rain" aria-hidden="true"></div>
+        <main>
+            <section class="card" id="payment" hidden>
+                <p class="eyebrow">Die freundliche Geldeintreibungsstelle</p>
+                <h1>Zahl deine Schulden an Tobias!</h1>
+                <p class="demand">Offener Betrag zur Finanzierung meiner Kaffeesucht:</p>
+                <strong class="amount" id="amount"></strong>
+                <p class="hint">Wähle dein Zahlungsmittel. Ausreden werden leider nicht unterstützt.</p>
+                <div class="actions">
+                    <a class="button paypal" id="paypal" rel="noopener noreferrer">Mit PayPal zahlen</a>
+                    <button class="button bank" id="show-bank" type="button">Mit Banking-App zahlen</button>
+                </div>
+                <div class="bank-panel" id="bank-panel" hidden>
+                    <p class="mobile-help">Kopiere die Daten und füge sie in deiner Banking-App ein.</p>
+                    <dl class="bank-details">
+                        <div>
+                            <dt>Empfänger</dt>
+                            <dd id="bank-recipient"></dd>
+                        </div>
+                        <div>
+                            <dt>IBAN</dt>
+                            <dd id="bank-iban"></dd>
+                        </div>
+                        <div>
+                            <dt>Betrag</dt>
+                            <dd id="bank-amount"></dd>
+                        </div>
+                        <div>
+                            <dt>Verwendungszweck</dt>
+                            <dd id="bank-reference"></dd>
+                        </div>
+                    </dl>
+                    <div class="copy-actions">
+                        <button class="button copy" id="copy-iban" type="button">IBAN kopieren</button>
+                        <button class="button copy" id="copy-all" type="button">Alle Daten kopieren</button>
+                    </div>
+                    <p class="copy-status" id="copy-status" role="status" aria-live="polite"></p>
+                    <details class="qr-details">
+                        <summary>QR-Code für ein zweites Gerät</summary>
+                        <img id="qr" alt="GiroCode für die Überweisung">
+                        <p>Mit einer Banking-App auf einem anderen Gerät scannen.</p>
+                    </details>
+                </div>
+            </section>
+            <section class="card error" id="error" hidden>
+                <p class="eyebrow">404 – Schulden nicht gefunden</p>
+                <h1>Wie viel schuldest du denn?</h1>
+                <p>Trage den offenen Betrag ein. Wir bauen dir die richtige Adresse.</p>
+                <form class="amount-form" id="amount-form" novalidate>
+                    <label for="amount-input">Betrag in Euro</label>
+                    <div class="amount-field">
+                        <input id="amount-input" name="amount" type="text" inputmode="decimal" autocomplete="off"
+                            placeholder="12,50" aria-describedby="amount-error" required>
+                        <span aria-hidden="true">€</span>
+                    </div>
+                    <p class="form-error" id="amount-error" role="alert"></p>
+                    <button class="button bank" type="submit">Schulden anzeigen</button>
+                </form>
+                <p class="fineprint">Oder direkt über die URL, zum Beispiel <code>/12,50/</code>.</p>
+            </section>
+        </main>
+        <script>window.PAYMENT_DATA = __PAYMENT_DATA__;</script>
+        <script src="/app.js" defer></script>
+    </body>
+
 </html>
