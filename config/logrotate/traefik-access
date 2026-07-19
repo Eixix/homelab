@@ -1,0 +1,14 @@
+/home/github/homelab/data/traefik/logs/access.json {
+    daily
+    maxsize 50M
+    rotate 7
+    missingok
+    notifempty
+    compress
+    delaycompress
+    create 0640 root root
+    sharedscripts
+    postrotate
+        /usr/bin/docker kill --signal USR1 traefik >/dev/null 2>&1 || true
+    endscript
+}

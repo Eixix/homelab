@@ -1,4 +1,59 @@
 services:
+  loki:
+    container_name: loki
+    image: grafana/loki:3.7.3
+    restart: unless-stopped
+    command: -config.file=/etc/loki/config.yaml
+    volumes:
+      - ../../config/monitoring/loki.yaml:/etc/loki/config.yaml:ro
+      - ../../data/monitoring/loki:/loki
+    networks:
+      - internal_network
+
+  alloy:
+    container_name: alloy
+    image: grafana/alloy:v1.17.1
+    restart: unless-stopped
+    command:
+      - run
+      - --storage.path=/var/lib/alloy/data
+      - /etc/alloy/config.alloy
+    depends_on:
+      - loki
+    volumes:
+      - ../../config/monitoring/alloy.alloy:/etc/alloy/config.alloy:ro
+      - ../../data/monitoring/alloy:/var/lib/alloy/data
+      - ../../data/traefik/logs:/var/log/traefik:ro
+    networks:
+      - internal_network
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:13.1.0
+    restart: unless-stopped
+    depends_on:
+      - loki
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+    volumes:
+      - ../../data/monitoring/grafana:/var/lib/grafana
+      - ../../config/monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ../../config/monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    networks:
+      - internal_network
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.grafana.rule=Host(`${GRAFANA_HOST}`)
+      - traefik.http.routers.grafana.entrypoints=websecure
+      - traefik.http.routers.grafana.tls=true
+      - traefik.http.routers.grafana.tls.certresolver=internalresolver
+      - traefik.http.routers.grafana.middlewares=internal-app@file
+      - traefik.http.services.grafana.loadbalancer.server.port=3000
+      - traefik.docker.network=internal_network
+
   beszel:
     container_name: beszel
     image: henrygd/beszel:latest

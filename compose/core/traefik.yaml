@@ -11,6 +11,15 @@ services:
         condition: service_healthy
     command:
       - --accesslog=true
+      - --accesslog.format=json
+      - --accesslog.filepath=/var/log/traefik/access.json
+      - --accesslog.fields.queryparameters.defaultmode=drop
+      - --accesslog.fields.headers.defaultmode=drop
+      - --accesslog.fields.headers.names.User-Agent=keep
+      - --accesslog.fields.headers.names.Referer=keep
+      - --accesslog.fields.headers.names.X-Request-ID=keep
+      - --accesslog.fields.headers.names.CF-IPCountry=keep
+      - --accesslog.fields.headers.names.CF-Ray=keep
       - --api.dashboard=true
       - --api.insecure=false
       - --providers.docker=true
@@ -18,7 +27,9 @@ services:
       - --providers.file.directory=/etc/traefik/dynamic
       - --providers.file.watch=true
       - --entrypoints.web.address=:80
+      - --entrypoints.web.forwardedheaders.trustedips=173.245.48.0/20,103.21.244.0/22,103.22.200.0/22,103.31.4.0/22,141.101.64.0/18,108.162.192.0/18,190.93.240.0/20,188.114.96.0/20,197.234.240.0/22,198.41.128.0/17,162.158.0.0/15,104.16.0.0/13,104.24.0.0/14,172.64.0.0/13,131.0.72.0/22,2400:cb00::/32,2606:4700::/32,2803:f800::/32,2405:b500::/32,2405:8100::/32,2a06:98c0::/29,2c0f:f248::/32
       - --entrypoints.websecure.address=:443
+      - --entrypoints.websecure.forwardedheaders.trustedips=173.245.48.0/20,103.21.244.0/22,103.22.200.0/22,103.31.4.0/22,141.101.64.0/18,108.162.192.0/18,190.93.240.0/20,188.114.96.0/20,197.234.240.0/22,198.41.128.0/17,162.158.0.0/15,104.16.0.0/13,104.24.0.0/14,172.64.0.0/13,131.0.72.0/22,2400:cb00::/32,2606:4700::/32,2803:f800::/32,2405:b500::/32,2405:8100::/32,2a06:98c0::/29,2c0f:f248::/32
       - --entrypoints.web.http.redirections.entrypoint.to=websecure
       - --entrypoints.web.http.redirections.entrypoint.scheme=https
       - --entrypoints.websecure.http.middlewares=global-noindex@file
@@ -46,6 +57,7 @@ services:
       - ../../data/step-ca/certs/root_ca.crt:/etc/ssl/certs/ca-certificates.crt:ro
       - ../../data/traefik/letsencrypt:/letsencrypt
       - ../../data/traefik/certificates:/certificates:ro
+      - ../../data/traefik/logs:/var/log/traefik
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       external_network:
@@ -71,6 +83,7 @@ services:
           - ${IMMICH_ADDITIONAL_EXTERNAL_HOST}
           - ${IMMICH_INTERNAL_HOST}
           - ${BESZEL_HOST}
+          - ${GRAFANA_HOST}
           - ${EVCC_HOST}
           - ${ZAHLDEINESCHULDENAN_HOST}
     extra_hosts:

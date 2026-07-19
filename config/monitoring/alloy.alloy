@@ -1,0 +1,44 @@
+local.file_match "traefik_access" {
+	path_targets = [{
+		__path__ = "/var/log/traefik/access.json",
+		job      = "traefik-access",
+	}]
+}
+
+loki.source.file "traefik_access" {
+	targets       = local.file_match.traefik_access.targets
+	forward_to    = [loki.process.traefik_access.receiver]
+	tail_from_end = true
+}
+
+loki.process "traefik_access" {
+	forward_to = [loki.write.local.receiver]
+
+	stage.json {
+		expressions = {
+			country_code = "\"request_CF-IPCountry\"",
+			host         = "RequestHost",
+			router       = "RouterName",
+		}
+	}
+
+	// Country, host and router are bounded dimensions. Keep IPs, paths,
+	// user agents, request IDs and CF-Ray only in the JSON log line.
+	stage.labels {
+		values = {
+			country_code = "",
+			host         = "",
+			router       = "",
+		}
+	}
+}
+
+loki.write "local" {
+	endpoint {
+		url = "http://loki:3100/loki/api/v1/push"
+	}
+}
+
+// Future phase: add a separate discovery/source pipeline for individual
+// container logs. Do not indiscriminately ingest Docker logs because they can
+// contain credentials, document names, webhook payloads, or other private data.
