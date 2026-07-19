@@ -80,44 +80,6 @@ services:
       - traefik.http.services.grafana.loadbalancer.server.port=3000
       - traefik.docker.network=internal_network
 
-  traffic-image:
-    container_name: traffic-image
-    build:
-      context: ../../apps/traffic-image
-    restart: unless-stopped
-    read_only: true
-    user: ${DEPLOY_UID}:${DEPLOY_GID}
-    depends_on:
-      loki:
-        condition: service_started
-    environment:
-      LOKI_URL: http://loki:3100
-      CACHE_SECONDS: 300
-    networks:
-      - internal_network
-    security_opt:
-      - no-new-privileges:true
-    cap_drop:
-      - ALL
-    healthcheck:
-      test: [CMD, node, -e, "fetch('http://127.0.0.1:3000/healthz').then(r => { if (!r.ok) process.exit(1) }).catch(() => process.exit(1))"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 5s
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.traffic-image.rule=Host(`${TRAFFIC_IMAGE_HOST:-traffic.home}`)
-      - traefik.http.routers.traffic-image.entrypoints=websecure
-      - traefik.http.routers.traffic-image.tls=true
-      - traefik.http.routers.traffic-image.tls.certresolver=internalresolver
-      - traefik.http.routers.traffic-image.middlewares=internal-app@file,traffic-image-rate-limit
-      - traefik.http.middlewares.traffic-image-rate-limit.ratelimit.average=12
-      - traefik.http.middlewares.traffic-image-rate-limit.ratelimit.period=1m
-      - traefik.http.middlewares.traffic-image-rate-limit.ratelimit.burst=6
-      - traefik.http.services.traffic-image.loadbalancer.server.port=3000
-      - traefik.docker.network=internal_network
-
   beszel:
     container_name: beszel
     image: henrygd/beszel:latest
