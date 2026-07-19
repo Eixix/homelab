@@ -1,4 +1,5 @@
 import http from "node:http";
+import sharp from "sharp";
 
 const port = Number(process.env.PORT || 3000);
 const lokiUrl = process.env.LOKI_URL || "http://loki:3100";
@@ -90,7 +91,10 @@ function render(series) {
 async function chart() {
   const now = Date.now();
   if (cached && now - cachedAt < cacheSeconds * 1000) return cached;
-  cached = render(await loadSeries());
+  const svg = render(await loadSeries());
+  cached = await sharp(Buffer.from(svg))
+    .png({ palette: true, colours: 5, compressionLevel: 9 })
+    .toBuffer();
   cachedAt = now;
   return cached;
 }
@@ -101,7 +105,7 @@ http.createServer(async (request, response) => {
     response.end("ok\n");
     return;
   }
-  if (!["GET", "HEAD"].includes(request.method) || !["/", "/external-traffic.svg"].includes(request.url)) {
+  if (!["GET", "HEAD"].includes(request.method) || !["/", "/external-traffic.png"].includes(request.url)) {
     response.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
     response.end("not found\n");
     return;
@@ -109,7 +113,7 @@ http.createServer(async (request, response) => {
   try {
     const body = await chart();
     response.writeHead(200, {
-      "Content-Type": "image/svg+xml; charset=utf-8",
+      "Content-Type": "image/png",
       "Cache-Control": `public, max-age=${cacheSeconds}, stale-if-error=3600`,
       "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; sandbox",
       "Access-Control-Allow-Origin": "*",

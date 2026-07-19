@@ -102,11 +102,11 @@ For an unattended display or an unauthenticated LAN-only embed, use the
 dedicated cached image:
 
 ```text
-https://traffic.home/external-traffic.svg
+https://traffic.home/external-traffic.png
 ```
 
 The lightweight image service runs the same fixed external-traffic query and
-renders an 800×480 SVG using solid black, blue, yellow, and off-white. It caches
+renders an 800×480 PNG quantized to five colours. It caches
 the result for five minutes and accepts no query expression, domain, or time
 parameters. Traefik's private-network allowlist restricts the endpoint to LAN
 clients, and the endpoint cannot be used to explore Loki or reach any other
