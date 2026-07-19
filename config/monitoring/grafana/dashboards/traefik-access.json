@@ -35,12 +35,12 @@
       "options": {
         "basemap": { "config": {}, "type": "default" },
         "controls": { "showAttribution": false, "showDebug": false, "showMeasure": false, "showScale": false, "showZoom": true },
-        "layers": [{ "config": { "showLegend": true, "style": { "color": { "field": "Requests", "fixed": "dark-green" }, "opacity": 0.9, "rotation": { "fixed": 0, "max": 360, "min": -360, "mode": "mod" }, "size": { "field": "Requests", "fixed": 12, "max": 40, "min": 10 } } }, "location": { "gazetteer": "countries", "lookup": "lookup", "mode": "lookup" }, "name": "Requests", "tooltip": true, "type": "markers" }],
+        "layers": [{ "config": { "showLegend": true, "style": { "color": { "field": "Requests", "fixed": "dark-green" }, "opacity": 0.9, "rotation": { "fixed": 0, "max": 360, "min": -360, "mode": "mod" }, "size": { "field": "Requests", "fixed": 12, "max": 40, "min": 10 } } }, "location": { "mode": "auto" }, "name": "Requests", "tooltip": true, "type": "markers" }],
         "view": { "allLayers": true, "id": "zero", "lat": 0, "lon": 0, "zoom": 1 }
       },
       "targets": [{ "datasource": { "type": "loki", "uid": "loki" }, "editorMode": "code", "expr": "sum by (country_code) (count_over_time({job=\"traefik-access\", access_scope=~\"$scope\", host=~\"$domain\", country_code!=\"\"}[$__range]))", "instant": true, "legendFormat": "{{country_code}}", "queryType": "instant", "refId": "A" }],
       "title": "Request origins",
-      "transformations": [{ "id": "labelsToFields", "options": { "mode": "columns" } }, { "id": "organize", "options": { "excludeByName": { "Time": true }, "renameByName": { "Value": "Requests", "Value #A": "Requests", "country_code": "lookup" } } }],
+      "transformations": [{ "id": "labelsToFields", "options": { "mode": "columns" } }, { "id": "organize", "options": { "excludeByName": { "Time": true }, "renameByName": { "Value": "Requests", "Value #A": "Requests", "country_code": "Country code" } } }, { "id": "spatial", "options": { "action": "prepare", "source": { "gazetteer": "public/gazetteer/countries.json", "lookup": "Country code", "mode": "lookup" } } }],
       "type": "geomap"
     },
     {
@@ -136,5 +136,5 @@
   "timezone": "browser",
   "title": "Traefik access security",
   "uid": "traefik-access-security",
-  "version": 4
+  "version": 5
 }
