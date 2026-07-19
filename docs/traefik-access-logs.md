@@ -98,6 +98,20 @@ Use InkyPi's Screenshot plugin at the display's native 800×480 resolution with:
 https://logs.home/d/traefik-inkypi/inkypi-public-traffic?orgId=1&from=now-24h&to=now&kiosk&theme=light&refresh=30m
 ```
 
+For an unattended display or an unauthenticated LAN-only embed, use the
+dedicated cached image:
+
+```text
+https://traffic.home/external-traffic.svg
+```
+
+The lightweight image service runs the same fixed external-traffic query and
+renders an 800×480 SVG using solid black, blue, yellow, and off-white. It caches
+the result for five minutes and accepts no query expression, domain, or time
+parameters. Traefik's private-network allowlist restricts the endpoint to LAN
+clients, and the endpoint cannot be used to explore Loki or reach any other
+Grafana dashboard. InkyPi can use this URL directly with the Screenshot plugin.
+
 The current Screenshot plugin does not submit a Grafana login or custom HTTP
 headers. Do not enable anonymous access to the main Grafana organization just
 for the display, because that would also expose the searchable access logs.
