@@ -86,8 +86,9 @@ scope.
 
 Grafana also provisions **InkyPi · Public traffic**, a deliberately sparse,
 single-panel dashboard showing the top five public domains over 24 hours. Its
-LogQL selector contains `access_scope="external"`; the screenshot URL cannot
-switch it to internal traffic. The donut and solid categorical colours survive
+LogQL selector directly excludes `.home` and `.localhost` hosts; the screenshot
+URL cannot switch it to internal traffic, and historical data works without a
+scope-label backfill. The donut and solid categorical colours survive
 the Inky display's small fixed palette better than a detailed basemap or dense
 time series.
 

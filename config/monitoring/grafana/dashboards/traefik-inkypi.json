@@ -36,7 +36,7 @@
         {
           "datasource": { "type": "loki", "uid": "loki" },
           "editorMode": "code",
-          "expr": "topk(5, sum by (host) (count_over_time({job=\"traefik-access\", access_scope=\"external\", host!=\"\"}[24h])))",
+          "expr": "topk(5, sum by (host) (count_over_time({job=\"traefik-access\", host!~\".*\\\\.(home|localhost)$\", host!=\"\"}[24h])))",
           "instant": true,
           "legendFormat": "{{host}}",
           "queryType": "instant",
@@ -56,5 +56,5 @@
   "timezone": "browser",
   "title": "InkyPi · Public traffic",
   "uid": "traefik-inkypi",
-  "version": 1
+  "version": 2
 }
