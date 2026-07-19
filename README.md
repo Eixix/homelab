@@ -86,7 +86,9 @@ Configure these GitHub Actions secrets before enabling a production deployment:
 - `ENV_FILE`: complete production `.env` content.
 - `CLOUDFLARE_API_TOKEN`: value written to `secrets/cloudflare_api_token`.
 
-Set the `*_UID` and `*_GID` entries in `ENV_FILE` to values that can write the `github` user's `data/` directory, or align directory ownership accordingly. The workflow is manual-only during migration. It validates the rendered production Compose configuration, pulls images, and starts the stack with the `external` profile. It deliberately does not start the optional Beszel agent profile.
+Set the `*_UID` and `*_GID` entries in `ENV_FILE` to values that can write the `github` user's `data/` directory, or align directory ownership accordingly. The workflow remains manual-only and validates the rendered production Compose configuration before changing containers.
+
+The `services` workflow input accepts space-separated Compose service names. Leave it empty to synchronize and validate without starting anything. Use the reserved value `all` on its own to pull updates, rebuild, and redeploy the complete stack with every Compose profile enabled, including `external` and the Beszel `agent` profile.
 
 The production backup setup and restore outline are documented in [`docs/backup.md`](docs/backup.md).
 

@@ -63,6 +63,10 @@
         icon: evcc.png
 
 - Monitoring:
+    - Grafana Logs:
+        href: "{{HOMEPAGE_VAR_GRAFANA_URL}}"
+        description: Search and investigate access logs
+        icon: grafana.png
     - Beszel:
         href: "{{HOMEPAGE_VAR_BESZEL_URL}}"
         description: Server monitoring
