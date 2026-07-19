@@ -35,7 +35,7 @@ services:
     user: ${DEPLOY_UID}:${DEPLOY_GID}
     command:
       - run
-      - --storage.path=/var/lib/alloy/data
+      - --storage.path=/alloy-data
       - /etc/alloy/config.alloy
     depends_on:
       monitoring-permissions:
@@ -44,7 +44,7 @@ services:
         condition: service_started
     volumes:
       - ../../config/monitoring/alloy.alloy:/etc/alloy/config.alloy:ro
-      - ../../data/monitoring/alloy:/var/lib/alloy/data
+      - ../../data/monitoring/alloy:/alloy-data
       - ../../data/traefik/logs:/var/log/traefik:ro
     networks:
       - internal_network
