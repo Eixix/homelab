@@ -1,9 +1,26 @@
 services:
+  monitoring-permissions:
+    container_name: monitoring-permissions
+    image: alpine:3.23.3
+    user: "0:0"
+    restart: "no"
+    command:
+      - sh
+      - -ec
+      - chown -R ${DEPLOY_UID}:${DEPLOY_GID} /state/alloy /state/grafana /state/loki
+    volumes:
+      - ../../data/monitoring/alloy:/state/alloy
+      - ../../data/monitoring/grafana:/state/grafana
+      - ../../data/monitoring/loki:/state/loki
+
   loki:
     container_name: loki
     image: grafana/loki:3.7.3
     restart: unless-stopped
     user: ${DEPLOY_UID}:${DEPLOY_GID}
+    depends_on:
+      monitoring-permissions:
+        condition: service_completed_successfully
     command: -config.file=/etc/loki/config.yaml
     volumes:
       - ../../config/monitoring/loki.yaml:/etc/loki/config.yaml:ro
@@ -21,7 +38,10 @@ services:
       - --storage.path=/var/lib/alloy/data
       - /etc/alloy/config.alloy
     depends_on:
-      - loki
+      monitoring-permissions:
+        condition: service_completed_successfully
+      loki:
+        condition: service_started
     volumes:
       - ../../config/monitoring/alloy.alloy:/etc/alloy/config.alloy:ro
       - ../../data/monitoring/alloy:/var/lib/alloy/data
@@ -35,7 +55,10 @@ services:
     restart: unless-stopped
     user: ${DEPLOY_UID}:${DEPLOY_GID}
     depends_on:
-      - loki
+      monitoring-permissions:
+        condition: service_completed_successfully
+      loki:
+        condition: service_started
     environment:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER}
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}

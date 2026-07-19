@@ -1,101 +1,19 @@
-:root {
-  --debt-ink: #102a21;
-  --debt-green: #0d7044;
-  --debt-green-dark: #173e2e;
-  --debt-cream: #fffef5;
-  --debt-yellow: #f4d35e;
-}
-
-html,
-body,
-#__next,
-#page_wrapper,
-#inner_wrapper {
-  min-height: 100vh;
-  color: var(--debt-ink) !important;
-  background: radial-gradient(circle at top, #f9e784 0, #f3bc42 34%, #0e5a3b 100%) fixed !important;
-  font-family: Inter, ui-rounded, system-ui, sans-serif !important;
-}
-
-#inner_wrapper > .container {
-  width: min(1500px, calc(100% - 24px));
-  margin: 18px auto;
-  padding: clamp(18px, 3vw, 36px) !important;
-  background: rgba(255, 255, 245, 0.94) !important;
-  border: 3px solid var(--debt-green-dark) !important;
-  border-radius: 28px !important;
-  box-shadow: 10px 12px 0 var(--debt-green-dark), 0 28px 70px rgba(0, 0, 0, 0.3) !important;
-}
-
-#inner_wrapper h1,
-#inner_wrapper h2,
-#inner_wrapper h3,
-#inner_wrapper .service-name,
-#inner_wrapper .widget-header {
-  color: var(--debt-ink) !important;
-  font-weight: 900 !important;
-  letter-spacing: -0.025em;
-}
-
-#inner_wrapper .service-description,
-#inner_wrapper .description,
-#inner_wrapper .text-theme-500,
-#inner_wrapper .dark\:text-theme-200 {
-  color: #52645c !important;
-}
-
-#inner_wrapper .service-card,
-#inner_wrapper .widget-container,
-#inner_wrapper .information-widget,
-#inner_wrapper li > a {
-  color: var(--debt-ink) !important;
-  background: linear-gradient(145deg, #fffef5, #f4f8df) !important;
-  border: 2px solid var(--debt-green-dark) !important;
-  border-radius: 16px !important;
-  box-shadow: 4px 5px 0 var(--debt-green-dark) !important;
-  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
-}
-
-#inner_wrapper .service-card:hover,
-#inner_wrapper li > a:hover {
-  transform: translate(2px, 2px) !important;
-  box-shadow: 2px 3px 0 var(--debt-green-dark) !important;
-}
-
-#inner_wrapper input,
-#inner_wrapper button,
-#inner_wrapper .search-container {
-  color: var(--debt-ink) !important;
-  background: var(--debt-cream) !important;
-  border-color: var(--debt-green-dark) !important;
-  border-radius: 14px !important;
-}
-
-#inner_wrapper .service-group-name,
-#inner_wrapper .bookmark-group-name {
-  display: inline-block;
-  padding: 5px 12px;
-  color: #fff !important;
-  background: var(--debt-green-dark);
-  border-radius: 999px;
-  font-size: 0.82rem;
-  font-weight: 900;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-@media (max-width: 640px) {
-  #inner_wrapper > .container {
-    width: calc(100% - 16px);
-    margin: 10px auto;
-    border-radius: 20px;
-    box-shadow: 6px 7px 0 var(--debt-green-dark), 0 18px 44px rgba(0, 0, 0, 0.24);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  #inner_wrapper .service-card,
-  #inner_wrapper li > a {
-    transition: none !important;
-  }
-}
+@import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap");
+:root { --tb-bg:#07120f; --tb-panel:#0d1d18; --tb-panel-2:#10241d; --tb-text:#edf6ef; --tb-muted:#8ea49a; --tb-lime:#cfff46; --tb-line:rgba(207,255,70,.2); --tb-neutral:rgba(237,246,239,.1); }
+html,body,#__next,#page_wrapper,#inner_wrapper { min-height:100vh; color:var(--tb-text)!important; background-color:var(--tb-bg)!important; font-family:"Manrope",sans-serif!important; }
+#page_wrapper::before { content:""; position:fixed; inset:0; pointer-events:none; opacity:.22; background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px); background-size:48px 48px; mask-image:linear-gradient(to bottom,black,transparent 80%); }
+#page_wrapper::after { content:""; position:fixed; inset:0; pointer-events:none; opacity:.065; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='156'%3E%3Cg fill='none' stroke='%23cfff46'%3E%3Cpath d='M45 0 90 26v52l-45 26L0 78V26zM135 0l45 26v52l-45 26-45-26V26zM90 78l45 26v52l-45 26-45-26v-52z'/%3E%3C/g%3E%3C/svg%3E"); }
+#inner_wrapper>.container { width:min(1320px,calc(100% - 32px)); margin:auto; padding:28px!important; background:transparent!important; }
+#information-widgets { border-color:var(--tb-neutral)!important; }
+#inner_wrapper h1,#inner_wrapper h2,#inner_wrapper h3,#inner_wrapper .service-name,#inner_wrapper .widget-header { color:var(--tb-text)!important; font-weight:700!important; letter-spacing:-.025em; }
+#inner_wrapper .service-description,#inner_wrapper .description,#inner_wrapper .text-theme-500,#inner_wrapper .dark\:text-theme-200,#inner_wrapper .dark\:text-theme-300 { color:var(--tb-muted)!important; }
+#inner_wrapper .service-card,#inner_wrapper .widget-container,#inner_wrapper .information-widget,#inner_wrapper li>a { color:var(--tb-text)!important; background:rgba(13,29,24,.94)!important; border:1px solid var(--tb-neutral)!important; border-top-color:rgba(207,255,70,.28)!important; border-radius:4px!important; box-shadow:0 16px 38px rgba(0,0,0,.22)!important; transition:transform .18s,border-color .18s,background .18s!important; }
+#inner_wrapper .service-card:hover,#inner_wrapper li>a:hover { transform:translateY(-2px)!important; border-color:rgba(207,255,70,.5)!important; background:var(--tb-panel-2)!important; }
+#inner_wrapper input,#inner_wrapper button,#inner_wrapper .search-container { color:var(--tb-text)!important; background:rgba(255,255,255,.025)!important; border-color:var(--tb-neutral)!important; border-radius:4px!important; }
+#inner_wrapper input::placeholder { color:var(--tb-muted)!important; }
+#inner_wrapper .service-group-name,#inner_wrapper .bookmark-group-name { display:flex; align-items:center; gap:9px; color:var(--tb-lime)!important; background:transparent!important; font:500 .7rem "DM Mono",monospace!important; letter-spacing:.09em; text-transform:uppercase; }
+#inner_wrapper .service-group-name::before,#inner_wrapper .bookmark-group-name::before { content:""; width:7px; height:7px; border-radius:50%; background:var(--tb-lime); box-shadow:0 0 0 4px rgba(207,255,70,.08),0 0 14px var(--tb-lime); }
+#inner_wrapper .service-icon { border-right:1px solid var(--tb-neutral); }
+#footer { color:var(--tb-muted)!important; border-top:1px solid var(--tb-neutral); }
+@media(max-width:640px){#inner_wrapper>.container{width:100%;padding:16px!important;}}
+@media(prefers-reduced-motion:reduce){#inner_wrapper .service-card,#inner_wrapper li>a{transition:none!important;}}

@@ -43,11 +43,6 @@ const links = [
     href: '/docs/remaining-projects',
     description: 'Live services still outside this repo, their routes, data paths, and next decisions.',
   },
-  {
-    title: 'Cutover Runbooks',
-    href: '/docs/app-cutover-runbook',
-    description: 'Service-by-service production migration notes and rollback commands.',
-  },
 ];
 
 export default function Home() {

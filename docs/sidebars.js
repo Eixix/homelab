@@ -12,8 +12,6 @@ const sidebars = {
     'presentations/homelab-onboarding',
     'storage-array-zfs',
     'remaining-projects',
-    'core-cutover-runbook',
-    'app-cutover-runbook',
     'service-template',
   ],
 };

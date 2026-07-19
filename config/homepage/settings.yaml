@@ -1,6 +1,6 @@
 title: Homelab
 startUrl: "{{HOMEPAGE_VAR_HOMEPAGE_URL}}"
-theme: light
+theme: dark
 color: emerald
 target: _self
 
@@ -9,5 +9,8 @@ layout:
     style: row
     columns: 4
   Apps:
+    style: row
+    columns: 4
+  Monitoring:
     style: row
     columns: 4

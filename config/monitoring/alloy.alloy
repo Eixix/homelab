@@ -16,7 +16,7 @@ loki.process "traefik_access" {
 
 	stage.json {
 		expressions = {
-			country_code = "\"request_CF-IPCountry\"",
+      country_code = "\"request_Cf-Ipcountry\"",
 			host         = "RequestHost",
 			router       = "RouterName",
 		}

@@ -51,7 +51,10 @@ sudo chown -R github:github \
 ```
 
 All three monitoring services run as `DEPLOY_UID:DEPLOY_GID`, matching the
-production deployment account, so subsequent files retain consistent ownership.
+production deployment account. A short-lived `monitoring-permissions` init
+container repairs the three narrowly scoped state directories before startup,
+so redeployment also recovers directories previously created by Docker or an
+older image-specific UID.
 
 Install the repository-managed rotation policy once on the production host:
 
