@@ -70,7 +70,7 @@ function render(series) {
 <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-label="External request volume over the last 24 hours">
   <rect width="800" height="480" fill="#fffdf5"/>
   <style>
-    text { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; fill: #111111; }
+    text { font-family: "DejaVu Sans Mono", monospace; fill: #111111; }
     .title { font-size: 27px; font-weight: 800; }
     .metric { font-size: 16px; font-weight: 700; }
     .axis { font-size: 13px; }
