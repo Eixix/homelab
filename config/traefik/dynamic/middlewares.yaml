@@ -1,5 +1,14 @@
 http:
   routers:
+    external-scanner-blackhole:
+      rule: HostRegexp(`^.+\.betz\.coffee$`) && (PathRegexp(`(?i)\.(php|php[0-9]+|phtml|asp|aspx|cgi)$`) || PathRegexp(`(?i)/(wp-admin|wp-login|wp-content|wp-includes|xmlrpc\.php)`) || PathRegexp(`(?i)/\.(env|git|svn|aws|ssh|npmrc)`) || PathRegexp(`(?i)/(phpmyadmin|pma|adminer|mysql)/`))
+      entryPoints:
+        - websecure
+      priority: 10000
+      tls:
+        certResolver: externalresolver
+      service: external-blackhole
+
     internal-not-found:
       rule: HostRegexp(`^.+\.home$`)
       entryPoints:
