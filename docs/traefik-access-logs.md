@@ -85,12 +85,12 @@ scope.
 ## InkyPi view
 
 Grafana also provisions **InkyPi · Public traffic**, a deliberately sparse,
-single-panel dashboard showing the top five public domains over 24 hours. Its
+single-panel dashboard showing external requests per minute over 24 hours. Its
 LogQL selector directly excludes `.home` and `.localhost` hosts; the screenshot
 URL cannot switch it to internal traffic, and historical data works without a
-scope-label backfill. The donut and solid categorical colours survive
-the Inky display's small fixed palette better than a detailed basemap or dense
-time series.
+scope-label backfill. The thick blue line, light fill, white background, and
+minimal legend are designed to remain legible after conversion to the Inky
+display's small fixed palette.
 
 Use InkyPi's Screenshot plugin at the display's native 800×480 resolution with:
 

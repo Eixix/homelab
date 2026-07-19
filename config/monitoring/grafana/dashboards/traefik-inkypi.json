@@ -8,11 +8,32 @@
   "panels": [
     {
       "datasource": { "type": "loki", "uid": "loki" },
-      "description": "Top five public domains over the last 24 hours. Internal .home and .localhost traffic is excluded at query level.",
+      "description": "Public request volume over the last 24 hours. Internal .home and .localhost traffic is excluded at query level.",
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
+          "color": { "fixedColor": "blue", "mode": "fixed" },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "Requests/min",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 18,
+            "gradientMode": "none",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 3,
+            "pointSize": 5,
+            "scaleDistribution": { "type": "linear" },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "off" }
+          },
           "mappings": [],
+          "min": 0,
           "unit": "short"
         },
         "overrides": []
@@ -20,31 +41,26 @@
       "gridPos": { "h": 20, "w": 24, "x": 0, "y": 0 },
       "id": 1,
       "options": {
-        "displayLabels": ["name", "percent"],
         "legend": {
-          "calcs": ["sum", "percent"],
+          "calcs": ["lastNotNull", "max"],
           "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "values": ["value", "percent"]
+          "placement": "bottom",
+          "showLegend": true
         },
-        "pieType": "donut",
-        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
-        "tooltip": { "hideZeros": false, "mode": "single", "sort": "desc" }
+        "tooltip": { "hideZeros": false, "mode": "single", "sort": "none" }
       },
       "targets": [
         {
           "datasource": { "type": "loki", "uid": "loki" },
           "editorMode": "code",
-          "expr": "topk(5, sum by (host) (count_over_time({job=\"traefik-access\", host!~\".*\\\\.(home|localhost)$\", host!=\"\"}[24h])))",
-          "instant": true,
-          "legendFormat": "{{host}}",
-          "queryType": "instant",
+          "expr": "sum(rate({job=\"traefik-access\", host!~\".*\\\\.(home|localhost)$\", host!=\"\"}[5m])) * 60",
+          "legendFormat": "External requests/min",
+          "queryType": "range",
           "refId": "A"
         }
       ],
-      "title": "Public traffic by domain · 24 hours",
-      "type": "piechart"
+      "title": "External request volume · last 24 hours",
+      "type": "timeseries"
     }
   ],
   "refresh": "30m",
@@ -56,5 +72,5 @@
   "timezone": "browser",
   "title": "InkyPi · Public traffic",
   "uid": "traefik-inkypi",
-  "version": 2
+  "version": 3
 }
