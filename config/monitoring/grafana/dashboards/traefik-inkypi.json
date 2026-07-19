@@ -1,0 +1,60 @@
+{
+  "annotations": { "list": [] },
+  "editable": false,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": { "type": "loki", "uid": "loki" },
+      "description": "Top five public domains over the last 24 hours. Internal .home and .localhost traffic is excluded at query level.",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "mappings": [],
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 20, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "options": {
+        "displayLabels": ["name", "percent"],
+        "legend": {
+          "calcs": ["sum", "percent"],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": ["value", "percent"]
+        },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "tooltip": { "hideZeros": false, "mode": "single", "sort": "desc" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "loki", "uid": "loki" },
+          "editorMode": "code",
+          "expr": "topk(5, sum by (host) (count_over_time({job=\"traefik-access\", access_scope=\"external\", host!=\"\"}[24h])))",
+          "instant": true,
+          "legendFormat": "{{host}}",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "Public traffic by domain · 24 hours",
+      "type": "piechart"
+    }
+  ],
+  "refresh": "30m",
+  "schemaVersion": 41,
+  "tags": ["traefik", "external", "inkypi", "eink"],
+  "templating": { "list": [] },
+  "time": { "from": "now-24h", "to": "now" },
+  "timepicker": { "hidden": true },
+  "timezone": "browser",
+  "title": "InkyPi · Public traffic",
+  "uid": "traefik-inkypi",
+  "version": 1
+}

@@ -71,6 +71,38 @@ and keeps ingested events for 30 days.
 Open `https://${GRAFANA_HOST}`, then use the provisioned **Security / Traefik
 access security** dashboard or Grafana Explore with the Loki data source.
 
+The dashboard has two selectors:
+
+- **Traffic scope** separates internal `.home`/`.localhost` requests from
+  external public-domain requests.
+- **Domain** filters every view to one or more requested hosts. The **Requests
+  by domain** panel provides the grouped overview.
+
+Scope is assigned when Alloy ingests a new event, so events collected before
+this label was introduced remain visible under **All** but not under a specific
+scope.
+
+## InkyPi view
+
+Grafana also provisions **InkyPi · Public traffic**, a deliberately sparse,
+single-panel dashboard showing the top five public domains over 24 hours. Its
+LogQL selector contains `access_scope="external"`; the screenshot URL cannot
+switch it to internal traffic. The donut and solid categorical colours survive
+the Inky display's small fixed palette better than a detailed basemap or dense
+time series.
+
+Use InkyPi's Screenshot plugin at the display's native 800×480 resolution with:
+
+```text
+https://logs.home/d/traefik-inkypi/inkypi-public-traffic?orgId=1&from=now-24h&to=now&kiosk&theme=light&refresh=30m
+```
+
+The current Screenshot plugin does not submit a Grafana login or custom HTTP
+headers. Do not enable anonymous access to the main Grafana organization just
+for the display, because that would also expose the searchable access logs.
+Use an authenticated browser session or a narrowly scoped rendering endpoint
+before adding this URL to an unattended InkyPi playlist.
+
 Useful LogQL investigations:
 
 ```logql
@@ -98,7 +130,7 @@ Query parameters and all headers are dropped by default. Only User-Agent,
 Referer, X-Request-ID, CF-IPCountry, and CF-Ray are retained. Never add cookies,
 Authorization, or application tokens to access-log fields.
 
-Country, host, and router are indexed as bounded Loki labels. Client IP, path,
+Country, host, router, and access scope are indexed as bounded Loki labels. Client IP, path,
 User-Agent, request ID, and CF-Ray stay in the JSON event to avoid high-cardinality
 indexes. Local Loki data is useful operational evidence but is not tamper-proof
 against an attacker with host access.

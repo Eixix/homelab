@@ -12,7 +12,7 @@
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
       "id": 1,
       "options": { "legend": { "displayMode": "table", "placement": "right", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
-      "targets": [{ "datasource": { "type": "loki", "uid": "loki" }, "editorMode": "code", "expr": "sum(rate({job=\"traefik-access\"}[$__auto]))", "legendFormat": "requests", "queryType": "range", "refId": "A" }],
+      "targets": [{ "datasource": { "type": "loki", "uid": "loki" }, "editorMode": "code", "expr": "sum(rate({job=\"traefik-access\", access_scope=~\"$scope\", host=~\"$domain\"}[$__auto]))", "legendFormat": "requests", "queryType": "range", "refId": "A" }],
       "title": "Request rate",
       "type": "timeseries"
     },
@@ -22,7 +22,7 @@
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
       "id": 4,
       "options": { "legend": { "displayMode": "table", "placement": "right", "showLegend": true }, "tooltip": { "mode": "multi", "sort": "desc" } },
-      "targets": [{ "datasource": { "type": "loki", "uid": "loki" }, "editorMode": "code", "expr": "sum by (status) (count_over_time({job=\"traefik-access\"} | json | label_format status=\"{{.DownstreamStatus}}\" [$__interval]))", "legendFormat": "HTTP {{status}}", "queryType": "range", "refId": "A" }],
+      "targets": [{ "datasource": { "type": "loki", "uid": "loki" }, "editorMode": "code", "expr": "sum by (status) (count_over_time({job=\"traefik-access\", access_scope=~\"$scope\", host=~\"$domain\"} | json | label_format status=\"{{.DownstreamStatus}}\" [$__interval]))", "legendFormat": "HTTP {{status}}", "queryType": "range", "refId": "A" }],
       "title": "HTTP status codes",
       "type": "timeseries"
     },
@@ -37,7 +37,7 @@
         "layers": [{ "config": { "showLegend": true, "style": { "color": { "field": "Requests", "fixed": "dark-green" }, "opacity": 0.8, "rotation": { "fixed": 0, "max": 360, "min": -360, "mode": "mod" }, "size": { "field": "Requests", "fixed": 8, "max": 30, "min": 5 } } }, "location": { "gazetteer": "countries", "lookup": "country_code", "mode": "lookup" }, "name": "Requests", "tooltip": true, "type": "markers" }],
         "view": { "allLayers": true, "id": "zero", "lat": 0, "lon": 0, "zoom": 1 }
       },
-      "targets": [{ "datasource": { "type": "loki", "uid": "loki" }, "editorMode": "code", "expr": "sum by (country_code) (count_over_time({job=\"traefik-access\", country_code!=\"\"}[$__range]))", "instant": true, "legendFormat": "{{country_code}}", "queryType": "instant", "refId": "A" }],
+      "targets": [{ "datasource": { "type": "loki", "uid": "loki" }, "editorMode": "code", "expr": "sum by (country_code) (count_over_time({job=\"traefik-access\", access_scope=~\"$scope\", host=~\"$domain\", country_code!=\"\"}[$__range]))", "instant": true, "legendFormat": "{{country_code}}", "queryType": "instant", "refId": "A" }],
       "title": "Request origins",
       "transformations": [{ "id": "labelsToFields", "options": { "mode": "columns" } }, { "id": "organize", "options": { "excludeByName": { "Time": true }, "renameByName": { "Value": "Requests", "Value #A": "Requests" } } }],
       "type": "geomap"
@@ -48,7 +48,7 @@
       "gridPos": { "h": 10, "w": 6, "x": 12, "y": 8 },
       "id": 2,
       "options": { "cellHeight": "sm", "showHeader": true },
-      "targets": [{ "datasource": { "type": "loki", "uid": "loki" }, "editorMode": "code", "expr": "sum by (country_code) (count_over_time({job=\"traefik-access\", country_code!=\"\"}[$__range]))", "instant": true, "legendFormat": "{{country_code}}", "queryType": "instant", "refId": "A" }],
+      "targets": [{ "datasource": { "type": "loki", "uid": "loki" }, "editorMode": "code", "expr": "sum by (country_code) (count_over_time({job=\"traefik-access\", access_scope=~\"$scope\", host=~\"$domain\", country_code!=\"\"}[$__range]))", "instant": true, "legendFormat": "{{country_code}}", "queryType": "instant", "refId": "A" }],
       "title": "Countries",
       "transformations": [{ "id": "labelsToFields", "options": { "mode": "columns" } }, { "id": "organize", "options": { "excludeByName": { "Time": true }, "renameByName": { "Value": "Requests", "Value #A": "Requests", "country_code": "Country" } } }, { "id": "sortBy", "options": { "fields": {}, "sort": [{ "field": "Requests", "desc": true }] } }],
       "type": "table"
@@ -59,8 +59,8 @@
       "gridPos": { "h": 10, "w": 6, "x": 18, "y": 8 },
       "id": 6,
       "options": { "displayMode": "gradient", "legend": { "showLegend": false }, "minVizHeight": 16, "minVizWidth": 8, "namePlacement": "auto", "orientation": "horizontal", "showUnfilled": true, "sizing": "auto", "valueMode": "color" },
-      "targets": [{ "datasource": { "type": "loki", "uid": "loki" }, "editorMode": "code", "expr": "topk(10, sum by (host) (count_over_time({job=\"traefik-access\"}[$__range])))", "instant": true, "legendFormat": "{{host}}", "queryType": "instant", "refId": "A" }],
-      "title": "Top hosts",
+      "targets": [{ "datasource": { "type": "loki", "uid": "loki" }, "editorMode": "code", "expr": "topk(10, sum by (host) (count_over_time({job=\"traefik-access\", access_scope=~\"$scope\", host=~\"$domain\"}[$__range])))", "instant": true, "legendFormat": "{{host}}", "queryType": "instant", "refId": "A" }],
+      "title": "Requests by domain",
       "type": "bargauge"
     },
     {
@@ -69,7 +69,7 @@
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 18 },
       "id": 7,
       "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": false }, "tooltip": { "mode": "single", "sort": "none" } },
-      "targets": [{ "datasource": { "type": "loki", "uid": "loki" }, "editorMode": "code", "expr": "sum(count_over_time({job=\"traefik-access\"} | json | DownstreamStatus >= 400 [$__interval]))", "legendFormat": "HTTP errors", "queryType": "range", "refId": "A" }],
+      "targets": [{ "datasource": { "type": "loki", "uid": "loki" }, "editorMode": "code", "expr": "sum(count_over_time({job=\"traefik-access\", access_scope=~\"$scope\", host=~\"$domain\"} | json | DownstreamStatus >= 400 [$__interval]))", "legendFormat": "HTTP errors", "queryType": "range", "refId": "A" }],
       "title": "HTTP errors (4xx/5xx)",
       "type": "timeseries"
     },
@@ -79,7 +79,7 @@
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 18 },
       "id": 8,
       "options": { "displayMode": "gradient", "legend": { "showLegend": false }, "minVizHeight": 16, "minVizWidth": 8, "namePlacement": "auto", "orientation": "horizontal", "showUnfilled": true, "sizing": "auto", "valueMode": "color" },
-      "targets": [{ "datasource": { "type": "loki", "uid": "loki" }, "editorMode": "code", "expr": "topk(10, sum by (RequestPath) (count_over_time({job=\"traefik-access\"} | json [$__range])))", "instant": true, "legendFormat": "{{RequestPath}}", "queryType": "instant", "refId": "A" }],
+      "targets": [{ "datasource": { "type": "loki", "uid": "loki" }, "editorMode": "code", "expr": "topk(10, sum by (RequestPath) (count_over_time({job=\"traefik-access\", access_scope=~\"$scope\", host=~\"$domain\"} | json [$__range])))", "instant": true, "legendFormat": "{{RequestPath}}", "queryType": "instant", "refId": "A" }],
       "title": "Top request paths",
       "type": "bargauge"
     },
@@ -88,7 +88,7 @@
       "gridPos": { "h": 14, "w": 24, "x": 0, "y": 26 },
       "id": 3,
       "options": { "dedupStrategy": "none", "enableInfiniteScrolling": false, "enableLogDetails": true, "prettifyLogMessage": true, "showCommonLabels": false, "showLabels": false, "showTime": true, "sortOrder": "Descending", "wrapLogMessage": false },
-      "targets": [{ "datasource": { "type": "loki", "uid": "loki" }, "editorMode": "code", "expr": "{job=\"traefik-access\"} | json", "queryType": "range", "refId": "A" }],
+      "targets": [{ "datasource": { "type": "loki", "uid": "loki" }, "editorMode": "code", "expr": "{job=\"traefik-access\", access_scope=~\"$scope\", host=~\"$domain\"} | json", "queryType": "range", "refId": "A" }],
       "title": "Access events",
       "type": "logs"
     }
@@ -96,11 +96,42 @@
   "refresh": "5m",
   "schemaVersion": 41,
   "tags": ["traefik", "security", "access-logs", "inkypi"],
-  "templating": { "list": [] },
+  "templating": {
+    "list": [
+      {
+        "allValue": ".*",
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "loki", "uid": "loki" },
+        "definition": "label_values({job=\"traefik-access\"}, access_scope)",
+        "includeAll": true,
+        "label": "Traffic scope",
+        "multi": false,
+        "name": "scope",
+        "options": [],
+        "query": "label_values({job=\"traefik-access\"}, access_scope)",
+        "refresh": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": { "selected": true, "text": "All", "value": "$__all" },
+        "datasource": { "type": "loki", "uid": "loki" },
+        "definition": "label_values({job=\"traefik-access\", access_scope=~\"$scope\"}, host)",
+        "includeAll": true,
+        "label": "Domain",
+        "multi": true,
+        "name": "domain",
+        "options": [],
+        "query": "label_values({job=\"traefik-access\", access_scope=~\"$scope\"}, host)",
+        "refresh": 1,
+        "type": "query"
+      }
+    ]
+  },
   "time": { "from": "now-6h", "to": "now" },
   "timepicker": {},
   "timezone": "browser",
   "title": "Traefik access security",
   "uid": "traefik-access-security",
-  "version": 2
+  "version": 3
 }

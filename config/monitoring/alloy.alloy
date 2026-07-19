@@ -31,6 +31,30 @@ loki.process "traefik_access" {
 			router       = "",
 		}
 	}
+
+	// Derive a bounded traffic scope from the requested hostname. Production
+	// .home names and local .localhost names are private; everything else with
+	// a hostname is public-facing traffic. The InkyPi dashboard only queries
+	// access_scope="external".
+	stage.match {
+		selector = "{host=~\".*\\\\.(home|localhost)$\"}"
+
+		stage.static_labels {
+			values = {
+				access_scope = "internal",
+			}
+		}
+	}
+
+	stage.match {
+		selector = "{host!=\"\", host!~\".*\\\\.(home|localhost)$\"}"
+
+		stage.static_labels {
+			values = {
+				access_scope = "external",
+			}
+		}
+	}
 }
 
 loki.write "local" {
