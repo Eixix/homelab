@@ -200,13 +200,13 @@ jobs:
               docker compose --env-file .env --profile "*" config --quiet
               docker compose --env-file .env --profile "*" pull
               docker compose --env-file .env --profile "*" build --pull
-              docker compose --env-file .env --profile "*" up -d --remove-orphans
+              docker compose --env-file .env --profile "*" up -d --force-recreate --remove-orphans
             elif [ -n "$DEPLOY_SERVICES" ]; then
               docker compose --env-file .env --profile external config --quiet
               read -r -a services <<< "$DEPLOY_SERVICES"
               docker compose --env-file .env --profile external pull "${services[@]}"
               docker compose --env-file .env --profile external build --pull "${services[@]}"
-              docker compose --env-file .env --profile external up -d "${services[@]}"
+              docker compose --env-file .env --profile external up -d --force-recreate "${services[@]}"
             else
               docker compose --env-file .env --profile external config --quiet
               echo 'Repository synchronized and configuration validated; no services selected for startup.'
