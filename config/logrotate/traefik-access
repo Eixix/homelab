@@ -6,7 +6,7 @@
     notifempty
     compress
     delaycompress
-    create 0640 root root
+    create 0640 github github
     sharedscripts
     postrotate
         /usr/bin/docker kill --signal USR1 traefik >/dev/null 2>&1 || true

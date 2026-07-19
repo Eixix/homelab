@@ -33,22 +33,25 @@ Production remains manual-only. After the normal repository deployment, create
 the runtime directories and start or recreate the affected services:
 
 ```sh
-install -d -m 0750 data/traefik/logs data/monitoring/alloy
-install -d -m 0750 -o 10001 -g 10001 data/monitoring/loki
-install -d -m 0750 -o "$(id -u)" -g "$(id -g)" data/monitoring/grafana
+install -d -m 0750 data/traefik/logs
+install -d -m 0750 -o "$(id -u)" -g "$(id -g)" \
+  data/monitoring/alloy data/monitoring/grafana data/monitoring/loki
 docker compose --env-file .env --profile external config --quiet
 docker compose --env-file .env up -d loki alloy grafana reverse-proxy
 ```
 
-If Grafana's directory was previously created by Docker as root or UID 472,
-repair it once before redeploying:
+If the monitoring directories were previously created by Docker as root or an
+image-specific UID, repair them once before redeploying:
 
 ```sh
-sudo chown -R github:github /home/github/homelab/data/monitoring/grafana
+sudo chown -R github:github \
+  /home/github/homelab/data/monitoring/alloy \
+  /home/github/homelab/data/monitoring/grafana \
+  /home/github/homelab/data/monitoring/loki
 ```
 
-Grafana runs as `DEPLOY_UID:DEPLOY_GID`, matching the production deployment
-account, so subsequent files retain consistent ownership.
+All three monitoring services run as `DEPLOY_UID:DEPLOY_GID`, matching the
+production deployment account, so subsequent files retain consistent ownership.
 
 Install the repository-managed rotation policy once on the production host:
 
