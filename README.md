@@ -90,6 +90,8 @@ Set the `*_UID` and `*_GID` entries in `ENV_FILE` to values that can write the `
 
 The `services` workflow input accepts space-separated Compose service names. Leave it empty to synchronize and validate without starting anything. Use the reserved value `all` on its own to pull updates, rebuild, and redeploy the complete stack with every Compose profile enabled, including `external` and the Beszel `agent` profile.
 
+Each workflow run records the containers that were actually created or recreated in the GitHub Actions job summary. An unchanged deployment reports `(none)`.
+
 The production backup setup and restore outline are documented in [`docs/backup.md`](docs/backup.md).
 
 ## Validieren

@@ -1,0 +1,97 @@
+:root {
+  --debt-ink: #102a21;
+  --debt-green: #0d7044;
+  --debt-green-dark: #173e2e;
+  --debt-cream: #fffef5;
+  --debt-yellow: #f4d35e;
+}
+
+body {
+  min-height: 100vh;
+  color: var(--debt-ink) !important;
+  background: radial-gradient(circle at top, #f9e784 0, #f3bc42 34%, #0e5a3b 100%) fixed !important;
+  font-family: Inter, ui-rounded, system-ui, sans-serif !important;
+}
+
+#page_container {
+  width: min(1500px, calc(100% - 24px));
+  margin: 18px auto;
+  padding: clamp(18px, 3vw, 36px) !important;
+  background: rgba(255, 255, 245, 0.94);
+  border: 3px solid var(--debt-green-dark);
+  border-radius: 28px;
+  box-shadow: 10px 12px 0 var(--debt-green-dark), 0 28px 70px rgba(0, 0, 0, 0.3);
+}
+
+#page_container h1,
+#page_container h2,
+#page_container h3,
+#page_container .service-name,
+#page_container .widget-header {
+  color: var(--debt-ink) !important;
+  font-weight: 900 !important;
+  letter-spacing: -0.025em;
+}
+
+#page_container .service-description,
+#page_container .description,
+#page_container .text-theme-500,
+#page_container .dark\:text-theme-200 {
+  color: #52645c !important;
+}
+
+#page_container .service,
+#page_container .widget,
+#page_container .information-widget,
+#page_container li > a {
+  color: var(--debt-ink) !important;
+  background: linear-gradient(145deg, #fffef5, #f4f8df) !important;
+  border: 2px solid var(--debt-green-dark) !important;
+  border-radius: 16px !important;
+  box-shadow: 4px 5px 0 var(--debt-green-dark) !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+#page_container .service:hover,
+#page_container li > a:hover {
+  transform: translate(2px, 2px) !important;
+  box-shadow: 2px 3px 0 var(--debt-green-dark) !important;
+}
+
+#page_container input,
+#page_container button,
+#page_container .search-container {
+  color: var(--debt-ink) !important;
+  background: var(--debt-cream) !important;
+  border-color: var(--debt-green-dark) !important;
+  border-radius: 14px !important;
+}
+
+#page_container .service-group-name,
+#page_container .bookmark-group-name {
+  display: inline-block;
+  padding: 5px 12px;
+  color: #fff !important;
+  background: var(--debt-green-dark);
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 640px) {
+  #page_container {
+    width: calc(100% - 16px);
+    margin: 10px auto;
+    border-radius: 20px;
+    box-shadow: 6px 7px 0 var(--debt-green-dark), 0 18px 44px rgba(0, 0, 0, 0.24);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #page_container .service,
+  #page_container li > a {
+    transition: none !important;
+  }
+}

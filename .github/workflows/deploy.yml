@@ -57,7 +57,7 @@ jobs:
       - name: Prepare deployment directory
         run: |
           set -euo pipefail
-          ssh "$DEPLOY_USER@$DEPLOY_HOST" "install -d -m 700 '$DEPLOY_PATH/secrets'; install -d '$DEPLOY_PATH/data' '$DEPLOY_PATH/backups'"
+          ssh "$DEPLOY_USER@$DEPLOY_HOST" "install -d -m 700 '$DEPLOY_PATH/secrets'; install -d '$DEPLOY_PATH/data' '$DEPLOY_PATH/backups' '$DEPLOY_PATH/data/monitoring' '$DEPLOY_PATH/data/monitoring/grafana' '$DEPLOY_PATH/data/traefik' '$DEPLOY_PATH/data/traefik/logs'"
 
       - name: Synchronize repository
         run: |
@@ -86,9 +86,14 @@ jobs:
         run: |
           set -euo pipefail
           DEPLOY_SERVICES_B64="$(printf '%s' "$DEPLOY_SERVICES" | base64 -w 0)"
-          ssh "$DEPLOY_USER@$DEPLOY_HOST" "DEPLOY_SERVICES_B64=$DEPLOY_SERVICES_B64 bash -s" <<'REMOTE'
+          deployment_log="$RUNNER_TEMP/homelab-deploy.log"
+          ssh "$DEPLOY_USER@$DEPLOY_HOST" "DEPLOY_SERVICES_B64=$DEPLOY_SERVICES_B64 bash -s" <<'REMOTE' | tee "$deployment_log"
             set -e
             cd /home/github/homelab
+            before_containers="$(mktemp)"
+            after_containers="$(mktemp)"
+            trap 'rm -f "$before_containers" "$after_containers"' EXIT
+            docker ps -a --filter label=com.docker.compose.project=homelab --format '{{.Names}}={{.ID}}' | sort > "$before_containers"
             DEPLOY_SERVICES="$(printf '%s' "$DEPLOY_SERVICES_B64" | base64 --decode)"
             case "$DEPLOY_SERVICES" in
               *[!a-zA-Z0-9_.\ -]*)
@@ -206,7 +211,24 @@ jobs:
               docker compose --env-file .env --profile external config --quiet
               echo 'Repository synchronized and configuration validated; no services selected for startup.'
             fi
+            docker ps -a --filter label=com.docker.compose.project=homelab --format '{{.Names}}={{.ID}}' | sort > "$after_containers"
+            echo 'UPDATED_CONTAINERS_BEGIN'
+            updated=false
+            while IFS='=' read -r name id; do
+              if ! grep -Fqx "$name=$id" "$before_containers"; then
+                printf '%s\n' "$name"
+                updated=true
+              fi
+            done < "$after_containers"
+            if [ "$updated" = false ]; then
+              echo '(none)'
+            fi
+            echo 'UPDATED_CONTAINERS_END'
           REMOTE
+          {
+            echo '### Containers actually updated'
+            sed -n '/^UPDATED_CONTAINERS_BEGIN$/,/^UPDATED_CONTAINERS_END$/p' "$deployment_log" | sed '1d;$d;s/^/- `/' | sed 's/$/`/'
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Disconnect WireGuard
         if: always()

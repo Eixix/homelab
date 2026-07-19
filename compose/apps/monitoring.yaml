@@ -31,6 +31,7 @@ services:
     container_name: grafana
     image: grafana/grafana:13.1.0
     restart: unless-stopped
+    user: ${DEPLOY_UID}:${DEPLOY_GID}
     depends_on:
       - loki
     environment:
