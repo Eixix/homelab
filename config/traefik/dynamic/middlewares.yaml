@@ -20,7 +20,7 @@ http:
         - internal-app
 
     external-blackhole:
-      rule: HostRegexp(`^.+\.betz\.coffee$`)
+      rule: HostRegexp(`^(.+\.)?betz\.coffee$`)
       entryPoints:
         - websecure
       priority: 1
