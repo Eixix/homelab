@@ -1,0 +1,101 @@
+services:
+  netbox-db:
+    container_name: netbox-db
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: netbox
+      POSTGRES_USER: netbox
+      POSTGRES_PASSWORD: ${NETBOX_DB_PASSWORD}
+    volumes:
+      - ../../data/netbox/postgres:/var/lib/postgresql/data
+    networks:
+      - internal_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U netbox -d netbox"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  netbox-redis:
+    container_name: netbox-redis
+    image: valkey/valkey:8-alpine
+    restart: unless-stopped
+    command: valkey-server --appendonly yes
+    volumes:
+      - ../../data/netbox/redis:/data
+    networks:
+      - internal_network
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  netbox: &netbox
+    container_name: netbox
+    image: netboxcommunity/netbox:v4.6-5.0.1
+    restart: unless-stopped
+    depends_on:
+      netbox-db:
+        condition: service_healthy
+      netbox-redis:
+        condition: service_healthy
+    environment: &netbox-environment
+      ALLOWED_HOSTS: ${NETBOX_HOST:-netbox.home}
+      CSRF_TRUSTED_ORIGINS: https://${NETBOX_HOST:-netbox.home}
+      DB_HOST: netbox-db
+      DB_NAME: netbox
+      DB_USER: netbox
+      DB_PASSWORD: ${NETBOX_DB_PASSWORD}
+      REDIS_HOST: netbox-redis
+      REDIS_DATABASE: 0
+      REDIS_CACHE_HOST: netbox-redis
+      REDIS_CACHE_DATABASE: 1
+      SECRET_KEY: ${NETBOX_SECRET_KEY}
+      API_TOKEN_PEPPER_1: ${NETBOX_API_TOKEN_PEPPER}
+      SKIP_SUPERUSER: "false"
+      SUPERUSER_NAME: ${NETBOX_SUPERUSER_NAME}
+      SUPERUSER_EMAIL: ${NETBOX_SUPERUSER_EMAIL}
+      SUPERUSER_PASSWORD: ${NETBOX_SUPERUSER_PASSWORD}
+      SUPERUSER_API_TOKEN: ${NETBOX_API_TOKEN}
+      SUPERUSER_API_KEY: ${NETBOX_API_KEY}
+    volumes:
+      - ../../data/netbox/media:/opt/netbox/netbox/media
+      - ../../data/netbox/reports:/opt/netbox/netbox/reports
+      - ../../data/netbox/scripts:/opt/netbox/netbox/scripts
+    networks:
+      - internal_network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/login/ || exit 1"]
+      start_period: 120s
+      interval: 15s
+      timeout: 5s
+      retries: 10
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.netbox.rule=Host(`${NETBOX_HOST:-netbox.home}`)
+      - traefik.http.routers.netbox.entrypoints=websecure
+      - traefik.http.routers.netbox.tls=true
+      - traefik.http.routers.netbox.tls.certresolver=internalresolver
+      - traefik.http.routers.netbox.middlewares=internal-app@file
+      - traefik.http.services.netbox.loadbalancer.server.port=8080
+      - traefik.docker.network=internal_network
+
+  netbox-worker:
+    <<: *netbox
+    container_name: netbox-worker
+    depends_on:
+      netbox:
+        condition: service_healthy
+    command:
+      - /opt/netbox/venv/bin/python
+      - /opt/netbox/netbox/manage.py
+      - rqworker
+    environment:
+      <<: *netbox-environment
+      SKIP_SUPERUSER: "true"
+    healthcheck:
+      disable: true
+    labels:
+      - traefik.enable=false

@@ -17,6 +17,10 @@
         href: "{{HOMEPAGE_VAR_DOCS_URL}}"
         description: Runbooks and decisions
         icon: docusaurus.png
+    - NetBox:
+        href: "{{HOMEPAGE_VAR_NETBOX_URL}}"
+        description: Network source of truth
+        icon: netbox.png
     - Vaultwarden:
         href: "{{HOMEPAGE_VAR_VAULTWARDEN_URL}}"
         description: Password vault

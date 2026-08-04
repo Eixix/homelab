@@ -85,7 +85,8 @@ for key in \
   SHLINK_DB_ROOT_PASSWORD \
   IMMICH_DB_PASSWORD \
   IMMICH_DB_USERNAME \
-  IMMICH_DB_DATABASE_NAME; do
+  IMMICH_DB_DATABASE_NAME \
+  NETBOX_DB_PASSWORD; do
   load_env_key "$key"
 done
 
@@ -127,6 +128,10 @@ docker exec -e PGPASSWORD="$IMMICH_DB_PASSWORD" immich_postgres \
   pg_dump --username="$IMMICH_DB_USERNAME" --format=custom "$IMMICH_DB_DATABASE_NAME" \
   > "$STAGING_DIR/database/immich.dump"
 
+docker exec -e PGPASSWORD="$NETBOX_DB_PASSWORD" netbox-db \
+  pg_dump --username=netbox --format=custom netbox \
+  > "$STAGING_DIR/database/netbox.dump"
+
 for dump in "$STAGING_DIR"/database/*; do
   [[ -s "$dump" ]] || {
     printf 'Database dump is empty: %s\n' "$dump" >&2
@@ -139,6 +144,8 @@ tar --create --gzip --file "$ARCHIVE" \
   --exclude='data/immich/database' \
   --exclude='data/paperless/db' \
   --exclude='data/shlink/db' \
+  --exclude='data/netbox/postgres' \
+  --exclude='data/netbox/redis' \
   --exclude='data/homeassistant/.ha_run.lock' \
   --exclude='data/homeassistant/home-assistant.log*' \
   --exclude='data/homeassistant/home-assistant_v2.db*' \
