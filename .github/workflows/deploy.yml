@@ -57,7 +57,7 @@ jobs:
       - name: Prepare deployment directory
         run: |
           set -euo pipefail
-          ssh "$DEPLOY_USER@$DEPLOY_HOST" "install -d -m 700 '$DEPLOY_PATH/secrets'; install -d '$DEPLOY_PATH/data' '$DEPLOY_PATH/backups' '$DEPLOY_PATH/data/monitoring' '$DEPLOY_PATH/data/monitoring/grafana' '$DEPLOY_PATH/data/monitoring/loki' '$DEPLOY_PATH/data/monitoring/alloy' '$DEPLOY_PATH/data/traefik' '$DEPLOY_PATH/data/traefik/logs' '$DEPLOY_PATH/data/netbox' '$DEPLOY_PATH/data/netbox/postgres' '$DEPLOY_PATH/data/netbox/redis' '$DEPLOY_PATH/data/netbox/media' '$DEPLOY_PATH/data/netbox/reports' '$DEPLOY_PATH/data/netbox/scripts'"
+          ssh "$DEPLOY_USER@$DEPLOY_HOST" "install -d -m 700 '$DEPLOY_PATH/secrets'; mkdir -p '$DEPLOY_PATH/data' '$DEPLOY_PATH/backups' '$DEPLOY_PATH/data/monitoring' '$DEPLOY_PATH/data/monitoring/grafana' '$DEPLOY_PATH/data/monitoring/loki' '$DEPLOY_PATH/data/monitoring/alloy' '$DEPLOY_PATH/data/traefik' '$DEPLOY_PATH/data/traefik/logs' '$DEPLOY_PATH/data/netbox' '$DEPLOY_PATH/data/netbox/postgres' '$DEPLOY_PATH/data/netbox/redis' '$DEPLOY_PATH/data/netbox/media' '$DEPLOY_PATH/data/netbox/reports' '$DEPLOY_PATH/data/netbox/scripts'"
 
       - name: Synchronize repository
         run: |
