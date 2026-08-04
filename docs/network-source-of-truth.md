@@ -19,6 +19,8 @@ NETBOX_API_TOKEN=...
 NETBOX_API_KEY=...
 ```
 
+`NETBOX_API_KEY` is the public identifier portion of a NetBox v2 token and must be between 1 and 12 characters. Keep the separate `NETBOX_API_TOKEN` value secret.
+
 Optional server metadata variables:
 
 ```text

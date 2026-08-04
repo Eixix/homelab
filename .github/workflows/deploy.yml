@@ -170,6 +170,11 @@ jobs:
               echo "ENV_FILE is incomplete; missing required keys:$missing_env" >&2
               exit 1
             fi
+            netbox_api_key="$(sed -n 's/^NETBOX_API_KEY=//p' .env | tail -n 1)"
+            if [ -z "$netbox_api_key" ] || [ "${#netbox_api_key}" -gt 12 ]; then
+              echo "NETBOX_API_KEY must contain between 1 and 12 characters." >&2
+              exit 1
+            fi
             if selected zahldeineschuldenan; then
               for key in ZAHLDEINESCHULDENAN_HOST PAYMENT_RECIPIENT_NAME PAYMENT_IBAN PAYMENT_BIC PAYPAL_ME_NAME; do
                 if ! grep -Eq "^${key}=.+" .env; then
