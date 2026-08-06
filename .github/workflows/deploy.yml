@@ -57,7 +57,7 @@ jobs:
       - name: Prepare deployment directory
         run: |
           set -euo pipefail
-          ssh "$DEPLOY_USER@$DEPLOY_HOST" "install -d -m 700 '$DEPLOY_PATH/secrets'; mkdir -p '$DEPLOY_PATH/data' '$DEPLOY_PATH/backups' '$DEPLOY_PATH/data/monitoring' '$DEPLOY_PATH/data/monitoring/grafana' '$DEPLOY_PATH/data/monitoring/loki' '$DEPLOY_PATH/data/monitoring/alloy' '$DEPLOY_PATH/data/traefik' '$DEPLOY_PATH/data/traefik/logs' '$DEPLOY_PATH/data/netbox' '$DEPLOY_PATH/data/netbox/postgres' '$DEPLOY_PATH/data/netbox/redis' '$DEPLOY_PATH/data/netbox/media' '$DEPLOY_PATH/data/netbox/reports' '$DEPLOY_PATH/data/netbox/scripts'"
+          ssh "$DEPLOY_USER@$DEPLOY_HOST" "install -d -m 700 '$DEPLOY_PATH/secrets'; mkdir -p '$DEPLOY_PATH/data' '$DEPLOY_PATH/backups' '$DEPLOY_PATH/data/monitoring' '$DEPLOY_PATH/data/monitoring/grafana' '$DEPLOY_PATH/data/monitoring/loki' '$DEPLOY_PATH/data/monitoring/alloy' '$DEPLOY_PATH/data/traefik' '$DEPLOY_PATH/data/traefik/logs'"
 
       - name: Synchronize repository
         run: |
@@ -151,14 +151,6 @@ jobs:
             ADGUARD_DNS_BIND_IP
             ADGUARD_WEB_PORT
             TRAEFIK_ACME_EMAIL
-            NETBOX_DB_PASSWORD
-            NETBOX_SECRET_KEY
-            NETBOX_SUPERUSER_NAME
-            NETBOX_SUPERUSER_EMAIL
-            NETBOX_SUPERUSER_PASSWORD
-            NETBOX_API_TOKEN
-            NETBOX_API_KEY
-            NETBOX_API_TOKEN_PEPPER
             "
             missing_env=""
             for key in $required_env; do
@@ -168,11 +160,6 @@ jobs:
             done
             if [ -n "$missing_env" ]; then
               echo "ENV_FILE is incomplete; missing required keys:$missing_env" >&2
-              exit 1
-            fi
-            netbox_api_key="$(sed -n 's/^NETBOX_API_KEY=//p' .env | tail -n 1)"
-            if [ -z "$netbox_api_key" ] || [ "${#netbox_api_key}" -gt 12 ]; then
-              echo "NETBOX_API_KEY must contain between 1 and 12 characters." >&2
               exit 1
             fi
             if selected zahldeineschuldenan; then

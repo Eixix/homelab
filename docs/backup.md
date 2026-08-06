@@ -1,6 +1,6 @@
 # Backups
 
-The production backup script is [`backup.sh`](../backup.sh). It backs up the repository-managed state under `/home/github/homelab`, including Compose files, `config/`, `data/`, `docs/`, `secrets/`, `.env`, and the backup script itself. It makes logical dumps of the Paperless, Shlink, Immich, and NetBox databases instead of archiving live database files.
+The production backup script is [`backup.sh`](../backup.sh). It backs up the repository-managed state under `/home/github/homelab`, including Compose files, `config/`, `data/`, `docs/`, `secrets/`, `.env`, and the backup script itself. It makes logical dumps of the Paperless, Shlink, and Immich databases instead of archiving live database files.
 
 `/storage_array` is intentionally not part of this script. Keep its existing S3 sync job as the separate backup path for Immich photos, media, libraries, and Paperless consumption.
 

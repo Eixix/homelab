@@ -8,7 +8,6 @@ include:
   - ./compose/core/cloudflare-ddns.yaml
   - ./compose/apps/homepage.yaml
   - ./compose/apps/docs.yaml
-  - ./compose/apps/netbox.yaml
   - ./compose/apps/vaultwarden.yaml
   - ./compose/apps/shlink.yaml
   - ./compose/apps/actual-budget.yaml
