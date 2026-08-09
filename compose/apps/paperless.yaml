@@ -25,7 +25,7 @@ services:
 
   paperless-web:
     container_name: paperless-web
-    image: ghcr.io/paperless-ngx/paperless-ngx:2.20
+    image: ghcr.io/paperless-ngx/paperless-ngx:3.0.5
     restart: unless-stopped
     depends_on:
       - paperless-db
@@ -41,6 +41,7 @@ services:
       PAPERLESS_DBPORT: 3306
       PAPERLESS_SECRET_KEY: ${PAPERLESS_SECRET_KEY}
       PAPERLESS_TIME_ZONE: ${TZ}
+      PAPERLESS_CONSUMER_DELETE_DUPLICATES: "true"
       PAPERLESS_ADMIN_USER: ${PAPERLESS_ADMIN_USER}
       PAPERLESS_ADMIN_PASSWORD: ${PAPERLESS_ADMIN_PASSWORD}
     healthcheck:
