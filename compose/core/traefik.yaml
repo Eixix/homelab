@@ -72,6 +72,7 @@ services:
           - ${SHLINK_HOST}
           - ${SHLINK_WEB_HOST}
           - ${ACTUAL_HOST}
+          - ${ACTUAL_ENABLEBANKING_HOST}
           - ${N8N_HOST}
           - ${GO2RTC_HOST}
           - ${KITCHENOWL_HOST}

@@ -17,4 +17,30 @@ services:
       - traefik.http.routers.actual-server.tls.certresolver=internalresolver
       - traefik.http.routers.actual-server.middlewares=internal-app@file
       - traefik.http.services.actual-server.loadbalancer.server.port=5006
+      # Actual derives the callback URL from the browser origin. This second UI
+      # route is therefore LAN-only, while the higher-priority OAuth callback is
+      # the sole path exposed publicly on the same hostname.
+      - traefik.http.routers.actual-enablebanking-setup.rule=Host(`${ACTUAL_ENABLEBANKING_HOST}`)
+      - traefik.http.routers.actual-enablebanking-setup.entrypoints=websecure
+      - traefik.http.routers.actual-enablebanking-setup.priority=100
+      - traefik.http.routers.actual-enablebanking-setup.tls=true
+      - traefik.http.routers.actual-enablebanking-setup.tls.certresolver=externalresolver
+      - traefik.http.routers.actual-enablebanking-setup.middlewares=internal-app@file
+      - traefik.http.routers.actual-enablebanking-setup.service=actual-server
+      - traefik.http.routers.actual-enablebanking-callback.rule=Host(`${ACTUAL_ENABLEBANKING_HOST}`) && Path(`/enablebanking/auth_callback`) && Method(`GET`)
+      - traefik.http.routers.actual-enablebanking-callback.entrypoints=websecure
+      - traefik.http.routers.actual-enablebanking-callback.priority=1000
+      - traefik.http.routers.actual-enablebanking-callback.tls=true
+      - traefik.http.routers.actual-enablebanking-callback.tls.certresolver=externalresolver
+      - traefik.http.routers.actual-enablebanking-callback.middlewares=actual-enablebanking-rate-limit,actual-enablebanking-headers
+      - traefik.http.routers.actual-enablebanking-callback.service=actual-server
+      - traefik.http.middlewares.actual-enablebanking-rate-limit.ratelimit.average=10
+      - traefik.http.middlewares.actual-enablebanking-rate-limit.ratelimit.period=1m
+      - traefik.http.middlewares.actual-enablebanking-rate-limit.ratelimit.burst=5
+      - traefik.http.middlewares.actual-enablebanking-headers.headers.stsSeconds=31536000
+      - traefik.http.middlewares.actual-enablebanking-headers.headers.contentTypeNosniff=true
+      - traefik.http.middlewares.actual-enablebanking-headers.headers.referrerPolicy=no-referrer
+      - traefik.http.middlewares.actual-enablebanking-headers.headers.customResponseHeaders.Cache-Control=no-store
+      - traefik.http.middlewares.actual-enablebanking-headers.headers.customResponseHeaders.Content-Security-Policy=default-src 'none'; script-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
+      - traefik.http.middlewares.actual-enablebanking-headers.headers.customResponseHeaders.Permissions-Policy=accelerometer=(), camera=(), geolocation=(), microphone=(), payment=(), usb=()
       - traefik.docker.network=internal_network
