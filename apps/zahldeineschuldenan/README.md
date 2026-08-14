@@ -9,7 +9,10 @@ https://zahldeineschuldenantobias.betz.coffee/12,50/
 The page offers PayPal.Me and an EPC/GiroCode QR for banking apps. Amounts must
 be positive, use at most two decimal places, and are limited to `999999.99` EUR.
 Every response carries an `X-Robots-Tag` that forbids indexing, and
-`robots.txt` disallows crawling the entire host.
+the page's robots metadata forbids indexing. Crawling is allowed so messenger
+preview bots can read the amount-specific Open Graph and Twitter Card metadata.
+Shared links show a playful 1200×630 preview image and include the requested
+amount in the preview title and description.
 
 For same-device mobile payments, the page displays the transfer details and
 offers buttons to copy either the IBAN or the complete transfer. The QR code is

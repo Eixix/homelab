@@ -6,6 +6,7 @@ services:
     restart: unless-stopped
     environment:
       TZ: ${TZ}
+      ZAHLDEINESCHULDENAN_HOST: ${ZAHLDEINESCHULDENAN_HOST}
       PAYMENT_RECIPIENT_NAME: ${PAYMENT_RECIPIENT_NAME}
       PAYMENT_IBAN: ${PAYMENT_IBAN}
       PAYMENT_BIC: ${PAYMENT_BIC:-}

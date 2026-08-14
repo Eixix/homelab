@@ -8,9 +8,14 @@ import { createEpcPayload } from './epc.js';
 
 const publicDir = fileURLToPath(new URL('../public/', import.meta.url));
 const index = await readFile(`${publicDir}/index.html`, 'utf8');
-const assets = new Map(await Promise.all(['style.css', 'app.js'].map(async (name) => [
+const assetTypes = {
+  'style.css': 'text/css; charset=utf-8',
+  'app.js': 'text/javascript; charset=utf-8',
+  'social-preview.jpg': 'image/jpeg',
+};
+const assets = new Map(await Promise.all(Object.entries(assetTypes).map(async ([name, type]) => [
   `/${name}`,
-  await readFile(`${publicDir}/${name}`),
+  { body: await readFile(`${publicDir}/${name}`), type },
 ])));
 
 const send = (res, status, type, body, cache = 'no-store') => {
@@ -45,16 +50,69 @@ const obfuscate = (value) => {
   };
 };
 
+const escapeHtml = (value) => String(value)
+  .replaceAll('&', '&amp;')
+  .replaceAll('"', '&quot;')
+  .replaceAll('<', '&lt;')
+  .replaceAll('>', '&gt;');
+
+const requestOrigin = (req) => {
+  if (process.env.ZAHLDEINESCHULDENAN_HOST) {
+    return `https://${process.env.ZAHLDEINESCHULDENAN_HOST}`;
+  }
+  const forwardedHost = req.headers['x-forwarded-host'];
+  const host = String(forwardedHost || req.headers.host || 'localhost:3000').split(',')[0].trim();
+  const forwardedProto = String(req.headers['x-forwarded-proto'] || 'http').split(',')[0].trim();
+  return `${forwardedProto === 'https' ? 'https' : 'http'}://${host}`;
+};
+
+const renderPage = (req, data, amount = null) => {
+  const origin = requestOrigin(req);
+  const canonicalUrl = amount
+    ? `${origin}/${encodeURIComponent(amount.canonical.replace('.', ','))}/`
+    : `${origin}/`;
+  const title = amount
+    ? `Tobias fordert ${amount.display} ein 💸`
+    : 'Zahl deine Schulden an Tobias! 💸';
+  const description = amount
+    ? `${amount.display} sind noch offen. Die freundliche Geldeintreibungsstelle akzeptiert PayPal und Überweisung.`
+    : 'Die freundliche Geldeintreibungsstelle – jetzt offenen Betrag eingeben und bequem bezahlen.';
+  const imageUrl = `${origin}/social-preview.jpg`;
+  const meta = [
+    ['property', 'og:type', 'website'],
+    ['property', 'og:locale', 'de_DE'],
+    ['property', 'og:site_name', 'Zahl deine Schulden an Tobias'],
+    ['property', 'og:title', title],
+    ['property', 'og:description', description],
+    ['property', 'og:url', canonicalUrl],
+    ['property', 'og:image', imageUrl],
+    ['property', 'og:image:secure_url', imageUrl],
+    ['property', 'og:image:type', 'image/jpeg'],
+    ['property', 'og:image:width', '1200'],
+    ['property', 'og:image:height', '630'],
+    ['property', 'og:image:alt', 'Eine freche Euro-Münze erinnert ans Schuldenbezahlen.'],
+    ['name', 'twitter:card', 'summary_large_image'],
+    ['name', 'twitter:title', title],
+    ['name', 'twitter:description', description],
+    ['name', 'twitter:image', imageUrl],
+  ].map(([attribute, name, content]) => `<meta ${attribute}="${name}" content="${escapeHtml(content)}">`).join('\n        ');
+
+  return index
+    .replace('__SOCIAL_META__', meta)
+    .replace('__PAYMENT_DATA__', data ? JSON.stringify(data).replaceAll('<', '\\u003c') : 'null');
+};
+
 createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost');
   if (url.pathname === '/healthz') return send(res, 200, 'text/plain', 'ok');
   if (url.pathname === '/robots.txt') {
-    return send(res, 200, 'text/plain; charset=utf-8', 'User-agent: *\nDisallow: /\n');
+    return send(res, 200, 'text/plain; charset=utf-8', 'User-agent: *\nAllow: /\n');
   }
 
   if (assets.has(url.pathname)) {
-    const type = url.pathname.endsWith('.css') ? 'text/css; charset=utf-8' : 'text/javascript; charset=utf-8';
-    return send(res, 200, type, assets.get(url.pathname), 'no-cache');
+    const asset = assets.get(url.pathname);
+    const cache = url.pathname === '/social-preview.jpg' ? 'public, max-age=86400' : 'no-cache';
+    return send(res, 200, asset.type, asset.body, cache);
   }
 
   if (url.pathname === '/' && url.searchParams.has('amount')) {
@@ -66,7 +124,7 @@ createServer(async (req, res) => {
 
   const match = url.pathname.match(/^\/([^/]+)\/?$/);
   const amount = parseAmount(match?.[1]);
-  if (!amount) return send(res, 404, 'text/html; charset=utf-8', index.replace('__PAYMENT_DATA__', 'null'));
+  if (!amount) return send(res, 404, 'text/html; charset=utf-8', renderPage(req, null));
 
   try {
     const payload = createEpcPayload({
@@ -88,7 +146,7 @@ createServer(async (req, res) => {
       },
       qr,
     };
-    return send(res, 200, 'text/html; charset=utf-8', index.replace('__PAYMENT_DATA__', JSON.stringify(data).replaceAll('<', '\\u003c')));
+    return send(res, 200, 'text/html; charset=utf-8', renderPage(req, data, amount));
   } catch (error) {
     console.error(error.message);
     return send(res, 500, 'text/plain; charset=utf-8', 'Payment configuration is incomplete.');
