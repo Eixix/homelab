@@ -32,10 +32,6 @@ function escapeHtml(value) { const node = document.createElement('span'); node.t
 async function load() {
   state = await api('/api/state');
   document.body.dataset.audience = state.audience;
-  $('#network').textContent = state.audience === 'bosch' ? 'WERKSNETZ-AUSGABE' : 'CHEFZENTRALE';
-  $('#restaurant').textContent = state.restaurant;
-  if (state.restaurantWebsite) $('#restaurant').href = state.restaurantWebsite;
-  else { $('#restaurant').removeAttribute('href'); $('#restaurant').removeAttribute('target'); }
   $('#closed').hidden = state.open;
   $('#closed-copy').textContent = state.open ? '' : ' Tobias muss die Ausgabe erst öffnen – oder 10:30 ist bereits durch.';
   $('#order-form').hidden = !state.open;

@@ -78,7 +78,10 @@ createServer(async (req, res) => {
     if (url.pathname === '/healthz') return json(res, 200, { ok: true });
     const ip = normalizeIp(req.headers['x-forwarded-for'] || req.socket.remoteAddress);
     const audience = classifyIp(ip, boschCidrs, ownerCidrs);
-    if (!audience) return json(res, 403, { error: 'This pizza counter is not available from your network.' });
+    if (!audience) {
+      res.writeHead(404, { 'Cache-Control': 'no-store', ...noIndex });
+      return res.end();
+    }
     if (url.pathname === '/robots.txt') {
       res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'public, max-age=86400', ...noIndex });
       return res.end('User-agent: *\nDisallow: /\n');
