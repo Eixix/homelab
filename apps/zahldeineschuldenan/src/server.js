@@ -5,11 +5,14 @@ import { fileURLToPath } from 'node:url';
 import QRCode from 'qrcode';
 import { parseAmount } from './amount.js';
 import { createEpcPayload } from './epc.js';
+import { DEFAULT_BOSCH_CIDRS, isBoschIp, normalizeIp, parseCidrs } from './network.js';
 
 const publicDir = fileURLToPath(new URL('../public/', import.meta.url));
 const index = await readFile(`${publicDir}/index.html`, 'utf8');
+const boschCidrs = parseCidrs(process.env.ZAHLDEINESCHULDENAN_BOSCH_CIDRS || DEFAULT_BOSCH_CIDRS);
 const assetTypes = {
   'style.css': 'text/css; charset=utf-8',
+  'classic.css': 'text/css; charset=utf-8',
   'app.js': 'text/javascript; charset=utf-8',
   'social-preview.jpg': 'image/jpeg',
 };
@@ -67,6 +70,8 @@ const requestOrigin = (req) => {
 };
 
 const renderPage = (req, data, amount = null) => {
+  const clientIp = normalizeIp(req.headers['x-forwarded-for'] || req.socket.remoteAddress);
+  const stylesheet = isBoschIp(clientIp, boschCidrs) ? 'style.css' : 'classic.css';
   const origin = requestOrigin(req);
   const canonicalUrl = amount
     ? `${origin}/${encodeURIComponent(amount.canonical.replace('.', ','))}/`
@@ -99,6 +104,7 @@ const renderPage = (req, data, amount = null) => {
 
   return index
     .replace('__SOCIAL_META__', meta)
+    .replace('__STYLESHEET__', stylesheet)
     .replace('__PAYMENT_DATA__', data ? JSON.stringify(data).replaceAll('<', '\\u003c') : 'null');
 };
 

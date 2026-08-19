@@ -1,0 +1,32 @@
+@import url("/style.css?v=4");
+
+/* The original public look. The Rexroth palette remains isolated in style.css. */
+:root {
+  color-scheme: dark;
+  --bg:#07120f;
+  --panel:#0d1d18;
+  --panel-2:#10241d;
+  --text:#edf6ef;
+  --muted:#8ea49a;
+  --lime:#cfff46;
+  --cyan:#cfff46;
+  --red:#cfff46;
+  --purple:#b9a7ff;
+  --light-blue:#cfff46;
+  --line:rgba(207,255,70,.25);
+  --neutral:rgba(237,246,239,.12);
+}
+body::after { opacity:.09; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='156'%3E%3Cg fill='none' stroke='%23cfff46'%3E%3Cpath d='M45 0 90 26v52l-45 26L0 78V26zM135 0l45 26v52l-45 26-45-26V26zM90 78l45 26v52l-45 26-45-26v-52z'/%3E%3C/g%3E%3C/svg%3E"); }
+.card { background:rgba(13,29,24,.96); border-top-color:rgba(207,255,70,.65); box-shadow:0 35px 90px rgba(0,0,0,.5),10px 12px 0 rgba(207,255,70,.12); }
+.eyebrow::before { background:var(--lime); box-shadow:0 0 0 5px rgba(207,255,70,.08),0 0 16px var(--lime); }
+.amount { text-shadow:4px 4px 0 rgba(207,255,70,.12); }
+.paypal,.copy { color:#101709; background:var(--lime); border-color:var(--lime); }
+.bank-panel { border-color:rgba(207,255,70,.4); background:rgba(255,255,255,.02); }
+.amount-field input { border-color:rgba(207,255,70,.35); background:#091713; }
+.amount-field input:focus { box-shadow:0 0 0 4px rgba(207,255,70,.09); }
+.amount-field input[aria-invalid="true"],.form-error { color:#f7764a; border-color:#f7764a; }
+.currency-badge { color:#101709; background:var(--lime); }
+.money-rain span { color:#101709; background:var(--lime); border-color:#101709; box-shadow:0 0 25px rgba(207,255,70,.18); }
+.money-rain span:nth-child(3n) { color:#101709; background:#b9a7ff; }
+.money-rain span:nth-child(4n) { color:#101709; background:#f7764a; }
+.money-rain span:nth-child(5n) { color:#101709; background:var(--lime); }
