@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="robots" content="noindex,nofollow,noarchive">
+    <title>Pizza-Schichtleitung</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/admin.css">
+    <style>[hidden]{display:none!important}.admin-card article{grid-template-columns:1fr auto auto;gap:10px}.admin-card article ul{grid-column:1/-1}.admin-card .danger,.delete-order{color:var(--red);background:#fff}</style>
+</head>
+<body>
+    <main class="admin-page">
+        <section class="admin-card">
+            <p class="kicker">SCHICHTLEITUNG // NUR TOBIAS</p>
+            <h1>Pizza-Zentrale</h1>
+            <form id="login">
+                <label for="password">Admin-Passwort</label>
+                <input id="password" type="password" autocomplete="current-password" required autofocus>
+                <button>Anmelden</button>
+                <p id="login-error" role="alert"></p>
+            </form>
+            <div id="dashboard" hidden>
+                <p id="day-state"></p>
+                <div class="admin-actions">
+                    <button data-action="open">Für heute öffnen</button>
+                    <button data-action="close">Früher schließen</button>
+                    <button data-action="retry-summary">Zusammenfassung erneut senden</button>
+                    <button class="danger" data-action="clear-orders">Alle Bestellungen löschen</button>
+                </div>
+                <h2>Heutige Bestellungen</h2>
+                <div id="orders"></div>
+            </div>
+        </section>
+    </main>
+    <script src="/admin.js" defer></script>
+</body>
+</html>

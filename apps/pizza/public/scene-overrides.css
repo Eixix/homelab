@@ -1,0 +1,54 @@
+[hidden] {
+    display: none !important;
+}
+
+body.box-intro-mode main {
+    width: 100vw !important;
+    max-width: none !important;
+    padding: 0 !important;
+}
+
+body.box-intro-mode .box-stage {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    width: 100vw;
+    height: 100vh;
+    min-height: 0;
+    padding: 0;
+}
+
+body.box-intro-mode .box-stage canvas {
+    width: 100vw;
+    height: 100vh;
+}
+
+.box-countdown {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    clip: rect(0 0 0 0) !important;
+    clip-path: inset(50%) !important;
+    white-space: nowrap !important;
+}
+
+.order-note,
+.box-stage.packed .order-note {
+    transform: translate(-50%, -50%) !important;
+    left: var(--receipt-left, 50%) !important;
+    top: var(--receipt-top, 50%) !important;
+    width: var(--receipt-width, 210px) !important;
+    max-width: none !important;
+    padding: 12px !important;
+    box-shadow: 0 3px 7px rgba(23, 23, 23, .3) !important;
+    border-width: 2px !important;
+}
+
+.order-note h2 { font-size: 1.25rem !important; }
+.order-note li { font-size: .72rem; }
+.order-note > strong { font-size: 1.1rem !important; }
+.order-note > p { font-size: .65rem !important; }
+.order-note .box-actions { grid-template-columns: 1fr !important; }
+.order-note .box-actions button,.order-note .pay { padding: 7px !important; font-size: .6rem !important; }

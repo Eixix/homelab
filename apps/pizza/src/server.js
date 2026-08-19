@@ -7,11 +7,13 @@ import { loadCatalog } from './catalog.js';
 import { Store } from './store.js';
 
 const publicDir = fileURLToPath(new URL('../public/', import.meta.url));
-const files = new Map(await Promise.all(['index.html', 'app.js', 'style.css'].map(async name => [
-  `/${name === 'index.html' ? '' : name}`,
+const files = new Map(await Promise.all(['index.html', 'admin.html', 'app.js', 'box-scene.js', 'admin.js', 'style.css', 'box.css', 'scene-overrides.css', 'admin.css'].map(async name => [
+  name === 'index.html' ? '/' : name === 'admin.html' ? '/admin' : `/${name}`,
   await readFile(`${publicDir}/${name}`),
 ])));
-const types = { '/': 'text/html; charset=utf-8', '/app.js': 'text/javascript; charset=utf-8', '/style.css': 'text/css; charset=utf-8' };
+files.set('/three.module.js', await readFile(new URL('../node_modules/three/build/three.module.js', import.meta.url)));
+files.set('/three.core.js', await readFile(new URL('../node_modules/three/build/three.core.js', import.meta.url)));
+const types = { '/': 'text/html; charset=utf-8', '/admin': 'text/html; charset=utf-8', '/app.js': 'text/javascript; charset=utf-8', '/box-scene.js': 'text/javascript; charset=utf-8', '/three.module.js': 'text/javascript; charset=utf-8', '/three.core.js': 'text/javascript; charset=utf-8', '/admin.js': 'text/javascript; charset=utf-8', '/style.css': 'text/css; charset=utf-8', '/box.css': 'text/css; charset=utf-8', '/scene-overrides.css': 'text/css; charset=utf-8', '/admin.css': 'text/css; charset=utf-8' };
 const store = new Store(process.env.PIZZA_DATA_PATH || '/data/orders.json');
 await store.load();
 let catalog = await loadCatalog(process.env.PIZZA_CATALOG_PATH || '/config/menu.txt');
@@ -20,7 +22,6 @@ const ownerCidrs = parseCidrs(process.env.PIZZA_OWNER_CIDRS);
 const adminPassword = process.env.PIZZA_ADMIN_PASSWORD || '';
 const cookieSecret = process.env.PIZZA_COOKIE_SECRET || '';
 const paymentBase = String(process.env.PIZZA_PAYMENT_URL || '').replace(/\/$/, '');
-const previewMode = process.env.PIZZA_PREVIEW_MODE === 'true';
 const deadlineHour = 10;
 const deadlineMinute = 30;
 
@@ -28,7 +29,8 @@ const berlinParts = date => Object.fromEntries(new Intl.DateTimeFormat('en-CA', 
   timeZone: 'Europe/Berlin', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
 }).formatToParts(date).filter(part => part.type !== 'literal').map(part => [part.type, part.value]));
 const today = () => { const p = berlinParts(new Date()); return `${p.year}-${p.month}-${p.day}`; };
-const afterDeadline = () => { if (previewMode) return false; const p = berlinParts(new Date()); return Number(p.hour) > deadlineHour || (Number(p.hour) === deadlineHour && Number(p.minute) >= deadlineMinute); };
+const afterDeadline = () => { const p = berlinParts(new Date()); return Number(p.hour) > deadlineHour || (Number(p.hour) === deadlineHour && Number(p.minute) >= deadlineMinute); };
+const orderingOpen = day => day.unlocked && !day.closed && !afterDeadline();
 const safeEqual = (a, b) => { const left = Buffer.from(String(a)); const right = Buffer.from(String(b)); return left.length === right.length && timingSafeEqual(left, right); };
 const noIndex = { 'X-Robots-Tag': 'noindex, nofollow, noarchive, nosnippet' };
 const json = (res, status, value, headers = {}) => { res.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', ...noIndex, ...headers }); res.end(JSON.stringify(value)); };
@@ -82,6 +84,10 @@ createServer(async (req, res) => {
       res.writeHead(404, { 'Cache-Control': 'no-store', ...noIndex });
       return res.end();
     }
+    if ((url.pathname === '/admin' || url.pathname.startsWith('/api/admin/')) && audience !== 'owner') {
+      res.writeHead(404, { 'Cache-Control': 'no-store', ...noIndex });
+      return res.end();
+    }
     if (url.pathname === '/robots.txt') {
       res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'public, max-age=86400', ...noIndex });
       return res.end('User-agent: *\nDisallow: /\n');
@@ -89,7 +95,7 @@ createServer(async (req, res) => {
     const admin = isAdmin(req);
     if (url.pathname === '/api/state' && req.method === 'GET') {
       await closeAndSummarize(); const date = today(); const day = store.day(date);
-      return json(res, 200, { date, audience, admin, restaurant: catalog.restaurant, restaurantWebsite: catalog.website, deadline: '10:30', open: day.unlocked && !day.closed && !afterDeadline(), items: catalog.items, orders: admin ? Object.values(day.orders).map(order => ({ ...order, tokenHash: undefined, totalCents: total(order) })) : undefined, summarySent: admin ? day.summarySent : undefined, summaryError: admin ? day.summaryError : undefined, paymentBase });
+      return json(res, 200, { date, audience, admin, restaurant: catalog.restaurant, restaurantWebsite: catalog.website, deadline: '10:30', unlocked: day.unlocked, open: orderingOpen(day), items: catalog.items, orders: admin ? Object.values(day.orders).map(order => ({ ...order, tokenHash: undefined, totalCents: total(order) })) : undefined, summarySent: admin ? day.summarySent : undefined, summaryError: admin ? day.summaryError : undefined, paymentBase });
     }
     if (url.pathname === '/api/admin/login' && req.method === 'POST') {
       const input = await body(req); if (!adminPassword || !cookieSecret || !safeEqual(input.password, adminPassword)) return json(res, 401, { error: 'Falsches Passwort.' });
@@ -101,12 +107,22 @@ createServer(async (req, res) => {
       if (input.action === 'open' && !afterDeadline()) { day.unlocked = true; day.closed = false; }
       else if (input.action === 'close') day.closed = true;
       else if (input.action === 'retry-summary') { day.summarySent = false; await notify('daily_summary', today()); day.summarySent = true; day.summaryError = null; }
+      else if (input.action === 'clear-orders') { const deleted = Object.keys(day.orders).length; day.orders = {}; await store.save(); return json(res, 200, { ok: true, deleted }); }
       else return json(res, 400, { error: 'Aktion ist jetzt nicht möglich.' });
       await store.save(); return json(res, 200, { ok: true });
     }
+    const adminOrderMatch = url.pathname.match(/^\/api\/admin\/orders\/([^/]+)$/);
+    if (adminOrderMatch && req.method === 'DELETE') {
+      if (!admin) return json(res, 401, { error: 'Admin-Anmeldung erforderlich.' });
+      const day = store.day(today()); const order = day.orders[adminOrderMatch[1]];
+      if (!order) return json(res, 404, { error: 'Bestellung nicht gefunden.' });
+      delete day.orders[order.id]; await store.save();
+      try { await notify('order_cancelled', today(), order); } catch (error) { console.error('Admin deletion notification failed:', error.message); }
+      return json(res, 200, { ok: true });
+    }
     if (url.pathname === '/api/orders' && req.method === 'POST') {
       await closeAndSummarize(); const input = await body(req); const date = today(); const day = store.day(date);
-      if (!day.unlocked || day.closed || afterDeadline()) return json(res, 409, { error: 'Bestellungen sind geschlossen.' });
+      if (!orderingOpen(day)) return json(res, 409, { error: 'Bestellungen sind geschlossen.' });
       const name = String(input.name || '').trim().slice(0, 80); if (!name) return json(res, 400, { error: 'Bitte Namen angeben.' });
       const selected = Array.isArray(input.items) ? input.items : [];
       const items = selected.map(line => { const item = catalog.items.find(value => value.id === line.itemId); const quantity = Number(line.quantity); return item && Number.isInteger(quantity) && quantity > 0 && quantity <= 20 ? { itemId: item.id, name: item.name, priceCents: item.priceCents, quantity } : null; }).filter(Boolean);
@@ -122,7 +138,7 @@ createServer(async (req, res) => {
     if (orderMatch && req.method === 'DELETE') {
       const input = await body(req); const day = store.day(today()); const order = day.orders[orderMatch[1]];
       if (!order || !safeEqual(order.tokenHash, hashToken(input.token || ''))) return json(res, 404, { error: 'Bestellung nicht gefunden.' });
-      if (day.closed || afterDeadline()) return json(res, 409, { error: 'Bestellungen sind geschlossen.' });
+      if (!orderingOpen(day)) return json(res, 409, { error: 'Bestellungen sind geschlossen.' });
       delete day.orders[order.id]; await store.save();
       try { await notify('order_cancelled', today(), order); } catch (error) { console.error('Cancellation notification failed:', error.message); }
       return json(res, 200, { ok: true });

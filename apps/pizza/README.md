@@ -14,7 +14,6 @@ PIZZA_HOST=pizza.betz.coffee
 PIZZA_OWNER_CIDRS=203.0.113.4/32
 PIZZA_ADMIN_PASSWORD=replace-with-a-long-unique-password
 PIZZA_COOKIE_SECRET=replace-with-at-least-32-random-bytes
-PIZZA_PREVIEW_MODE=false
 PIZZA_N8N_WEBHOOK_URL=http://n8n:5678/webhook/replace-me
 PIZZA_N8N_WEBHOOK_SECRET=replace-with-a-shared-bearer-secret
 ```
@@ -52,11 +51,6 @@ The app retries a failed daily summary every 30 seconds until n8n accepts it.
 The admin dashboard can also request a retry. n8n should use the event and date
 as an idempotency key before sending Telegram, since a network timeout can occur
 after n8n accepted the request.
-
-For an after-hours local UI preview only, `PIZZA_PREVIEW_MODE=true` disables the
-10:30 deadline. To preview the complete flow through the normal homelab stack, set
-`PIZZA_PREVIEW_MODE=true` only in the local `.env`, then run the normal root
-Compose project. Production must leave it `false`.
 
 ## Network source
 

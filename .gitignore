@@ -8,6 +8,7 @@ config/homepage/logs/
 docs/.docusaurus/
 docs/build/
 docs/node_modules/
+apps/pizza/node_modules/
 
 # runtime data
 data/
