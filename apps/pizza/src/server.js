@@ -84,10 +84,6 @@ createServer(async (req, res) => {
       res.writeHead(404, { 'Cache-Control': 'no-store', ...noIndex });
       return res.end();
     }
-    if ((url.pathname === '/admin' || url.pathname.startsWith('/api/admin/')) && audience !== 'owner') {
-      res.writeHead(404, { 'Cache-Control': 'no-store', ...noIndex });
-      return res.end();
-    }
     if (url.pathname === '/robots.txt') {
       res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'public, max-age=86400', ...noIndex });
       return res.end('User-agent: *\nDisallow: /\n');
