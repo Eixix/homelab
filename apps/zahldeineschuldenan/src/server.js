@@ -127,11 +127,14 @@ createServer(async (req, res) => {
   if (!amount) return send(res, 404, 'text/html; charset=utf-8', renderPage(req, null));
 
   try {
+    const requestedReference = String(url.searchParams.get('reference') || '').trim();
+    const reference = requestedReference.slice(0, 140) || 'Schulden begleichen';
     const payload = createEpcPayload({
       name: process.env.PAYMENT_RECIPIENT_NAME,
       iban: process.env.PAYMENT_IBAN,
       bic: process.env.PAYMENT_BIC,
       amount,
+      reference,
     });
     const qr = await QRCode.toDataURL(payload, { errorCorrectionLevel: 'M', margin: 2, width: 420 });
     const iban = process.env.PAYMENT_IBAN.replace(/\s/g, '').toUpperCase();
@@ -142,7 +145,7 @@ createServer(async (req, res) => {
         recipient: process.env.PAYMENT_RECIPIENT_NAME,
         ibanObfuscated: obfuscate(iban),
         bic: (process.env.PAYMENT_BIC || '').replace(/\s/g, '').toUpperCase(),
-        reference: 'Schulden begleichen',
+        reference,
       },
       qr,
     };

@@ -1,0 +1,7 @@
+# Pipe-delimited UTF-8. Replace this mounted file locally; do not add private data.
+@restaurant=Beispiel Pizzeria
+@website=https://example.com/
+
+Pizza | Margherita | 8,50 | Tomate, Mozzarella
+Pizza | Salami | 9,50 | Tomate, Mozzarella, Salami
+Getränke | Wasser | 2,50 | 0,5 l

@@ -1,0 +1,44 @@
+services:
+  pizza:
+    container_name: pizza
+    build:
+      context: ../../apps/pizza
+    restart: unless-stopped
+    environment:
+      TZ: Europe/Berlin
+      PIZZA_DATA_PATH: /data/orders.json
+      PIZZA_CATALOG_PATH: /config/menu.txt
+      PIZZA_HOST: ${PIZZA_HOST}
+      PIZZA_OWNER_CIDRS: ${PIZZA_OWNER_CIDRS}
+      PIZZA_BOSCH_CIDRS: ${PIZZA_BOSCH_CIDRS:-139.15.0.0/16 185.112.176.0/22 192.48.31.0/24 193.108.217.0/24 193.141.57.0/24 194.39.218.0/23 2a03:cc00::/32}
+      PIZZA_ADMIN_PASSWORD: ${PIZZA_ADMIN_PASSWORD}
+      PIZZA_COOKIE_SECRET: ${PIZZA_COOKIE_SECRET}
+      PIZZA_PREVIEW_MODE: ${PIZZA_PREVIEW_MODE:-false}
+      PIZZA_N8N_WEBHOOK_URL: ${PIZZA_N8N_WEBHOOK_URL:-}
+      PIZZA_N8N_WEBHOOK_SECRET: ${PIZZA_N8N_WEBHOOK_SECRET:-}
+      PIZZA_PAYMENT_URL: https://${ZAHLDEINESCHULDENAN_HOST}
+    volumes:
+      - ../../data/pizza:/data
+      - ../../apps/pizza/config/menu.json:/config/menu.txt:ro
+    networks:
+      - external_network
+      - internal_network
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:3000/healthz').then(r => { if (!r.ok) process.exit(1) }).catch(() => process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.pizza.rule=Host(`${PIZZA_HOST:?Set PIZZA_HOST in .env}`)
+      - traefik.http.routers.pizza.entrypoints=websecure
+      - traefik.http.routers.pizza.tls=true
+      - traefik.http.routers.pizza.tls.certresolver=externalresolver
+      - traefik.http.routers.pizza.middlewares=security-headers@file
+      - traefik.http.services.pizza.loadbalancer.server.port=3000
+      - traefik.docker.network=external_network

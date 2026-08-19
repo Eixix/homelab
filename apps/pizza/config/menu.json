@@ -1,0 +1,531 @@
+{
+  "restaurant": "Va Bene",
+  "website": "",
+  "items": [
+    {
+      "id": "item-1",
+      "category": "Antipasti",
+      "name": "Pizzabrot (Ø 32cm)",
+      "description": "mit Tomatensauce",
+      "priceCents": 690
+    },
+    {
+      "id": "item-2",
+      "category": "Antipasti",
+      "name": "Pizza Pane Bianca (Ø 32cm)",
+      "description": "mit Tomatenstücken, Knoblauch und Rosmarin",
+      "priceCents": 840
+    },
+    {
+      "id": "item-3",
+      "category": "Antipasti",
+      "name": "Antipasti-Teller (scharf)",
+      "description": "mit Tomaten, Mozzarella, italienischem Rohschinken, Zucchini, Oliven, scharfer Peperoni-Salami, Basilikum, italienischem Hirtenkäse und frischem Panini",
+      "priceCents": 1540
+    },
+    {
+      "id": "item-4",
+      "category": "Antipasti",
+      "name": "Caprese",
+      "description": "mit Tomaten, Basilikum, italienischem Büffelmozzarella und frischem Panini",
+      "priceCents": 1340
+    },
+    {
+      "id": "item-5",
+      "category": "Antipasti",
+      "name": "Vitello Tonnato",
+      "description": "Kalbfleischstreifen mit Thunfischsauce, Oliven, Kapern und frischem Panini",
+      "priceCents": 1540
+    },
+    {
+      "id": "item-6",
+      "category": "Antipasti",
+      "name": "Bruschetta alla Casa",
+      "description": "Pizzabrot mit Bruschetta-Tomaten und Rucola",
+      "priceCents": 890
+    },
+    {
+      "id": "item-7",
+      "category": "Salate",
+      "name": "Insalata Verde",
+      "description": "grüner Salat",
+      "priceCents": 590
+    },
+    {
+      "id": "item-8",
+      "category": "Salate",
+      "name": "Insalata Mista",
+      "description": "gemischter Salat",
+      "priceCents": 690
+    },
+    {
+      "id": "item-9",
+      "category": "Salate",
+      "name": "Insalata Caesare",
+      "description": "mit grünem Salat, Kirschtomaten, italienischem Hirtenkäse, Croutons, Caesar-Dressing und einer Zutat nach Wahl, dazu frischer Panini",
+      "priceCents": 1640
+    },
+    {
+      "id": "item-10",
+      "category": "Salate",
+      "name": "Insalata Pomodoro",
+      "description": "mit Tomaten, Basilikum und Zwiebeln, dazu frischer Panini",
+      "priceCents": 840
+    },
+    {
+      "id": "item-11",
+      "category": "Salate",
+      "name": "Insalata Nizza",
+      "description": "mit italienischem Mozzarella, Hinterschinken, Oliven, Paprika, Mais, gekochtem Ei und Prinzessbohnen, dazu frischer Panini",
+      "priceCents": 1540
+    },
+    {
+      "id": "item-12",
+      "category": "Salate",
+      "name": "Insalata Tonno",
+      "description": "gemischter Salat mit Thunfisch, Oregano und Zwiebeln, dazu frischer Panini",
+      "priceCents": 1540
+    },
+    {
+      "id": "item-13",
+      "category": "Salate",
+      "name": "Insalata Vabene",
+      "description": "mit grünem Salat, Gurken, Bohnen, Oliven, Radieschen, Kirschtomaten, Mais, Mozzarella, Avocado, Artischocken, Petersilie und einer Zutat nach Wahl, dazu frisches Panini",
+      "priceCents": 1690
+    },
+    {
+      "id": "item-14",
+      "category": "Salate",
+      "name": "Insalate Vabene Veggie",
+      "description": "mit grünem Salat, Gurken, Bohnen, Oliven, Radieschen, Kirschtomaten, Mais, Mozzarella, Avocado, Artischocken und Petersilie, dazu frisches Panini",
+      "priceCents": 1540
+    },
+    {
+      "id": "item-15",
+      "category": "Pizza",
+      "name": "Pizza Margherita",
+      "description": "Aktionspreis (statt 10,40 €)",
+      "priceCents": 936
+    },
+    {
+      "id": "item-16",
+      "category": "Pizza",
+      "name": "Pizza Funghi",
+      "description": "mit frischen Egerlingen",
+      "priceCents": 1140
+    },
+    {
+      "id": "item-17",
+      "category": "Pizza",
+      "name": "Pizza Prosciutto",
+      "description": "mit Hinterschinken",
+      "priceCents": 1240
+    },
+    {
+      "id": "item-18",
+      "category": "Pizza",
+      "name": "Pizza Salami",
+      "description": "mit herzhafter Salami",
+      "priceCents": 1240
+    },
+    {
+      "id": "item-19",
+      "category": "Pizza",
+      "name": "Pizza Capperi e Sardelle",
+      "description": "mit Kapern, Sardellen und Oregano",
+      "priceCents": 1340
+    },
+    {
+      "id": "item-20",
+      "category": "Pizza",
+      "name": "Pizza Mafia (scharf)",
+      "description": "mit scharfer, italienischer Salami, Jalapenos und roten Zwiebeln",
+      "priceCents": 1540
+    },
+    {
+      "id": "item-21",
+      "category": "Pizza",
+      "name": "Pizza Hawaii",
+      "description": "mit Hinterschinken und Ananas",
+      "priceCents": 1290
+    },
+    {
+      "id": "item-22",
+      "category": "Pizza",
+      "name": "Pizza Prosciutto e Funghi",
+      "description": "mit frischen Egerlingen und Hinterschinken",
+      "priceCents": 1340
+    },
+    {
+      "id": "item-23",
+      "category": "Pizza",
+      "name": "Pizza Tonno",
+      "description": "mit Thunfisch, Zwiebeln und Oliven",
+      "priceCents": 1440
+    },
+    {
+      "id": "item-24",
+      "category": "Pizza",
+      "name": "Pizza Vegetariana",
+      "description": "mit verschiedenem Gemüse und Knoblauch",
+      "priceCents": 1340
+    },
+    {
+      "id": "item-25",
+      "category": "Pizza",
+      "name": "Pizza Parma e Rucola",
+      "description": "mit italienischem Hirtenkäse, Rucola, Knoblauch und italienischem Roh-Schinken",
+      "priceCents": 1590
+    },
+    {
+      "id": "item-26",
+      "category": "Pizza",
+      "name": "Pizza Speziale",
+      "description": "mit frischen Egerlingen, Salami und Hinterschinken",
+      "priceCents": 1440
+    },
+    {
+      "id": "item-27",
+      "category": "Pizza",
+      "name": "Pizza Frutti di Mare",
+      "description": "mit Meeresfrüchten und Knoblauch",
+      "priceCents": 1540
+    },
+    {
+      "id": "item-28",
+      "category": "Pizza",
+      "name": "Pizza Quattro Formaggi",
+      "description": "mit vier Käsesorten",
+      "priceCents": 1540
+    },
+    {
+      "id": "item-29",
+      "category": "Pizza",
+      "name": "Pizza Rucola",
+      "description": "mit italienischem Hartkäse, Rucola und Knoblauch",
+      "priceCents": 1440
+    },
+    {
+      "id": "item-30",
+      "category": "Pizza",
+      "name": "Pizza Capricciosa",
+      "description": "mit frischen Egerlingen, Hinterschinken, Artischocken und Oliven",
+      "priceCents": 1490
+    },
+    {
+      "id": "item-31",
+      "category": "Pizza",
+      "name": "Pizza Pancetta Bianca",
+      "description": "mit italienischem Speck, Mozzarella, Kirschtomaten, rohen Zwiebeln und Creme fraiche",
+      "priceCents": 1540
+    },
+    {
+      "id": "item-32",
+      "category": "Pizza",
+      "name": "Pizza 4 Stagioni",
+      "description": "mit Salami, Hinterschinken, frischen Egerlingen, Artischocken und Peperoni",
+      "priceCents": 1440
+    },
+    {
+      "id": "item-33",
+      "category": "Pizza",
+      "name": "Pizza Melanzana",
+      "description": "mit gegrillten Auberginen, frischem Basilikum und italienischem Hartkäse",
+      "priceCents": 1340
+    },
+    {
+      "id": "item-34",
+      "category": "Pizza",
+      "name": "Pizza Noci Gorgonzola",
+      "description": "mit Creme fraiche, Walnüssen, Gorgonzola und roten Zwiebeln",
+      "priceCents": 1440
+    },
+    {
+      "id": "item-35",
+      "category": "Pizza",
+      "name": "Pizza Caprese",
+      "description": "mit frischen Tomaten, italienischer Mozzarellakugel und frischem Basilikum",
+      "priceCents": 1440
+    },
+    {
+      "id": "item-36",
+      "category": "Pizza",
+      "name": "Pizza Gamberetti",
+      "description": "mit Creme fraiche, Shrimps, Bruschetta-Tomaten und Knoblauch",
+      "priceCents": 1490
+    },
+    {
+      "id": "item-37",
+      "category": "Pizza",
+      "name": "Pizza Scampi e Funghi",
+      "description": "mit Mozzarella, Garnelen, frischen Egerlingen, Rucola und Knoblauch",
+      "priceCents": 1640
+    },
+    {
+      "id": "item-38",
+      "category": "Pizza",
+      "name": "Pizza Genovese",
+      "description": "mit Mozzarella, Zwiebeln, Oliven, frischem Basilikum, Oregano und Tomaten",
+      "priceCents": 1340
+    },
+    {
+      "id": "item-39",
+      "category": "Pizza",
+      "name": "Pizza Diavolo (scharf)",
+      "description": "mit Mozzarella, scharfer, italienischer Salami und Oregano",
+      "priceCents": 1390
+    },
+    {
+      "id": "item-40",
+      "category": "Pizza",
+      "name": "Pizza BBQ Tacchino",
+      "description": "mit Mozzarella, Barbecue Sauce, Putenbruststreifen, rote Zwiebeln, Jalapenos, Knoblauch und Petersilie",
+      "priceCents": 1640
+    },
+    {
+      "id": "item-41",
+      "category": "Vegane Pizza",
+      "name": "Vegane Pizza Margherita",
+      "description": "",
+      "priceCents": 1140
+    },
+    {
+      "id": "item-42",
+      "category": "Vegane Pizza",
+      "name": "Vegane Pizza Funghi",
+      "description": "mit frischen Egerlingen",
+      "priceCents": 1240
+    },
+    {
+      "id": "item-43",
+      "category": "Vegane Pizza",
+      "name": "Vegane Pizza Rucola",
+      "description": "mit frischem Rucola und Knoblauch",
+      "priceCents": 1340
+    },
+    {
+      "id": "item-44",
+      "category": "Vegane Pizza",
+      "name": "Vegane Pizza Spinaci",
+      "description": "mit Spinat und Knoblauch",
+      "priceCents": 1240
+    },
+    {
+      "id": "item-45",
+      "category": "Vegane Pizza",
+      "name": "Vegane Pizza Funghi Rucola Bianca",
+      "description": "mit frischen Egerlingen, Rucola und Knoblauch",
+      "priceCents": 1390
+    },
+    {
+      "id": "item-46",
+      "category": "Vegane Pizza",
+      "name": "Vegane Pizza Ananas",
+      "description": "mit Ananas",
+      "priceCents": 1240
+    },
+    {
+      "id": "item-47",
+      "category": "Vegane Pizza",
+      "name": "Vegane Pizza Napoli",
+      "description": "mit Kirschtomaten, frischem Basilikum und Olivenöl",
+      "priceCents": 1240
+    },
+    {
+      "id": "item-48",
+      "category": "Vegane Pizza",
+      "name": "Vegane Pizza Melanzana",
+      "description": "mit gegrillten Auberginen, Kirschtomaten und frischem Basilikum",
+      "priceCents": 1340
+    },
+    {
+      "id": "item-49",
+      "category": "Vegane Pizza",
+      "name": "Vegane Pizza Genovese",
+      "description": "mit Zwiebeln, Oliven, frischem Basilikum und Oregano",
+      "priceCents": 1340
+    },
+    {
+      "id": "item-50",
+      "category": "Vegane Pizza",
+      "name": "Vegane Pizza Broccoli",
+      "description": "mit Broccoli",
+      "priceCents": 1240
+    },
+    {
+      "id": "item-51",
+      "category": "Vegane Pizza",
+      "name": "Vegane Pizza Vegetariana",
+      "description": "mit verschiedenem Gemüse und Knoblauch",
+      "priceCents": 1390
+    },
+    {
+      "id": "item-52",
+      "category": "Vegane Pizza",
+      "name": "Vegane Pizza Pomodori Secchi / Bianca",
+      "description": "mit Knoblauchöl, getrocknete Tomaten, Kichererbsen, Artischocken und frischem Basilikum",
+      "priceCents": 1340
+    },
+    {
+      "id": "item-53",
+      "category": "Vegane Pizza",
+      "name": "Vegane Pizza Tofu",
+      "description": "mit getrocknete Tomaten, Kichererbsen, geräucherter Tofu, frischem Basilikum und Knoblauchöl",
+      "priceCents": 1440
+    },
+    {
+      "id": "item-54",
+      "category": "Party-Pizza",
+      "name": "Party-Pizza Margherita",
+      "description": "",
+      "priceCents": 2900
+    },
+    {
+      "id": "item-55",
+      "category": "Party-Pizza",
+      "name": "Party-Pizza Uno",
+      "description": "mit vier Zutaten nach Wahl",
+      "priceCents": 3540
+    },
+    {
+      "id": "item-56",
+      "category": "Party-Pizza",
+      "name": "Party-Pizza Due",
+      "description": "mit acht Zutaten nach Wahl",
+      "priceCents": 4140
+    },
+    {
+      "id": "item-57",
+      "category": "Panino",
+      "name": "Panino Caprese",
+      "description": "mit Tomatenpesto, frischem Basilikum, Tomaten, Mozzarella und Olivenöl",
+      "priceCents": 940
+    },
+    {
+      "id": "item-58",
+      "category": "Panino",
+      "name": "Panino Calabrese (scharf)",
+      "description": "mit Tomatenpesto, italienischem Büffel-Mozzarella, scharfer italienischer Salami, frischem Basilikum und Olivenöl",
+      "priceCents": 1240
+    },
+    {
+      "id": "item-59",
+      "category": "Panino",
+      "name": "Panino Nizza",
+      "description": "mit Thunfischsauce, roten Zwiebeln, Ei, Rucola, Paprika und Thunfisch",
+      "priceCents": 1140
+    },
+    {
+      "id": "item-60",
+      "category": "Pasta",
+      "name": "Spaghetti Pomodoro e Basilico",
+      "description": "mit Basilikum, Knoblauch, Zwiebeln, italienischem Hartkäse und hausgemachter Sugo di Pomodori",
+      "priceCents": 1290
+    },
+    {
+      "id": "item-61",
+      "category": "Pasta",
+      "name": "Gnocchi Scampi (leicht scharf)",
+      "description": "mit Knoblauch, Piccante, Garnelen und Aurorasauce",
+      "priceCents": 1590
+    },
+    {
+      "id": "item-62",
+      "category": "Pasta",
+      "name": "Penne Arrabbiata (leicht scharf)",
+      "description": "mit Knoblauch, Piccante und hausgemachter Sugo di Pomodori",
+      "priceCents": 1290
+    },
+    {
+      "id": "item-63",
+      "category": "Pasta",
+      "name": "Spaghetti Carbonara",
+      "description": "mit Speck, Ei, italienischem Hartkäse und Sahnesauce",
+      "priceCents": 1390
+    },
+    {
+      "id": "item-64",
+      "category": "Pasta",
+      "name": "Tortelloni Prosciutto",
+      "description": "mit Zwiebeln, Hinterschinken, italienischem Hartkäse und Sahnesauce",
+      "priceCents": 1490
+    },
+    {
+      "id": "item-65",
+      "category": "Pasta",
+      "name": "Strozzapreti Tacchino e Paprica",
+      "description": "mit Zwiebeln, Paprika, Rosmarin, Putenfleisch und Aurorasauce",
+      "priceCents": 1740
+    },
+    {
+      "id": "item-66",
+      "category": "Pasta",
+      "name": "Spaghetti Ragu di Manzo",
+      "description": "mit feinem Rinderfleischragout, italienischem Hartkäse und Bolognesesauce",
+      "priceCents": 1440
+    },
+    {
+      "id": "item-67",
+      "category": "Pasta",
+      "name": "Penne 4 Formaggi",
+      "description": "mit vier verschiedenen Käsesorten und Sahnesauce",
+      "priceCents": 1440
+    },
+    {
+      "id": "item-68",
+      "category": "Pasta",
+      "name": "Gnocchi Caprese",
+      "description": "mit Knoblauch, Kirschtomaten, Mozzarella, frischem Basilikum und hausgemachter Sugo di Pomodori",
+      "priceCents": 1340
+    },
+    {
+      "id": "item-69",
+      "category": "Pasta",
+      "name": "Tagliatelle Salsiccia e Spinaci (leicht scharf)",
+      "description": "mit scharfer Peperoni-Salami, Spinat, Zwiebeln, italienischem Hartkäse und Sahnesauce",
+      "priceCents": 1540
+    },
+    {
+      "id": "item-70",
+      "category": "Desserts",
+      "name": "Panna Cotta",
+      "description": "mit Erdbeersauce",
+      "priceCents": 590
+    },
+    {
+      "id": "item-71",
+      "category": "Desserts",
+      "name": "Tartufo Nero",
+      "description": "Eisspezialität aus Schokoladen-Eis, Haselnuss-Eis, hausgemachter Erdbeersauce und Kakao",
+      "priceCents": 690
+    },
+    {
+      "id": "item-72",
+      "category": "Desserts",
+      "name": "Tiramisu",
+      "description": "mit abwechselnden Schichten von Löffelbiskuits und einer Creme aus Mascarpone",
+      "priceCents": 690
+    },
+    {
+      "id": "item-73",
+      "category": "Desserts",
+      "name": "Eisbecher Cookies",
+      "description": "regionales Milcheis im 160ml Becher",
+      "priceCents": 370
+    },
+    {
+      "id": "item-74",
+      "category": "Desserts",
+      "name": "Eisbecher Joghurt-Maracuja",
+      "description": "regionales Milcheis im 160ml Becher",
+      "priceCents": 370
+    },
+    {
+      "id": "item-75",
+      "category": "Desserts",
+      "name": "Eisbecher Pistazie",
+      "description": "regionales Milcheis im 160ml Becher",
+      "priceCents": 390
+    }
+  ]
+}

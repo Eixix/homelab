@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="de">
+
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <meta name="robots" content="noindex,nofollow,noarchive">
+        <title>Pizza-Fernschreiber</title>
+        <link rel="stylesheet" href="/style.css">
+    </head>
+
+    <body>
+        <header><span class="lamp"></span><b>PIZZA-FERNSCHREIBER</b><span id="network"></span></header>
+        <main>
+            <section class="hero">
+                <p class="kicker">ESS6 & friends</p>
+                <h1>Pizza. Um<br><em>Zwölf.</em></h1>
+                <div class="clock">BESTELLSCHLUSS <strong>10:30</strong> EUROPE/BERLIN</div>
+            </section>
+
+            <section class="notice" id="closed" hidden><b>DER OFEN IST AUS.</b><span id="closed-copy"></span></section>
+            <form id="order-form" hidden>
+                <div class="form-head"><label for="name">WER BIST DU?</label><input id="name" maxlength="80"
+                        autocomplete="name" required placeholder="Vorname reicht"></div>
+                <div id="menu"></div>
+                <div class="ticket">
+                    <span>DEIN DECKEL</span><strong id="total">0,00 €</strong>
+                    <button type="submit">BESTELLUNG ABSCHIESSEN →</button>
+                    <button class="danger" id="cancel" type="button" hidden>Meine Bestellung stornieren</button>
+                    <p id="status" role="status"></p>
+                </div>
+            </form>
+
+            <section class="success" id="success" hidden>
+                <p class="kicker">BON GEDRUCKT ✓</p>
+                <h2>Ist notiert.</h2>
+                <p>Du kannst deine Bestellung in diesem Browser bis 10:30 ändern oder stornieren.</p>
+                <a id="pay" class="pay" hidden>Jetzt Schulden begleichen →</a>
+            </section>
+
+            <details class="admin" id="admin">
+                <summary>Schichtleitung</summary>
+                <form id="login"><input id="password" type="password" autocomplete="current-password"
+                        placeholder="Admin-Passwort"><button>Anmelden</button></form>
+                <div id="dashboard" hidden>
+                    <div class="admin-actions"><button data-action="open">Für heute öffnen</button><button
+                            data-action="close">Früher schließen</button><button
+                            data-action="retry-summary">Zusammenfassung erneut senden</button></div>
+                    <h2>Heutige Bestellungen</h2>
+                    <div id="orders"></div>
+                </div>
+            </details>
+        </main>
+        <footer><span>KEINE KRÜMEL IM TASTATURBEREICH</span><a id="restaurant" rel="noopener noreferrer"
+                target="_blank"></a></footer>
+        <script src="/app.js" defer></script>
+    </body>
+
+</html>

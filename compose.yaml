@@ -21,6 +21,7 @@ include:
   - ./compose/apps/monitoring.yaml
   - ./compose/apps/evcc.yaml
   - ./compose/apps/zahldeineschuldenan.yaml
+  - ./compose/apps/pizza.yaml
 
 networks:
   external_network:
