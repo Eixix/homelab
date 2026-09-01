@@ -10,6 +10,12 @@ x-anubis-base: &anubis-base
     - ALL
   networks:
     - external_network
+  healthcheck:
+    test: [CMD, /ko-app/anubis, --healthcheck]
+    interval: 30s
+    timeout: 5s
+    retries: 3
+    start_period: 5s
   deploy:
     resources:
       limits:
@@ -23,6 +29,8 @@ services:
     environment:
       BIND: :8080
       TARGET: http://pizza:3000
+      REDIRECT_DOMAINS: ${PIZZA_HOST:?Set PIZZA_HOST in .env}
+      USE_REMOTE_ADDRESS: "true"
     labels:
       - traefik.enable=true
       - traefik.docker.network=external_network
@@ -40,6 +48,8 @@ services:
     environment:
       BIND: :8080
       TARGET: http://zahldeineschuldenan:3000
+      REDIRECT_DOMAINS: ${ZAHLDEINESCHULDENAN_HOST:?Set ZAHLDEINESCHULDENAN_HOST in .env}
+      USE_REMOTE_ADDRESS: "true"
     labels:
       - traefik.enable=true
       - traefik.docker.network=external_network
@@ -57,6 +67,8 @@ services:
     environment:
       BIND: :8080
       TARGET: http://flag-quiz:3000
+      REDIRECT_DOMAINS: flags.betz.coffee
+      USE_REMOTE_ADDRESS: "true"
     labels:
       - traefik.enable=true
       - traefik.docker.network=external_network
@@ -74,6 +86,8 @@ services:
     environment:
       BIND: :8080
       TARGET: http://mtg-hand-oracle:80
+      REDIRECT_DOMAINS: mtg-oracle.betz.coffee
+      USE_REMOTE_ADDRESS: "true"
     labels:
       - traefik.enable=true
       - traefik.docker.network=external_network
