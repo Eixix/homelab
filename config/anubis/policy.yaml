@@ -1,0 +1,17 @@
+bots:
+  # Reject known abusive and AI/LLM crawlers before the generic challenge.
+  - import: (data)/bots/_deny-pathological.yaml
+  - import: (data)/bots/aggressive-brazilian-scrapers.yaml
+  - import: (data)/meta/ai-block-aggressive.yaml
+
+  # Keep infrastructure discovery and the opt-out robots file reachable.
+  - import: (data)/common/keep-internet-working.yaml
+
+  # Require every other client, including curl and unknown fetchers, to prove
+  # that it can execute the browser challenge. A valid Anubis cookie passes.
+  - name: strict-unknown-client
+    expression: "true"
+    action: CHALLENGE
+    challenge:
+      algorithm: fast
+      difficulty: 2
