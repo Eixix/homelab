@@ -1,0 +1,90 @@
+x-anubis-base: &anubis-base
+  image: ghcr.io/techarohq/anubis:v1.27.0@sha256:8828275668b7bc675679f100970f9714f731388fbbf66ae94de8aca952e3fc4a
+  restart: unless-stopped
+  read_only: true
+  tmpfs:
+    - /tmp
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+  networks:
+    - external_network
+  volumes:
+    - ../../config/anubis/policy.yaml:/etc/anubis/policy.yaml:ro
+  healthcheck:
+    test: [CMD, /ko-app/anubis, --healthcheck]
+    interval: 30s
+    timeout: 5s
+    retries: 3
+    start_period: 5s
+  deploy:
+    resources:
+      limits:
+        cpus: "0.50"
+        memory: 128M
+
+services:
+  anubis-zahldeineschuldenan:
+    <<: *anubis-base
+    container_name: anubis-zahldeineschuldenan
+    environment:
+      BIND: :8080
+      TARGET: http://zahldeineschuldenan:3000
+      REDIRECT_DOMAINS: ${ZAHLDEINESCHULDENAN_HOST:?Set ZAHLDEINESCHULDENAN_HOST in .env}
+      USE_REMOTE_ADDRESS: "true"
+      POLICY_FNAME: /etc/anubis/policy.yaml
+      SERVE_ROBOTS_TXT: "true"
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=external_network
+      - traefik.http.routers.anubis-zahldeineschuldenan.rule=Host(`${ZAHLDEINESCHULDENAN_HOST:?Set ZAHLDEINESCHULDENAN_HOST in .env}`)
+      - traefik.http.routers.anubis-zahldeineschuldenan.priority=1000
+      - traefik.http.routers.anubis-zahldeineschuldenan.entrypoints=websecure
+      - traefik.http.routers.anubis-zahldeineschuldenan.tls=true
+      - traefik.http.routers.anubis-zahldeineschuldenan.tls.certresolver=externalresolver
+      - traefik.http.routers.anubis-zahldeineschuldenan.middlewares=security-headers@file,anubis-noindex
+      - traefik.http.services.anubis-zahldeineschuldenan.loadbalancer.server.port=8080
+      - traefik.http.middlewares.anubis-noindex.headers.customresponseheaders.X-Robots-Tag=noindex, nofollow, noarchive, nosnippet, noimageindex
+
+  anubis-flag-quiz:
+    <<: *anubis-base
+    container_name: anubis-flag-quiz
+    environment:
+      BIND: :8080
+      TARGET: http://flag-quiz:3000
+      REDIRECT_DOMAINS: flags.betz.coffee
+      USE_REMOTE_ADDRESS: "true"
+      POLICY_FNAME: /etc/anubis/policy.yaml
+      SERVE_ROBOTS_TXT: "true"
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=external_network
+      - traefik.http.routers.anubis-flag-quiz.rule=Host(`flags.betz.coffee`)
+      - traefik.http.routers.anubis-flag-quiz.priority=1000
+      - traefik.http.routers.anubis-flag-quiz.entrypoints=websecure
+      - traefik.http.routers.anubis-flag-quiz.tls=true
+      - traefik.http.routers.anubis-flag-quiz.tls.certresolver=externalresolver
+      - traefik.http.routers.anubis-flag-quiz.middlewares=security-headers@file,anubis-noindex@docker
+      - traefik.http.services.anubis-flag-quiz.loadbalancer.server.port=8080
+
+  anubis-mtg-hand-oracle:
+    <<: *anubis-base
+    container_name: anubis-mtg-hand-oracle
+    environment:
+      BIND: :8080
+      TARGET: http://mtg-hand-oracle:80
+      REDIRECT_DOMAINS: mtg-oracle.betz.coffee
+      USE_REMOTE_ADDRESS: "true"
+      POLICY_FNAME: /etc/anubis/policy.yaml
+      SERVE_ROBOTS_TXT: "true"
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=external_network
+      - traefik.http.routers.anubis-mtg-hand-oracle.rule=Host(`mtg-oracle.betz.coffee`)
+      - traefik.http.routers.anubis-mtg-hand-oracle.priority=1000
+      - traefik.http.routers.anubis-mtg-hand-oracle.entrypoints=websecure
+      - traefik.http.routers.anubis-mtg-hand-oracle.tls=true
+      - traefik.http.routers.anubis-mtg-hand-oracle.tls.certresolver=externalresolver
+      - traefik.http.routers.anubis-mtg-hand-oracle.middlewares=security-headers@file,anubis-noindex@docker
+      - traefik.http.services.anubis-mtg-hand-oracle.loadbalancer.server.port=8080
