@@ -1,4 +1,5 @@
 import { createPizzaBoxScene } from './box-scene.js';
+import { recommendOrder } from './recommendations.js';
 
 const euro = cents => new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(cents / 100);
 let saved = JSON.parse(localStorage.getItem('pizza-order') || 'null');
@@ -13,14 +14,55 @@ async function api(path, options = {}) {
   return value;
 }
 
+const pizzaExtras = new Map();
 function quantities() {
-  return [...document.querySelectorAll('[data-item]')].map(input => ({ itemId: input.dataset.item, quantity: Number(input.value) })).filter(line => line.quantity > 0);
+  return [...document.querySelectorAll('[data-item]')].flatMap(input => {
+    const itemId = input.dataset.item;
+    const quantity = Number(input.value);
+    if (!(quantity > 0)) return [];
+    const item = state.items.find(item => item.id === itemId);
+    return item.extras?.length
+      ? Array.from({ length: quantity }, (_, index) => ({ itemId, quantity: 1, extraIds: pizzaExtras.get(itemId)?.[index] || [] }))
+      : [{ itemId, quantity }];
+  });
+}
+function linePrice(line) {
+  if (Number.isInteger(line.priceCents)) return line.priceCents;
+  const item = state.items.find(item => item.id === line.itemId);
+  return (item?.priceCents || 0) + (line.extraIds || []).reduce((sum, id) => sum + (item?.extras?.find(extra => extra.id === id)?.priceCents || 0), 0);
+}
+function renderExtras(input) {
+  const item = state.items.find(item => item.id === input.dataset.item);
+  if (!item.extras?.length) return;
+  const container = input.closest('.menu-item').querySelector('.pizza-extras');
+  const count = Math.max(0, Math.min(20, Math.floor(Number(input.value) || 0)));
+  input.value = count;
+  const selections = pizzaExtras.get(item.id) || [];
+  while (selections.length < count) selections.push([]);
+  selections.length = count;
+  pizzaExtras.set(item.id, selections);
+  container.innerHTML = selections.map((ids, index) => `<details class="extra-options"><summary>Pizza ${index + 1}: Extras wählen <b data-extra-price></b></summary><p>Aufpreise pro Pizza. Jede Auswahl gilt nur für diese Pizza.</p><div class="extra-grid">${item.extras.map(extra => `<label><input type="checkbox" data-extra="${escapeHtml(extra.id)}" data-pizza-index="${index}" ${ids.includes(extra.id) ? 'checked' : ''}><span>${escapeHtml(extra.name)}</span><b>+${euro(extra.priceCents)}</b></label>`).join('')}</div></details>`).join('');
+  container.querySelectorAll('[data-extra]').forEach(checkbox => checkbox.addEventListener('change', () => {
+    const index = Number(checkbox.dataset.pizzaIndex);
+    const selected = new Set(selections[index]);
+    if (checkbox.checked) selected.add(checkbox.dataset.extra); else selected.delete(checkbox.dataset.extra);
+    selections[index] = [...selected];
+    updateTotal();
+  }));
 }
 function updateTotal() {
-  const cents = quantities().reduce((sum, line) => sum + line.quantity * state.items.find(item => item.id === line.itemId).priceCents, 0);
+  const lines = quantities();
+  const cents = lines.reduce((sum, line) => sum + line.quantity * linePrice(line), 0);
   $('#total').textContent = euro(cents);
+  document.querySelectorAll('[data-item]').forEach(input => {
+    const item = state.items.find(item => item.id === input.dataset.item);
+    input.closest('.menu-item').querySelectorAll('[data-extra-price]').forEach((label, index) => {
+      label.textContent = euro(linePrice({ itemId: item.id, extraIds: pizzaExtras.get(item.id)?.[index] || [] }));
+    });
+  });
 }
 function syncItem(input) {
+  renderExtras(input);
   const row = input.closest('.menu-item');
   const selected = Number(input.value) > 0;
   row.classList.toggle('selected', selected);
@@ -30,10 +72,15 @@ function syncItem(input) {
 function escapeHtml(value) { const node = document.createElement('span'); node.textContent = value; return node.innerHTML; }
 
 const wait = milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds));
-function packedTotal(record) { return record.totalCents ?? record.items.reduce((sum, line) => { const item = state.items.find(candidate => candidate.id === line.itemId); return sum + (item?.priceCents || 0) * line.quantity; }, 0); }
+function packedTotal(record) { return record.totalCents ?? record.items.reduce((sum, line) => sum + linePrice(line) * line.quantity, 0); }
 function fillOrderNote(record) {
   $('#box-name').textContent = record.name;
-  $('#box-summary').innerHTML = record.items.map(line => { const item = state.items.find(candidate => candidate.id === line.itemId); return `<li><span>${line.quantity}× ${escapeHtml(item?.name || line.itemId)}</span><b>${euro((item?.priceCents || 0) * line.quantity)}</b></li>`; }).join('');
+  $('#box-summary').innerHTML = record.items.map(line => {
+    const item = state.items.find(candidate => candidate.id === line.itemId);
+    const extras = (line.extraIds || []).map(id => item?.extras?.find(extra => extra.id === id)?.name || id);
+    const name = line.name || (item?.name || line.itemId) + (extras.length ? ` + ${extras.join(', ')}` : '');
+    return `<li><span>${line.quantity}× ${escapeHtml(name)}</span><b>${euro(linePrice(line) * line.quantity)}</b></li>`;
+  }).join('');
   $('#box-total').textContent = euro(packedTotal(record));
   $('#box-actions').hidden = !state.open;
   $('#box-deadline').textContent = state.open ? 'Bis 10:30 kannst du die Box noch einmal öffnen.' : 'Bestellschluss. Diese Box bleibt jetzt zu.';
@@ -74,19 +121,18 @@ async function load() {
     saved = null;
   }
   boxScene = createPizzaBoxScene($('#box-canvas'), state.items);
-  document.body.dataset.audience = state.audience;
   startCountdown();
   $('#closed').hidden = state.open;
   $('#closed-copy').textContent = state.open ? '' : ' Tobias muss die Ausgabe erst öffnen – oder 10:30 ist bereits durch.';
   $('#order-form').hidden = !state.open;
   const groups = state.items.reduce((result, item) => { (result[item.category] ||= []).push(item); return result; }, {});
-  $('#menu').innerHTML = Object.entries(groups).map(([category, items], groupIndex) => `<details class="menu-group"><summary><span>0${groupIndex + 1}</span><b>${escapeHtml(category)}</b><small>${items.length} Positionen</small><i aria-hidden="true">＋</i></summary><div class="menu-items">${items.map(item => `<div class="menu-item"><label class="pick"><input data-select type="checkbox"><i aria-hidden="true">✓</i><span><b>${escapeHtml(item.name)}</b><small>${escapeHtml(item.description)}</small></span></label><strong>${euro(item.priceCents)}</strong><div class="stepper" hidden><button type="button" data-step="-1" aria-label="Eine Portion weniger">−</button><input data-item="${item.id}" type="number" inputmode="numeric" min="0" max="20" value="0" aria-label="Anzahl ${escapeHtml(item.name)}"><button type="button" data-step="1" aria-label="Eine Portion mehr">+</button></div></div>`).join('')}</div></details>`).join('');
+  $('#menu').innerHTML = Object.entries(groups).map(([category, items], groupIndex) => `<details class="menu-group"><summary><span>0${groupIndex + 1}</span><b>${escapeHtml(category)}</b><small>${items.length} Positionen</small><i aria-hidden="true">＋</i></summary><div class="menu-items">${items.map(item => `<div class="menu-item"><label class="pick"><input data-select type="checkbox"><i aria-hidden="true">✓</i><span><b>${escapeHtml(item.name)}</b><small>${escapeHtml(item.description)}</small></span></label><strong>${euro(item.priceCents)}</strong><div class="stepper" hidden><button type="button" data-step="-1" aria-label="Eine Portion weniger">−</button><input data-item="${item.id}" type="number" inputmode="numeric" min="0" max="20" value="0" aria-label="Anzahl ${escapeHtml(item.name)}"><button type="button" data-step="1" aria-label="Eine Portion mehr">+</button></div><div class="pizza-extras"></div></div>`).join('')}</div></details>`).join('');
   document.querySelectorAll('[data-select]').forEach(checkbox => checkbox.addEventListener('change', () => { const input = checkbox.closest('.menu-item').querySelector('[data-item]'); input.value = checkbox.checked ? Math.max(1, Number(input.value)) : 0; syncItem(input); updateTotal(); }));
   document.querySelectorAll('[data-step]').forEach(button => button.addEventListener('click', () => { const input = button.closest('.stepper').querySelector('[data-item]'); input.value = Math.max(0, Math.min(20, Number(input.value) + Number(button.dataset.step))); syncItem(input); updateTotal(); }));
   document.querySelectorAll('[data-item]').forEach(input => input.addEventListener('input', () => { syncItem(input); updateTotal(); }));
   if (saved?.date === state.date) {
     $('#name').value = saved.name || '';
-    saved.items?.forEach(line => { const input = document.querySelector(`[data-item="${CSS.escape(line.itemId)}"]`); if (input) { input.value = line.quantity; syncItem(input); } });
+    restoreSelection(saved.items || []);
     $('#cancel').hidden = false;
   }
   updateTotal();
@@ -94,12 +140,32 @@ async function load() {
   else if (state.open) await playBoxIntro();
 }
 
+function restoreSelection(lines) {
+  const counts = new Map();
+  pizzaExtras.clear();
+  for (const line of lines) {
+    counts.set(line.itemId, (counts.get(line.itemId) || 0) + line.quantity);
+    const selections = pizzaExtras.get(line.itemId) || [];
+    for (let index = 0; index < line.quantity; index++) selections.push([...(line.extraIds || [])]);
+    pizzaExtras.set(line.itemId, selections);
+  }
+  document.querySelectorAll('[data-item]').forEach(input => {
+    input.value = counts.get(input.dataset.item) || 0;
+    syncItem(input);
+  });
+  updateTotal();
+}
+
 $('#order-form').addEventListener('submit', async event => {
   event.preventDefault(); $('#status').textContent = '';
-  const payload = { id: saved?.date === state.date ? saved.id : undefined, token: saved?.date === state.date ? saved.token : undefined, name: $('#name').value, items: quantities() };
+  const items = recommendOrder(quantities(), state.items, state.recommendations || [], alternative => confirm(
+    `${alternative.name} kostet ${euro(alternative.priceCents)} statt ${euro(alternative.originalPriceCents)} für ${alternative.originalName}.\n\nLaut Speisekarte gleicher Belag – du sparst ${euro(alternative.savingCents)} pro Pizza.\n\nAlle ausgewählten Pizzen dieser Kombination durch die günstigere Variante ersetzen?`
+  ));
+  restoreSelection(items);
+  const payload = { id: saved?.date === state.date ? saved.id : undefined, token: saved?.date === state.date ? saved.token : undefined, name: $('#name').value, items };
   try {
     const result = await api('/api/orders', { method: 'POST', body: JSON.stringify(payload) });
-    const record = { ...payload, id: result.id, token: result.token || payload.token, totalCents: result.totalCents, date: state.date }; localStorage.setItem('pizza-order', JSON.stringify(record)); saved = record;
+    const record = { ...payload, items: result.items, id: result.id, token: result.token || payload.token, totalCents: result.totalCents, date: state.date }; localStorage.setItem('pizza-order', JSON.stringify(record)); saved = record;
     $('#cancel').hidden = false; await showPackedOrder(record); if (result.warning) $('#status').textContent = result.warning;
   } catch (error) { $('#status').textContent = error.message; }
 });

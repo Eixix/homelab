@@ -38,6 +38,42 @@ Category | Item name | 12,50 | Optional description
 stable and is therefore significant: changing the menu while a daily session is
 open is unsupported.
 
+## Pizza extras
+
+`menu.json` defines priced options in `extraGroups`; regular pizza items reference
+the `pizza` group using `extraGroup`. The 52 options (including wholemeal dough)
+were copied from the supplied Lieferando Margherita options in `extras.txt`.
+Surcharges are used as listed, without an additional promotional discount.
+Vegan and party pizzas have no extras configured because their option prices
+have not been supplied.
+
+Each selected pizza has its own extras selector and total. Requests send
+`extraIds` on each order line; the server validates them against that item's
+options and snapshots their names and prices. `priceCents` includes extras per
+pizza. Saved orders, admin listings and webhook item names include the toppings;
+daily summaries group only matching configurations and prices. Existing orders
+without extras remain supported. Keep the menu fixed during an open session.
+
+The text conversion script replaces the catalog; preserve `extraGroups` and item
+`extraGroup` references if regenerating the menu with that script.
+
+### Cheaper equivalent pizzas
+
+`config/pizza-equivalences.json` maps explicit menu recipes to Margherita extras.
+Before submission, a confirmation popup offers cheaper mapped combinations and
+shows the saving per pizza. Accepting replaces matching configurations in the
+form and submitted order; declining keeps the original. Additional toppings and
+dough choices are preserved. Combinations requiring double portions of the same
+extra, ambiguous ingredients, or more than 20 Margheritas are not suggested.
+
+Prices are recalculated from the loaded catalog. Recipe names/descriptions guard
+against reusing a connection after a menu change; review these mappings when
+updating recipes. These are menu-based ingredient matches, not restaurant
+confirmation of identical topping portions. The mapping ships in the image,
+so changes require rebuilding the pizza service.
+
+The same visual theme is used for all allowed networks, including Bosch.
+
 ## n8n contract
 
 The app POSTs JSON with an `event` field. Values are `order_created`,

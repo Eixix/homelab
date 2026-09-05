@@ -105,182 +105,208 @@
       "category": "Pizza",
       "name": "Pizza Margherita",
       "description": "Aktionspreis (statt 10,40 €)",
-      "priceCents": 936
+      "priceCents": 936,
+      "extraGroup": "pizza"
     },
     {
       "id": "item-16",
       "category": "Pizza",
       "name": "Pizza Funghi",
       "description": "mit frischen Egerlingen",
-      "priceCents": 1140
+      "priceCents": 1140,
+      "extraGroup": "pizza"
     },
     {
       "id": "item-17",
       "category": "Pizza",
       "name": "Pizza Prosciutto",
       "description": "mit Hinterschinken",
-      "priceCents": 1240
+      "priceCents": 1240,
+      "extraGroup": "pizza"
     },
     {
       "id": "item-18",
       "category": "Pizza",
       "name": "Pizza Salami",
       "description": "mit herzhafter Salami",
-      "priceCents": 1240
+      "priceCents": 1240,
+      "extraGroup": "pizza"
     },
     {
       "id": "item-19",
       "category": "Pizza",
       "name": "Pizza Capperi e Sardelle",
       "description": "mit Kapern, Sardellen und Oregano",
-      "priceCents": 1340
+      "priceCents": 1340,
+      "extraGroup": "pizza"
     },
     {
       "id": "item-20",
       "category": "Pizza",
       "name": "Pizza Mafia (scharf)",
       "description": "mit scharfer, italienischer Salami, Jalapenos und roten Zwiebeln",
-      "priceCents": 1540
+      "priceCents": 1540,
+      "extraGroup": "pizza"
     },
     {
       "id": "item-21",
       "category": "Pizza",
       "name": "Pizza Hawaii",
       "description": "mit Hinterschinken und Ananas",
-      "priceCents": 1290
+      "priceCents": 1290,
+      "extraGroup": "pizza"
     },
     {
       "id": "item-22",
       "category": "Pizza",
       "name": "Pizza Prosciutto e Funghi",
       "description": "mit frischen Egerlingen und Hinterschinken",
-      "priceCents": 1340
+      "priceCents": 1340,
+      "extraGroup": "pizza"
     },
     {
       "id": "item-23",
       "category": "Pizza",
       "name": "Pizza Tonno",
       "description": "mit Thunfisch, Zwiebeln und Oliven",
-      "priceCents": 1440
+      "priceCents": 1440,
+      "extraGroup": "pizza"
     },
     {
       "id": "item-24",
       "category": "Pizza",
       "name": "Pizza Vegetariana",
       "description": "mit verschiedenem Gemüse und Knoblauch",
-      "priceCents": 1340
+      "priceCents": 1340,
+      "extraGroup": "pizza"
     },
     {
       "id": "item-25",
       "category": "Pizza",
       "name": "Pizza Parma e Rucola",
       "description": "mit italienischem Hirtenkäse, Rucola, Knoblauch und italienischem Roh-Schinken",
-      "priceCents": 1590
+      "priceCents": 1590,
+      "extraGroup": "pizza"
     },
     {
       "id": "item-26",
       "category": "Pizza",
       "name": "Pizza Speziale",
       "description": "mit frischen Egerlingen, Salami und Hinterschinken",
-      "priceCents": 1440
+      "priceCents": 1440,
+      "extraGroup": "pizza"
     },
     {
       "id": "item-27",
       "category": "Pizza",
       "name": "Pizza Frutti di Mare",
       "description": "mit Meeresfrüchten und Knoblauch",
-      "priceCents": 1540
+      "priceCents": 1540,
+      "extraGroup": "pizza"
     },
     {
       "id": "item-28",
       "category": "Pizza",
       "name": "Pizza Quattro Formaggi",
       "description": "mit vier Käsesorten",
-      "priceCents": 1540
+      "priceCents": 1540,
+      "extraGroup": "pizza"
     },
     {
       "id": "item-29",
       "category": "Pizza",
       "name": "Pizza Rucola",
       "description": "mit italienischem Hartkäse, Rucola und Knoblauch",
-      "priceCents": 1440
+      "priceCents": 1440,
+      "extraGroup": "pizza"
     },
     {
       "id": "item-30",
       "category": "Pizza",
       "name": "Pizza Capricciosa",
       "description": "mit frischen Egerlingen, Hinterschinken, Artischocken und Oliven",
-      "priceCents": 1490
+      "priceCents": 1490,
+      "extraGroup": "pizza"
     },
     {
       "id": "item-31",
       "category": "Pizza",
       "name": "Pizza Pancetta Bianca",
       "description": "mit italienischem Speck, Mozzarella, Kirschtomaten, rohen Zwiebeln und Creme fraiche",
-      "priceCents": 1540
+      "priceCents": 1540,
+      "extraGroup": "pizza"
     },
     {
       "id": "item-32",
       "category": "Pizza",
       "name": "Pizza 4 Stagioni",
       "description": "mit Salami, Hinterschinken, frischen Egerlingen, Artischocken und Peperoni",
-      "priceCents": 1440
+      "priceCents": 1440,
+      "extraGroup": "pizza"
     },
     {
       "id": "item-33",
       "category": "Pizza",
       "name": "Pizza Melanzana",
       "description": "mit gegrillten Auberginen, frischem Basilikum und italienischem Hartkäse",
-      "priceCents": 1340
+      "priceCents": 1340,
+      "extraGroup": "pizza"
     },
     {
       "id": "item-34",
       "category": "Pizza",
       "name": "Pizza Noci Gorgonzola",
       "description": "mit Creme fraiche, Walnüssen, Gorgonzola und roten Zwiebeln",
-      "priceCents": 1440
+      "priceCents": 1440,
+      "extraGroup": "pizza"
     },
     {
       "id": "item-35",
       "category": "Pizza",
       "name": "Pizza Caprese",
       "description": "mit frischen Tomaten, italienischer Mozzarellakugel und frischem Basilikum",
-      "priceCents": 1440
+      "priceCents": 1440,
+      "extraGroup": "pizza"
     },
     {
       "id": "item-36",
       "category": "Pizza",
       "name": "Pizza Gamberetti",
       "description": "mit Creme fraiche, Shrimps, Bruschetta-Tomaten und Knoblauch",
-      "priceCents": 1490
+      "priceCents": 1490,
+      "extraGroup": "pizza"
     },
     {
       "id": "item-37",
       "category": "Pizza",
       "name": "Pizza Scampi e Funghi",
       "description": "mit Mozzarella, Garnelen, frischen Egerlingen, Rucola und Knoblauch",
-      "priceCents": 1640
+      "priceCents": 1640,
+      "extraGroup": "pizza"
     },
     {
       "id": "item-38",
       "category": "Pizza",
       "name": "Pizza Genovese",
       "description": "mit Mozzarella, Zwiebeln, Oliven, frischem Basilikum, Oregano und Tomaten",
-      "priceCents": 1340
+      "priceCents": 1340,
+      "extraGroup": "pizza"
     },
     {
       "id": "item-39",
       "category": "Pizza",
       "name": "Pizza Diavolo (scharf)",
       "description": "mit Mozzarella, scharfer, italienischer Salami und Oregano",
-      "priceCents": 1390
+      "priceCents": 1390,
+      "extraGroup": "pizza"
     },
     {
       "id": "item-40",
       "category": "Pizza",
       "name": "Pizza BBQ Tacchino",
       "description": "mit Mozzarella, Barbecue Sauce, Putenbruststreifen, rote Zwiebeln, Jalapenos, Knoblauch und Petersilie",
-      "priceCents": 1640
+      "priceCents": 1640,
+      "extraGroup": "pizza"
     },
     {
       "id": "item-41",
@@ -527,5 +553,269 @@
       "description": "regionales Milcheis im 160ml Becher",
       "priceCents": 390
     }
-  ]
+  ],
+  "extraGroups": {
+    "pizza": [
+      {
+        "id": "vollkornteig",
+        "name": "Vollkornteig",
+        "priceCents": 100
+      },
+      {
+        "id": "diavolo-salami",
+        "name": "Diavolo-Salami",
+        "priceCents": 300
+      },
+      {
+        "id": "salami",
+        "name": "Salami",
+        "priceCents": 150
+      },
+      {
+        "id": "creme-fraiche",
+        "name": "Creme Fraiche",
+        "priceCents": 100
+      },
+      {
+        "id": "ananas",
+        "name": "Ananas",
+        "priceCents": 100
+      },
+      {
+        "id": "schinken",
+        "name": "Schinken",
+        "priceCents": 150
+      },
+      {
+        "id": "5-garnelen",
+        "name": "5 Garnelen",
+        "priceCents": 500
+      },
+      {
+        "id": "prinzessbohnen",
+        "name": "Prinzessbohnen",
+        "priceCents": 100
+      },
+      {
+        "id": "olivenoel",
+        "name": "Olivenöl",
+        "priceCents": 25
+      },
+      {
+        "id": "thunfisch",
+        "name": "Thunfisch",
+        "priceCents": 250
+      },
+      {
+        "id": "bolognesesauce",
+        "name": "Bolognesesauce",
+        "priceCents": 300
+      },
+      {
+        "id": "mozzarella",
+        "name": "Mozzarella",
+        "priceCents": 200
+      },
+      {
+        "id": "jalapenos",
+        "name": "Jalapenos",
+        "priceCents": 100
+      },
+      {
+        "id": "kichererbsen",
+        "name": "Kichererbsen",
+        "priceCents": 100
+      },
+      {
+        "id": "tofu",
+        "name": "Tofu",
+        "priceCents": 150
+      },
+      {
+        "id": "ei",
+        "name": "Ei",
+        "priceCents": 100
+      },
+      {
+        "id": "zucchini",
+        "name": "Zucchini",
+        "priceCents": 100
+      },
+      {
+        "id": "basilikum",
+        "name": "Basilikum",
+        "priceCents": 100
+      },
+      {
+        "id": "knoblauchoel",
+        "name": "Knoblauchöl",
+        "priceCents": 25
+      },
+      {
+        "id": "tomaten-getrocknet",
+        "name": "Tomaten, getrocknet",
+        "priceCents": 150
+      },
+      {
+        "id": "paprika",
+        "name": "Paprika",
+        "priceCents": 100
+      },
+      {
+        "id": "spinat",
+        "name": "Spinat",
+        "priceCents": 100
+      },
+      {
+        "id": "bruschetta-tomaten",
+        "name": "Bruschetta-Tomaten",
+        "priceCents": 150
+      },
+      {
+        "id": "chillioel",
+        "name": "Chilliöl",
+        "priceCents": 25
+      },
+      {
+        "id": "oliven-mit-kern-6-stueck",
+        "name": "Oliven mit Kern (6 Stück)",
+        "priceCents": 100
+      },
+      {
+        "id": "gorgonzola",
+        "name": "Gorgonzola",
+        "priceCents": 150
+      },
+      {
+        "id": "kapern",
+        "name": "Kapern",
+        "priceCents": 100
+      },
+      {
+        "id": "panini-10-stueck",
+        "name": "Panini, 10 Stück",
+        "priceCents": 300
+      },
+      {
+        "id": "kirschtomaten",
+        "name": "Kirschtomaten",
+        "priceCents": 200
+      },
+      {
+        "id": "speck",
+        "name": "Speck",
+        "priceCents": 200
+      },
+      {
+        "id": "oregano",
+        "name": "Oregano",
+        "priceCents": 25
+      },
+      {
+        "id": "auberginen",
+        "name": "Auberginen",
+        "priceCents": 100
+      },
+      {
+        "id": "kaese-ueberbacken",
+        "name": "Käse, überbacken",
+        "priceCents": 200
+      },
+      {
+        "id": "parmesan",
+        "name": "Parmesan",
+        "priceCents": 200
+      },
+      {
+        "id": "funghi",
+        "name": "Funghi",
+        "priceCents": 100
+      },
+      {
+        "id": "shrimps",
+        "name": "Shrimps",
+        "priceCents": 300
+      },
+      {
+        "id": "rucola",
+        "name": "Rucola",
+        "priceCents": 150
+      },
+      {
+        "id": "meeresfruechten",
+        "name": "Meeresfrüchten",
+        "priceCents": 300
+      },
+      {
+        "id": "brokkoli",
+        "name": "Brokkoli",
+        "priceCents": 100
+      },
+      {
+        "id": "croutons",
+        "name": "Croutons",
+        "priceCents": 100
+      },
+      {
+        "id": "sardellen",
+        "name": "Sardellen",
+        "priceCents": 150
+      },
+      {
+        "id": "mozzarella-kugel",
+        "name": "Mozzarella, Kugel",
+        "priceCents": 200
+      },
+      {
+        "id": "zwiebeln-rot",
+        "name": "Zwiebeln, rot",
+        "priceCents": 100
+      },
+      {
+        "id": "peperoni",
+        "name": "Peperoni",
+        "priceCents": 150
+      },
+      {
+        "id": "artischocken",
+        "name": "Artischocken",
+        "priceCents": 100
+      },
+      {
+        "id": "mais",
+        "name": "Mais",
+        "priceCents": 100
+      },
+      {
+        "id": "tomaten",
+        "name": "Tomaten",
+        "priceCents": 150
+      },
+      {
+        "id": "walnuessen",
+        "name": "Walnüssen",
+        "priceCents": 150
+      },
+      {
+        "id": "putenfleisch",
+        "name": "Putenfleisch",
+        "priceCents": 400
+      },
+      {
+        "id": "bueffelmozzarella",
+        "name": "Büffelmozzarella",
+        "priceCents": 300
+      },
+      {
+        "id": "parmaschinken",
+        "name": "Parmaschinken",
+        "priceCents": 400
+      },
+      {
+        "id": "kaese",
+        "name": "Käse",
+        "priceCents": 200
+      }
+    ]
+  }
 }

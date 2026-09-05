@@ -5,15 +5,19 @@ import { fileURLToPath } from 'node:url';
 import { classifyIp, normalizeIp, parseCidrs } from './network.js';
 import { loadCatalog } from './catalog.js';
 import { Store } from './store.js';
+import { priceOrder, summarizeItems } from './orders.js';
+import { buildRecommendations } from '../public/recommendations.js';
 
 const publicDir = fileURLToPath(new URL('../public/', import.meta.url));
-const files = new Map(await Promise.all(['index.html', 'admin.html', 'app.js', 'box-scene.js', 'admin.js', 'style.css', 'box.css', 'scene-overrides.css', 'admin.css'].map(async name => [
+const files = new Map(await Promise.all(['index.html', 'admin.html', 'app.js', 'box-scene.js', 'admin.js', 'style.css', 'box.css', 'scene-overrides.css', 'admin.css', 'recommendations.js'].map(async name => [
   name === 'index.html' ? '/' : name === 'admin.html' ? '/admin' : `/${name}`,
   await readFile(`${publicDir}/${name}`),
 ])));
 files.set('/three.module.js', await readFile(new URL('../node_modules/three/build/three.module.js', import.meta.url)));
 files.set('/three.core.js', await readFile(new URL('../node_modules/three/build/three.core.js', import.meta.url)));
 const types = { '/': 'text/html; charset=utf-8', '/admin': 'text/html; charset=utf-8', '/app.js': 'text/javascript; charset=utf-8', '/box-scene.js': 'text/javascript; charset=utf-8', '/three.module.js': 'text/javascript; charset=utf-8', '/three.core.js': 'text/javascript; charset=utf-8', '/admin.js': 'text/javascript; charset=utf-8', '/style.css': 'text/css; charset=utf-8', '/box.css': 'text/css; charset=utf-8', '/scene-overrides.css': 'text/css; charset=utf-8', '/admin.css': 'text/css; charset=utf-8' };
+types['/recommendations.js'] = 'text/javascript; charset=utf-8';
+const equivalences = JSON.parse(await readFile(new URL('../config/pizza-equivalences.json', import.meta.url), 'utf8'));
 const store = new Store(process.env.PIZZA_DATA_PATH || '/data/orders.json');
 await store.load();
 let catalog = await loadCatalog(process.env.PIZZA_CATALOG_PATH || '/config/menu.txt');
@@ -55,7 +59,7 @@ async function notify(event, date, order = null) {
   const payload = { event, date, deadline: '10:30 Europe/Berlin', restaurant: catalog.restaurant, order: order ? { id: order.id, name: order.name, items: order.items, totalCents: total(order), total: money(total(order)) } : null };
   if (event === 'daily_summary') {
     const grandTotalCents = orders.reduce((sum, value) => sum + total(value), 0);
-    const itemTotals = Object.values(orders.flatMap(value => value.items).reduce((map, line) => { const key = line.itemId; map[key] ||= { name: line.name, quantity: 0, totalCents: 0 }; map[key].quantity += line.quantity; map[key].totalCents += line.quantity * line.priceCents; return map; }, {}));
+    const itemTotals = summarizeItems(orders);
     payload.summary = { orders: orders.map(value => ({ name: value.name, items: value.items, totalCents: total(value), total: money(total(value)) })), itemTotals: itemTotals.map(item => ({ ...item, total: money(item.totalCents) })), grandTotalCents, grandTotal: money(grandTotalCents) };
   }
   const response = await fetch(process.env.PIZZA_N8N_WEBHOOK_URL, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(process.env.PIZZA_N8N_WEBHOOK_SECRET ? { Authorization: `Bearer ${process.env.PIZZA_N8N_WEBHOOK_SECRET}` } : {}) }, body: JSON.stringify(payload), signal: AbortSignal.timeout(15_000) });
@@ -91,7 +95,7 @@ createServer(async (req, res) => {
     const admin = isAdmin(req);
     if (url.pathname === '/api/state' && req.method === 'GET') {
       await closeAndSummarize(); const date = today(); const day = store.day(date);
-      return json(res, 200, { date, audience, admin, restaurant: catalog.restaurant, restaurantWebsite: catalog.website, deadline: '10:30', unlocked: day.unlocked, open: orderingOpen(day), items: catalog.items, orders: admin ? Object.values(day.orders).map(order => ({ ...order, tokenHash: undefined, totalCents: total(order) })) : undefined, summarySent: admin ? day.summarySent : undefined, summaryError: admin ? day.summaryError : undefined, paymentBase });
+      return json(res, 200, { date, audience, admin, restaurant: catalog.restaurant, restaurantWebsite: catalog.website, deadline: '10:30', unlocked: day.unlocked, open: orderingOpen(day), items: catalog.items, recommendations: buildRecommendations(catalog.items, equivalences), orders: admin ? Object.values(day.orders).map(order => ({ ...order, tokenHash: undefined, totalCents: total(order) })) : undefined, summarySent: admin ? day.summarySent : undefined, summaryError: admin ? day.summaryError : undefined, paymentBase });
     }
     if (url.pathname === '/api/admin/login' && req.method === 'POST') {
       const input = await body(req); if (!adminPassword || !cookieSecret || !safeEqual(input.password, adminPassword)) return json(res, 401, { error: 'Falsches Passwort.' });
@@ -120,15 +124,15 @@ createServer(async (req, res) => {
       await closeAndSummarize(); const input = await body(req); const date = today(); const day = store.day(date);
       if (!orderingOpen(day)) return json(res, 409, { error: 'Bestellungen sind geschlossen.' });
       const name = String(input.name || '').trim().slice(0, 80); if (!name) return json(res, 400, { error: 'Bitte Namen angeben.' });
-      const selected = Array.isArray(input.items) ? input.items : [];
-      const items = selected.map(line => { const item = catalog.items.find(value => value.id === line.itemId); const quantity = Number(line.quantity); return item && Number.isInteger(quantity) && quantity > 0 && quantity <= 20 ? { itemId: item.id, name: item.name, priceCents: item.priceCents, quantity } : null; }).filter(Boolean);
-      if (!items.length) return json(res, 400, { error: 'Bitte mindestens einen Artikel wählen.' });
+      let items;
+      try { items = priceOrder(input.items, catalog); }
+      catch (error) { return json(res, 400, { error: error.message }); }
       const existing = input.id ? day.orders[input.id] : null;
       if (existing && !safeEqual(existing.tokenHash, hashToken(input.token || ''))) return json(res, 403, { error: 'Diese Bestellung gehört zu einem anderen Browser.' });
       const token = existing ? input.token : randomBytes(24).toString('base64url'); const id = existing?.id || randomBytes(10).toString('base64url');
       const order = { id, tokenHash: hashToken(token), name, items, createdAt: existing?.createdAt || new Date().toISOString(), updatedAt: new Date().toISOString() }; day.orders[id] = order; await store.save();
-      try { await notify(existing ? 'order_updated' : 'order_created', date, order); } catch (error) { console.error('Order notification failed:', error.message); return json(res, 202, { id, token, totalCents: total(order), warning: 'Bestellung gespeichert, Telegram-Benachrichtigung fehlgeschlagen.' }); }
-      return json(res, 200, { id, token, totalCents: total(order) });
+      try { await notify(existing ? 'order_updated' : 'order_created', date, order); } catch (error) { console.error('Order notification failed:', error.message); return json(res, 202, { id, token, items, totalCents: total(order), warning: 'Bestellung gespeichert, Telegram-Benachrichtigung fehlgeschlagen.' }); }
+      return json(res, 200, { id, token, items, totalCents: total(order) });
     }
     const orderMatch = url.pathname.match(/^\/api\/orders\/([^/]+)$/);
     if (orderMatch && req.method === 'DELETE') {

@@ -1,0 +1,70 @@
+{
+  "baseName": "Pizza Margherita",
+  "baseDescription": "Aktionspreis (statt 10,40 €)",
+  "connections": [
+    {
+      "name": "Pizza Funghi",
+      "description": "mit frischen Egerlingen",
+      "extraIds": [
+        "funghi"
+      ]
+    },
+    {
+      "name": "Pizza Prosciutto",
+      "description": "mit Hinterschinken",
+      "extraIds": [
+        "schinken"
+      ]
+    },
+    {
+      "name": "Pizza Salami",
+      "description": "mit herzhafter Salami",
+      "extraIds": [
+        "salami"
+      ]
+    },
+    {
+      "name": "Pizza Capperi e Sardelle",
+      "description": "mit Kapern, Sardellen und Oregano",
+      "extraIds": [
+        "kapern",
+        "sardellen",
+        "oregano"
+      ]
+    },
+    {
+      "name": "Pizza Hawaii",
+      "description": "mit Hinterschinken und Ananas",
+      "extraIds": [
+        "schinken",
+        "ananas"
+      ]
+    },
+    {
+      "name": "Pizza Prosciutto e Funghi",
+      "description": "mit frischen Egerlingen und Hinterschinken",
+      "extraIds": [
+        "schinken",
+        "funghi"
+      ]
+    },
+    {
+      "name": "Pizza Speziale",
+      "description": "mit frischen Egerlingen, Salami und Hinterschinken",
+      "extraIds": [
+        "funghi",
+        "salami",
+        "schinken"
+      ]
+    },
+    {
+      "name": "Pizza Caprese",
+      "description": "mit frischen Tomaten, italienischer Mozzarellakugel und frischem Basilikum",
+      "extraIds": [
+        "tomaten",
+        "mozzarella-kugel",
+        "basilikum"
+      ]
+    }
+  ]
+}

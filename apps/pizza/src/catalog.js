@@ -11,6 +11,18 @@ export function parseCatalog(text) {
   if (!trimmed) return { restaurant: '', website: '', items: [] };
   if (trimmed.startsWith('{')) {
     const value = JSON.parse(trimmed);
+    const extraGroups = value.extraGroups || {};
+    for (const extras of Object.values(extraGroups)) {
+      if (!Array.isArray(extras)) throw new Error('Invalid extra group');
+      const ids = new Set();
+      for (const extra of extras) {
+        if (typeof extra.id !== 'string' || !extra.id || ids.has(extra.id) || typeof extra.name !== 'string' || !extra.name || !Number.isSafeInteger(extra.priceCents) || extra.priceCents < 0) throw new Error('Invalid pizza extra');
+        ids.add(extra.id);
+      }
+    }
+    for (const item of value.items) {
+      if (item.extraGroup && !Object.hasOwn(extraGroups, item.extraGroup)) throw new Error('Unknown extra group');
+    }
     return {
       restaurant: String(value.restaurant || ''),
       website: String(value.website || ''),
@@ -20,6 +32,7 @@ export function parseCatalog(text) {
         name: String(item.name),
         description: String(item.description || ''),
         priceCents: Number.isInteger(item.priceCents) ? item.priceCents : money(item.price),
+        ...(item.extraGroup ? { extras: extraGroups[item.extraGroup] } : {}),
       })),
     };
   }
