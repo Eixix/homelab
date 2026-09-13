@@ -1,0 +1,43 @@
+services:
+  asterisk:
+    container_name: asterisk
+    build:
+      context: ../../apps/asterisk
+    restart: unless-stopped
+    stop_grace_period: 30s
+    network_mode: host
+    environment:
+      TZ: ${TZ:-Europe/Berlin}
+      ASTERISK_MODE: ${ASTERISK_MODE:-local}
+      ASTERISK_BIND: ${ASTERISK_BIND:-}
+      ASTERISK_REGISTRATION_EXPIRATION: ${ASTERISK_REGISTRATION_EXPIRATION:-3600}
+      ASTERISK_REGISTRAR: ${ASTERISK_REGISTRAR:-}
+      ASTERISK_SIP_USER: ${ASTERISK_SIP_USER:-}
+      ASTERISK_SIP_DOMAIN: ${ASTERISK_SIP_DOMAIN:-}
+      ASTERISK_AUTH_USERNAME: ${ASTERISK_AUTH_USERNAME:-}
+      ASTERISK_SIP_PASSWORD: ${ASTERISK_SIP_PASSWORD:-}
+      ASTERISK_INBOUND_SBC: ${ASTERISK_INBOUND_SBC:-}
+      ASTERISK_OUTBOUND_PROXY: ${ASTERISK_OUTBOUND_PROXY:-}
+      ASTERISK_LOCAL_NET: ${ASTERISK_LOCAL_NET:-}
+      ASTERISK_PUBLIC_IP: ${ASTERISK_PUBLIC_IP:-}
+    volumes:
+      - ../../data/asterisk/db:/var/lib/asterisk/db
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    tmpfs:
+      - /run/asterisk:mode=0700
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test: [CMD, python3, /usr/local/bin/asterisk-healthcheck.py]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+    labels:
+      - traefik.enable=false

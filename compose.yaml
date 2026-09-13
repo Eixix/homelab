@@ -17,6 +17,7 @@ include:
   - ./compose/apps/kitchenowl.yaml
   - ./compose/apps/paperless.yaml
   - ./compose/apps/homeassistant.yaml
+  - ./compose/apps/asterisk.yaml
   - ./compose/apps/kavita.yaml
   - ./compose/apps/immich.yaml
   - ./compose/apps/monitoring.yaml

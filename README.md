@@ -125,3 +125,20 @@ Neue App-Dateien liegen unter `compose/apps/`, Core-Infrastruktur unter `compose
 Persistente Daten liegen standardmäßig unter `data/<service>` im Repo-Root. Alte Pfade wie `/docker-compose-services/<service>` werden nur übernommen, wenn ein Dienst bewusst während der Migration weiter auf bestehende Produktivdaten zeigen soll.
 
 Die laufende Produktions-Checkliste liegt in `docs/prod-migration-todo.md` und wird beim Portieren aktualisiert.
+
+## Asterisk IVR
+
+Asterisk ist als regulärer Service `asterisk` in `compose.yaml` integriert, mit
+automatischem Neustart, Healthcheck und Zustand unter `data/asterisk/db`.
+Die IVR spielt eine deutsche Begrüßung und bei Taste 1 eine Testansage.
+Vodafone-Zugangsdaten bleiben in der ignorierten lokalen `.env`.
+
+```bash
+docker compose --env-file .env up -d --build asterisk
+```
+
+`ASTERISK_MODE=local` ermöglicht den lokalen SIP-Test ohne Provider-Registrierung;
+für Vodafone ist eine vollständige Konfiguration mit `ASTERISK_MODE=vodafone` nötig.
+Der manuelle Deployment-Workflow kann den Service künftig über `asterisk` oder `all`
+starten. Er ist noch nicht produktiv deployt.
+Betrieb, SIP/NAT-Konfiguration und nächste HA-Stufe: [IVR-Runbook](docs/asterisk-ivr.md).

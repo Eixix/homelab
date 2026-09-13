@@ -13,6 +13,7 @@ const sidebars = {
     'storage-array-zfs',
     'remaining-projects',
     'service-template',
+    'asterisk-ivr',
   ],
 };
 

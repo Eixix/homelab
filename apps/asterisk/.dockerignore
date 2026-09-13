@@ -1,0 +1,8 @@
+*
+!Dockerfile
+!config/
+!config/**
+!prompts/
+!prompts/**
+!entrypoint.py
+!healthcheck.py
