@@ -11,8 +11,8 @@ spec.loader.exec_module(healthcheck)
 
 class HealthTests(unittest.TestCase):
     def responses(self, mode="local", status="Registered"):
-        responses = ["chan_pjsip.so  PJSIP Channel Driver  0  Running  core",
-                     "1. Playback(custom/test)",
+        responses = ["chan_pjsip.so  PJSIP Channel Driver  0  Running  core\nres_agi.so AGI 0 Running core\napp_dial.so Dial 0 Running core\nbridge_simple.so Bridge 0 Running core",
+                     "1. AGI(/usr/local/bin/menu.py,forward,annika)",
                      " Endpoint:  " + ("local-test" if mode == "local" else "vodafone") + "  Unavailable  0 of inf"]
         if mode == "vodafone":
             responses.append(" vodafone-registration/sip:example.invalid  vodafone-auth  " + status)

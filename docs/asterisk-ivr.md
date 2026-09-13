@@ -1,210 +1,156 @@
 # Asterisk IVR-Service
 
-Status: regulärer Homelab-Service, über den manuellen GitHub-Job deployt. Asterisk
-ist bei Vodafone registriert und hat einen echten Anruf angenommen. Nach Problemen
-mit eSpeak-Sprachqualität und Tastenerkennung stehen das Piper-/DTMF-Update und
-dessen Abnahme mit einem echten Anruf noch aus.
+Asterisk läuft als regulärer Homelab-Service. Vodafone-Registrierung, deutsche
+Piper-Ansagen und DTMF wurden mit einem echten Anruf bestätigt. Die Erweiterung
+um Mobilfunk-Weiterleitungen und eine geschützte Home-Assistant-Aktion ist lokal
+getestet und muss nach dem manuellen Deployment am echten Anschluss abgenommen werden.
 
-## Aufbau
+## Öffentliches Telefonmenü
+
+Die Begrüßung nennt ausschließlich zwei Optionen:
+
+- Taste 1 verbindet mit Annika.
+- Taste 2 verbindet mit Tobias.
+
+Die Zielnummern werden ausschließlich vom Betreiber konfiguriert. Es gibt keine
+freie Rufnummerneingabe und keine Übernahme einer vom Anrufer angegebenen Ziel-URI.
+Eine Weiterleitung baut einen zusätzlichen ausgehenden Anruf über Vodafone auf und
+verbindet beide Gesprächsseiten. Der Anschluss muss diese parallelen Verbindungen
+unterstützen. Der Rufversuch dauert höchstens 35 Sekunden; das vermittelte Gespräch
+ist auf 30 Minuten begrenzt. Bei besetztem, fehlendem oder nicht erreichbarem Ziel
+folgt eine Fehleransage. Im lokalen Modus wird kein Provider angerufen.
+
+Ungültige Eingaben im Hauptmenü sind auf drei Versuche begrenzt. Ohne Eingabe endet
+das Menü nach fünf Sekunden Wartezeit. Die Menüphase hat eine absolute Grenze von
+120 Sekunden; maximal zwei eingehende Gespräche sind gleichzeitig erlaubt.
+Asterisk erlaubt vier Kanäle, damit die beiden ausgehenden Gesprächsseiten Platz haben.
+
+## Konfiguration
 
 `compose/apps/asterisk.yaml` ist in `compose.yaml` eingebunden. Service- und
-Containername sind `asterisk`, Compose-Projekt ist `homelab`. Der Service startet
-mit dem Hauptstack und wird bei Prozessabbruch automatisch neu gestartet
-(`unless-stopped`). Der manuelle Deployment-Workflow kann ihn gezielt über
-`asterisk` oder zusammen mit dem Stack über `all` deployen. Die initiale
-Bereitstellung ist erfolgt; die Audio-/DTMF-Abnahme des Updates bleibt offen.
-Linux-Host-Netzwerk vermeidet eine zusätzliche Docker-NAT-Schicht. Keine Traefik-Route.
-Der Prozess läuft als Container-root ohne Linux-Capabilities. Einstellungen kommen
-aus der ignorierten `.env`; beim Start entsteht `/run/asterisk/pjsip.conf` mit
-Modus 600 auf einem tmpfs. RTP nutzt UDP 10000–10019.
+Containername sind `asterisk`; das Projekt heißt `homelab`. Der manuelle
+GitHub-Deployment-Workflow kann den Service über `services: asterisk` oder zusammen
+mit allen Diensten über `all` starten. Das Deployment bleibt manuell.
 
-Das Image baut Asterisk 20 aus Alpine 3.22 und erzeugt deutsche WAV-Ansagen lokal
-mit Piper 1.8.0, der deutschen Stimme Thorsten (medium, CC0-Datensatz) und SoX
-(8 kHz, mono, signed PCM 16 Bit, Pegel auf −3 dBFS normalisiert). Der Modellstand
-ist im Dockerfile festgelegt. Das Modell wird beim Build heruntergeladen; die
-Synthese läuft lokal. Im Laufzeit-Image liegen nur die WAV-Dateien, kein TTS-Modell
-und kein Cloud-TTS-Zugang. Texte stehen in `apps/asterisk/prompts/`; Änderungen brauchen
-einen erneuten Build. Paketupdates innerhalb des Alpine-Zweigs sind nicht gepinnt.
+Alle echten Werte stehen ausschließlich in der ignorierten `.env` beziehungsweise
+im GitHub-Secret `ENV_FILE`. Der Deploy-Job überschreibt die Server-`.env` mit
+`ENV_FILE`; Änderungen nur an der lokalen Datei gelangen dadurch nicht automatisch
+auf den Server. `.env.example` und `.env.local.example` enthalten leere Werte.
 
-Ablauf: Begrüßung → Taste 1 → Testansage → Auflegen. DTMF funktioniert auch
-während der Begrüßung. Ohne Auswahl endet der Anruf nach fünf Sekunden Wartezeit;
-nach drei ungültigen Eingaben ebenfalls. Absolute Anrufgrenze: 60 Sekunden,
-maximal zwei gleichzeitige Anrufe. Kein ausgehender Dialplan, keine AMI-/ARI-/HTTP-
-Schnittstelle, keine Home-Assistant-Aktion.
+| Variable | Bedeutung |
+| --- | --- |
+| `ASTERISK_MODE` | `local` ohne Registrierung oder `vodafone` für den Anschluss |
+| `ASTERISK_BIND` | Lokale SIP-Adresse mit Port, beim Server `10.0.0.2:5060` |
+| `ASTERISK_REGISTRAR` | Registrar-Host, optional Port, ohne `sip:` |
+| `ASTERISK_SIP_USER` | Benutzerteil der SIP-Identität |
+| `ASTERISK_SIP_DOMAIN` | Domain der SIP-Identität |
+| `ASTERISK_AUTH_USERNAME` | SIP-Authentifizierungsname |
+| `ASTERISK_SIP_PASSWORD` | SIP-Passwort |
+| `ASTERISK_INBOUND_SBC` | Provider-Hostname oder Quellnetz für eingehende Anrufe |
+| `ASTERISK_OUTBOUND_PROXY` | Optional Proxy-Host mit Port, ohne `sip:` und `;lr` |
+| `ASTERISK_REGISTRATION_EXPIRATION` | Sekunden, Standard 3600; Wert aus erfolgreichem baresip-Test übernehmen |
+| `ASTERISK_DTMF_MODE` | Standard `auto`; bei Bedarf `rfc4733`, `inband`, `info` oder `auto_info` |
+| `ASTERISK_LOCAL_NET` | Optional lokales Netz als CIDR bei NAT |
+| `ASTERISK_PUBLIC_IP` | Optional externe Signalisierungs-/Medien-Adresse bei NAT |
+| `ASTERISK_ANNIKA_NUMBER` | Feste internationale Mobilnummer mit `+` |
+| `ASTERISK_TOBIAS_NUMBER` | Feste internationale Mobilnummer mit `+` |
+| `ASTERISK_MENU_PIN` | Numerische Zugangsdaten, 6 bis 12 Ziffern |
+| `ASTERISK_HA_URL` | Lokale HA-Adresse, Standard `http://127.0.0.1:8123` |
+| `ASTERISK_HA_TOKEN` | Long-lived Access Token eines dedizierten HA-Benutzers |
+| `ASTERISK_HA_KITCHEN_ENTITY` | Genau eine `light.*`- oder `switch.*`-Entity |
 
-## Lokal starten (ohne Vodafone)
+Passwörter und PIN in der `.env` bei Bedarf einfach quotieren, damit beispielsweise
+`$` nicht interpoliert wird und führende Nullen erhalten bleiben. SIP-Werte mit
+Steuerzeichen oder Backslashes werden abgelehnt. Fehlende SIP-Pflichtwerte verhindern
+im Vodafone-Modus den Start. Fehlende Zielnummern deaktivieren nur die jeweilige
+Weiterleitung; fehlende PIN/HA-Werte deaktivieren nur die geschützte Funktion.
 
-Alle Befehle im Repo-Root auf einem Linux-Testrechner ausführen. In der bestehenden
-`.env` die `ASTERISK_*`-Variablen aus `.env.example` ergänzen; die Datei nicht
-überschreiben. `ASTERISK_MODE=local` aktiviert ausschließlich den lokalen Test.
+Die HA-Anbindung erlaubt genau eine Aktion: `turn_on` für die konfigurierte
+Küchenlampe. URL, Ziel und Aktion werden nicht aus Anrufereingaben übernommen.
+Die Zugangsdaten werden pro Anruf geprüft, nicht anhand der Anrufernummer.
+Pro Anruf sind drei PIN-Versuche möglich; über alle Anrufe hinweg höchstens zehn
+Versuche in fünf Minuten. Der globale Zähler liegt gesperrt gegen parallele Zugriffe
+im tmpfs und wird bei einem Container-Neustart zurückgesetzt.
+
+HA-Aufrufe erfolgen lokal mit einem Timeout von drei Sekunden und ohne automatische
+Wiederholung oder HTTP-Redirects. Erfolg bedeutet, dass HA den Einschaltbefehl
+angenommen hat; ein Fehler oder Timeout wird als fehlende Bestätigung angesagt.
+Ein Timeout beweist nicht, dass HA die Aktion nicht ausgeführt hat. Es gibt keine
+allgemeine Fernsteuer-API, keinen Shell-Zugriff aus dem Menü und keine weiteren
+HA-Aktionen. Die öffentlichen Ansagen nennen den geschützten Zugang nicht.
+
+## Audio, SIP und Netzwerk
+
+Die Ansagen werden beim Image-Build lokal mit Piper 1.8.0 und der deutschen
+Thorsten-Stimme (medium, CC0-Datensatz) erzeugt. Der Modellstand ist festgelegt;
+das Modell wird beim Build heruntergeladen. Nur die fertigen WAV-Dateien gelangen
+in das Laufzeit-Image: 8 kHz, mono, PCM 16 Bit, auf −3 dBFS normalisiert.
+Änderungen an `apps/asterisk/prompts/*.txt` erfordern einen neuen Build.
+
+Asterisk nutzt Linux-Host-Netzwerk, UDP-SIP und RTP auf UDP 10000–10019. Es gibt
+keine Traefik-Route, AMI-/ARI-/HTTP-Oberfläche oder Gesprächsaufzeichnung.
+`auto` nutzt RFC 4733, wenn es ausgehandelt wird, sonst Inband-DTMF.
+Das SIP-INFO-Modul nimmt zusätzlich INFO-Tastensignale entgegen.
+
+Host-Netzwerk beseitigt Router-NAT nicht. Bei einseitigem Audio oder fehlenden
+Tastensignalen SIP-/SDP-Adressen, eingehende RTP-Pakete und die Host-/Router-Firewall
+prüfen. SIP/RTP gezielt für die Provider-Netze freigeben, keine pauschale
+Internet-Freigabe. Registrar, eingehender SBC und Medienserver können verschieden
+sein. Die Zuordnung des Providers erfolgt über dessen Quellen, nicht die Caller-ID.
+Der REGISTER-Contact heißt `ivr`; nur dieses eingehende Rufziel ist freigegeben.
+
+baresip mit derselben Identität vor dem Asterisk-Test beenden, damit sich die
+Registrierungen nicht ersetzen. Die funktionierende baresip-Konfiguration ist die
+Quelle für Anschlusswerte; keine universellen Vodafone-Zugangswerte annehmen.
+
+## Betrieb und Datenschutz
 
 ```bash
-chmod 600 .env
-docker compose --env-file .env config --quiet
+docker compose --env-file .env --profile external config --quiet
 docker compose --env-file .env up -d --build asterisk
-```
-
-Die lokale Vorlage bindet ausschließlich `127.0.0.1:5060` und akzeptiert nur
-SIP-Verkehr vom selben Host. Ein Softphone/baresip auf diesem Host nutzt einen
-anderen lokalen SIP-Port, keine Registrierung und wählt `sip:ivr@127.0.0.1:5060`.
-RFC 4733 (häufig „RFC 2833“ genannt), SIP INFO und Inband-DTMF werden unterstützt.
-`auto` verwendet RFC 4733 bei erfolgreicher Aushandlung und sonst Inband-Erkennung.
-Das zusätzlich geladene SIP-INFO-Modul nimmt Tastensignale als INFO-Nachrichten an.
-RTP-Portbereich auch im lokalen Firewall-Setup berücksichtigen. Loopback-IP-Zuordnung ist nur
-für diesen lokalen Test gedacht.
-
-```bash
-docker compose --env-file .env exec asterisk asterisk -rx 'core show uptime'
-docker compose --env-file .env exec asterisk asterisk -rx 'dialplan show ivr'
+docker compose --env-file .env ps asterisk
+docker compose --env-file .env exec asterisk python3 /usr/local/bin/asterisk-healthcheck.py
 docker compose --env-file .env logs --tail 50 asterisk
-# Stoppt ausschließlich Asterisk:
+# Stoppt nur Asterisk:
 docker compose --env-file .env stop asterisk
 ```
 
-## Vodafone-Test vorbereiten
+Nach `.env`-Änderungen `up -d` ausführen; `restart` allein übernimmt keine geänderte
+Container-Umgebung. Updates können Gespräche unterbrechen. Vor Wartung mit
+`asterisk -rx 'core show channels count'` im Container auf aktive Gespräche prüfen.
+Der Service verwendet `restart: unless-stopped`; ein `unhealthy`-Status allein
+löst keinen Neustart aus. Der Healthcheck prüft SIP-/AGI-/Dial-/Bridge-Module,
+Dialplan und Endpoint sowie im Vodafone-Modus die Registrierung. Er ruft keine
+Mobilnummer an und schaltet keine Lampe.
 
-1. Asterisk stoppen und in `.env` bewusst `ASTERISK_MODE=vodafone` setzen.
-   Zugangsdaten nur lokal im Editor eintragen. Passwörter in einfache Anführungszeichen
-   setzen, damit Compose beispielsweise `$` nicht interpoliert. Steuerzeichen und
-   Backslashes werden vom Generator abgelehnt; Semikolons werden für Asterisk maskiert.
-   Fehlende Pflichtwerte verhindern den Start, ohne Werte in Fehlern auszugeben.
-2. Die erfolgreich mit baresip getesteten Werte übertragen:
+Die SIP- und Menü-Konfiguration entsteht beim Start im tmpfs unter `/run/asterisk`
+mit Modus 600. Der PIN liegt dort nur als gesalzener PBKDF2-Hash; der HA-Token muss
+für API-Aufrufe lesbar bleiben. Danach werden `ASTERISK_*` aus der Asterisk-
+Prozessumgebung entfernt. Docker speichert die ursprünglichen Umgebungsvariablen
+weiterhin: `docker inspect` und `docker compose config` ohne `--quiet` können
+Secrets anzeigen. Nicht unverändert teilen. AGI-/DTMF-/SIP-Debugging kann PINs,
+Rufnummern und Authentifizierungsdaten offenlegen und bleibt im Normalbetrieb aus.
 
-   | Variable | Wert |
-   | --- | --- |
-   | `ASTERISK_DTMF_MODE` | Standard `auto`; optional `rfc4733`, `inband`, `info` oder `auto_info` für gezielte Diagnose |
-   | `ASTERISK_BIND` | Lokale LAN-IP mit Port, z. B. `192.0.2.10:5060` |
-   | `ASTERISK_REGISTRATION_EXPIRATION` | Registrierung in Sekunden (Standard 3600; baresip-`regint` übernehmen) |
-   | `ASTERISK_REGISTRAR` | Registrar-Host, optional mit Port, ohne `sip:` |
-   | `ASTERISK_SIP_USER` | Benutzerteil der SIP-Identität |
-   | `ASTERISK_SIP_DOMAIN` | Domain der SIP-Identität |
-   | `ASTERISK_AUTH_USERNAME` | Auth-Benutzername, ggf. abweichend von der Rufnummer |
-   | `ASTERISK_SIP_PASSWORD` | SIP-Passwort |
-   | `ASTERISK_INBOUND_SBC` | Tatsächliche eingehende SBC-IP/CIDR oder Hostname |
-   | `ASTERISK_OUTBOUND_PROXY` | Optional Proxy-Host mit Port, ohne `sip:` oder `;lr` |
-   | `ASTERISK_LOCAL_NET` | Optional lokales Netz als CIDR bei NAT |
-   | `ASTERISK_PUBLIC_IP` | Optional öffentliche Signalisierungs-/Medien-IP bei NAT |
+Die Container-Capabilities sind entfernt; der Prozess läuft als Container-root.
+Docker-Logs sind auf drei Dateien zu je 10 MB begrenzt. Die interne Asterisk-
+Datenbank liegt unter `data/asterisk/db`; die Anwendung speichert dort keine
+Gesprächs- oder HA-Daten. `.env` und `data/` liegen im Umfang des Repo-Backups.
+Für eine konsistente manuelle SQLite-Kopie den Service vorher stoppen. Bei
+künftigem fachlichem Datenbankeinsatz einen SQLite-Backup-Schritt ergänzen.
+Zur Wiederherstellung den passenden Git-Stand, die geschützte `.env` und bei Bedarf
+`data/asterisk/db` wiederherstellen und nur Asterisk starten.
 
-   Die Implementierung nutzt UDP; falls baresip TCP/TLS nutzte, Transport und
-   erforderliche Module/Zertifikatsprüfung vor dem Test anpassen. Es gibt keine
-   universellen angenommenen Vodafone-Zugangswerte.
-3. `ASTERISK_INBOUND_SBC` begrenzt den eingehenden Endpoint auf Provider-Quellen;
-   Registrar und eingehender SBC können unterschiedlich sein. Kein Catch-all-Match
-   verwenden. SIP/RTP in der Host-/Router-Firewall passend zu den Provider-
-   Signalisierungs- und Mediennetzen begrenzen, keine pauschale Internet-Freigabe.
-4. Host-Netzwerk beseitigt Router-NAT nicht. NAT-Werte in `.env` setzen und bei
-   wechselnder öffentlicher IP erneut prüfen. Nach jeder `.env`-Änderung den
-   `up -d`-Befehl erneut ausführen, damit Compose den Container mit aktualisierter
-   Umgebung erzeugt; ein einfaches `restart` übernimmt keine geänderten Variablen.
-   SIP ALG kann die Signalisierung stören.
-5. baresip auf derselben Identität vor dem Test beenden, damit sich Registrierungen
-   nicht gegenseitig ersetzen. Andere Telefonie am Anschluss berücksichtigen.
-6. Asterisk mit obigem Compose-Befehl auf dem Testrechner starten. Mit
-   `asterisk -rx 'pjsip show registrations'` im Container `Registered` prüfen.
-   Eine erfolgreiche Registrierung allein belegt noch keinen Audio-/DTMF-Erfolg.
+## Tests
 
-Die `.env` liegt außerhalb des Image-Build-Kontexts. Nur die explizit aufgeführten
-Variablen werden an den Container übergeben. Nach der Konfiguration entfernt der
-Entrypoint die `ASTERISK_*`-Werte aus der Prozessumgebung, bevor Asterisk startet.
-Docker speichert die ursprünglichen Container-Umgebungsvariablen weiterhin:
-`docker inspect` und `docker compose config` ohne `--quiet` können Secrets zeigen.
-Solche Ausgaben nicht teilen. Die frühere `secrets/asterisk-pjsip.conf` wird nicht
-mehr verwendet; eine eventuell vorhandene lokale Datei bleibt unangetastet.
+Unit- und HTTP-Mock-Tests brauchen keine echten Zugangsdaten und keine HA-Instanz:
 
-Der REGISTER-Contact verwendet `ivr`. Nur dieses eingehende Rufziel wird im
-Dialplan angenommen. Falls Vodafone stattdessen die Rufnummer im Request-URI
-liefert, zuerst lokal prüfen und den Eingang gezielt anpassen; keine beliebigen
-Ziele freischalten. Provider-Zuordnung erfolgt über die SBC-Quellen, nicht über
-vertrauenswürdige Annahmen zur Anrufernummer.
+```bash
+PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s apps/asterisk/tests
+```
 
-Abnahme mit echtem Anruf: Begrüßung hörbar; Taste 1 während und nach der Begrüßung
-führt zur Testansage; falsche Taste wiederholt die Auswahl höchstens zweimal;
-keine Eingabe beendet den Anruf; Auflegen gibt den Kanal frei. Zusätzlich
-unbekanntes Rufziel und fremde SIP-Quelle ablehnen lassen. Asterisk-Logs/SIP-Traces
-können Rufnummern, IPs und Authentifizierungsdaten enthalten: nur lokal untersuchen,
-nicht unverändert teilen. Der Healthcheck prüft SIP-Kanalmodul, IVR-Dialplan und
-Endpoint sowie im Vodafone-Modus den Status `Registered`. Eine erfolgreiche
-Audio-/DTMF-Verbindung ist damit noch nicht bewiesen.
-
-Zum Zurücksetzen Asterisk stoppen und bei Bedarf baresip wieder starten.
-Es werden keine Produktionsdaten verändert oder gelöscht.
-
-## Betrieb, Zustand und Wiederherstellung
-
-- Die Asterisk-Datenbank liegt unter `data/asterisk/db`, Ansagen und Dialplan im
-  Image. Es gibt derzeit keine Aufzeichnungen, Voicemail oder CDR-Speicherung.
-- Die generierte SIP-Konfiguration liegt ausschließlich im tmpfs und entsteht bei
-  jedem Containerstart neu aus der `.env`. Alle Linux-Capabilities sind entfernt.
-- Docker-Logs sind auf drei Dateien zu je 10 MB begrenzt. Ein `unhealthy`-Status
-  löst allein keinen Docker-Neustart aus; bei fehlender Registrierung die lokalen
-  Logs und den Trunk prüfen. Die Restart-Policy greift bei Prozessabbruch.
-- Ansagen-/Code-Updates: `docker compose --env-file .env up -d --build asterisk`.
-  Updates und Stopps können laufende Gespräche unterbrechen. Vor Wartung mit
-  `docker compose --env-file .env exec asterisk asterisk -rx 'core show channels count'`
-  auf aktive Gespräche prüfen.
-- Wiederherstellung: passenden Git-Stand auschecken, geschützte `.env` und bei Bedarf
-  `data/asterisk/db` wiederherstellen, danach ausschließlich `asterisk` starten.
-  Für eine konsistente manuelle Kopie der SQLite-Datenbank den Service vorher stoppen.
-  Der aktuelle Dialplan legt keine fachlichen Daten darin ab; bei künftigem Ausbau
-  mit Datenbankschreibzugriffen einen SQLite-Backup-Schritt in `backup.sh` ergänzen.
-  `data/` und `.env` liegen bereits im Umfang des Repository-Backups.
-
-Falls auf einem Testhost noch ein früherer Container des Compose-Projekts
-`homelab-ivr` läuft, diesen vor dem ersten Start des integrierten Services stoppen,
-damit er den SIP-Port nicht belegt. Vorhandene Daten dabei erhalten.
-
-## Nächste Stufe: lokale Home-Assistant-Anbindung
-
-Erst nach erfolgreicher IVR-Abnahme implementieren. Home Assistant läuft bereits
-im Host-Netzwerk; bei gleichem Testhost ist die lokale API über
-`http://127.0.0.1:8123` erreichbar. Bei getrennten Hosts eine private LAN-Adresse
-verwenden. Keine externe Traefik-Route und keine Cloud-Abhängigkeit erforderlich.
-
-Geplant ist eine separate, zeitlich begrenzte lokale Bridge mit fest erlaubter
-Aktion, zunächst nur einem Test-Event ohne Gerätewirkung. HA-Token oder geheime
-Webhook-ID ausschließlich in der lokalen `.env`, nicht im Dialplan. Bei HA-Ausfall muss
-die IVR weiter funktionieren und eine passende Fehleransage liefern. Vor echten
-Schaltaktionen eine explizite Authentifizierung und Aktionsfreigabe entwerfen:
-Taste 1 und Caller-ID sind keine Autorisierung. Die aktuelle IVR führt nur
-Audio aus und benötigt noch keinen HA-Token.
-
-## Quellen
-
-- [Asterisk: Outbound registrations](https://docs.asterisk.org/Configuration/Channel-Drivers/SIP/Configuring-res_pjsip/Configuring-Outbound-Registrations/)
-- [Asterisk: Background und WaitExten](https://docs.asterisk.org/Deployment/Basic-PBX-Functionality/Auto-attendant-and-IVR-Menus/Background-and-WaitExten-Applications/)
-- [Alpine: Asterisk-Paket](https://pkgs.alpinelinux.org/package/v3.22/main/x86_64/asterisk)
-
-## Lokale technische Prüfung
-
-Compose-Validierung des Hauptstacks sowie Image-Build erfolgreich.
-Sieben Generator-Tests prüfen Vodafone-Parameter, Sonderzeichen, Pflichtwerte,
-lokalen Modus und das Ablehnen ungültiger Konfiguration. Vier weitere Tests prüfen
-den Healthcheck einschließlich abgelehnter Registrierung und CLI-Timeout. Ausführen mit
-`PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s apps/asterisk/tests`.
-Im isolierten Container ohne Netzwerk wurden PJSIP-Endpoint, SIP-Kanalmodul und
-IVR-Dialplan geladen. Die Isolation verursachte erwartete DNS-/Interface-Hinweise.
-Auf dieser Entwicklungsumgebung benötigte der Build `docker build --network host
--t homelab-asterisk apps/asterisk`, weil Docker-Bridge/veth nicht verfügbar war.
-Die Registrierung und ein eingehender Vodafone-Anruf wurden produktiv verifiziert;
-die DTMF-/Audio-Abnahme des Updates steht noch aus.
-
-
-## Audio- und DTMF-Regressionstest
-
-Der ursprüngliche eSpeak-Klang wurde nach dem ersten echten Testanruf durch Piper
-ersetzt. Zusätzlich sind `res_pjsip_dtmf_info` und `res_timing_timerfd` geladen;
-der bisher fest auf RFC 4733 gesetzte Trunk verwendet standardmäßig `auto`.
-Das tatsächlich beim Vodafone-Test verwendete DTMF-Verfahren wurde nicht
-mitgeschnitten und ist daher noch nicht nachgewiesen. Auf dem Server ist ein
-privates Default-Gateway aktiv, während `ASTERISK_LOCAL_NET` und
-`ASTERISK_PUBLIC_IP` leer sind. Beim nächsten echten Anruf daher auch prüfen, ob
-eingehende RTP-/DTMF-Pakete ankommen; lokale Tests belegen die Provider-NAT-Strecke
-nicht.
-
-Der folgende Test baut ausschließlich synthetische Anrufe über Loopback auf. Er
-sendet Taste 1 als RFC-4733-Event, SIP INFO und als G.711-A-law-Ton und prüft Audio
-sowie den Sprung zur Testansage während und nach der Begrüßung. Er lädt keine
-`.env` und registriert sich nicht:
+Der Integrationstest verwendet synthetische Anrufe, Loopback-RTP, einen SIP-Mock
+für beide Weiterleitungsziele und einen lokalen HTTP-Mock. Er prüft korrekte Ziele,
+Besetzt-Behandlung, alle drei DTMF-Verfahren sowie die PIN-Sperre vor dem HA-Aufruf. Er lädt keine `.env`, ruft keine Mobilnummer an und schaltet kein Gerät.
 
 ```bash
 docker build -t homelab-asterisk apps/asterisk
@@ -214,10 +160,17 @@ docker run --rm --network none --cap-drop ALL --security-opt no-new-privileges \
   --entrypoint python3 homelab-asterisk /tmp/smoke_dtmf.py
 ```
 
-Nach dem manuellen Deploy erneut einen echten Vodafone-Anruf mit Taste 1 prüfen.
-`ASTERISK_DTMF_MODE` muss für das Update nicht ergänzt werden, solange der Standard
-`auto` gewünscht ist. Nur bei bereits explizit gesetztem Wert diesen anpassen.
+Auf Entwicklungsumgebungen ohne Docker-Bridge/veth kann der Build mit
+`docker build --network host -t homelab-asterisk apps/asterisk` erfolgen.
+Echte Weiterleitungen, bidirektionales Audio und die gezielte HA-Aktion erst nach
+dem manuellen Deploy abnehmen. Die verbindliche Checkliste steht in
+[Production Migration TODO](prod-migration-todo.md).
 
-Stimme und Technik: [Thorsten-Modellkarte](https://huggingface.co/rhasspy/piper-voices/blob/1162a9173d0ce503555aed757976b7a9912eae4c/de/de_DE/thorsten/medium/MODEL_CARD),
-[Piper CLI](https://github.com/OHF-Voice/piper1-gpl/blob/main/docs/CLI.md),
-[Asterisk DTMF-Modi](https://docs.asterisk.org/Certified-Asterisk_20.7_Documentation/API_Documentation/Module_Configuration/res_pjsip/#dtmf_mode).
+## Quellen
+
+- [Asterisk: Outbound registrations](https://docs.asterisk.org/Configuration/Channel-Drivers/SIP/Configuring-res_pjsip/Configuring-Outbound-Registrations/)
+- [Asterisk: PJSIP-Konfigurationsbeziehungen](https://docs.asterisk.org/Configuration/Channel-Drivers/SIP/Configuring-res_pjsip/PJSIP-Configuration-Sections-and-Relationships/)
+- [Asterisk: AGI GET DATA](https://docs.asterisk.org/Asterisk_22_Documentation/API_Documentation/AGI_Commands/get_data/)
+- [Home Assistant: REST API](https://developers.home-assistant.io/docs/api/rest/)
+- [Thorsten-Modellkarte](https://huggingface.co/rhasspy/piper-voices/blob/1162a9173d0ce503555aed757976b7a9912eae4c/de/de_DE/thorsten/medium/MODEL_CARD)
+- [Piper CLI](https://github.com/OHF-Voice/piper1-gpl/blob/main/docs/CLI.md)

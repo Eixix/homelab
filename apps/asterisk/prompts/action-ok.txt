@@ -1,0 +1,1 @@
+Der Einschaltbefehl für die Küchenlampe wurde an Home Assistant übergeben.

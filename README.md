@@ -130,7 +130,9 @@ Die laufende Produktions-Checkliste liegt in `docs/prod-migration-todo.md` und w
 
 Asterisk ist als regulärer Service `asterisk` in `compose.yaml` integriert, mit
 automatischem Neustart, Healthcheck und Zustand unter `data/asterisk/db`.
-Die IVR spielt eine mit Piper erzeugte deutsche Begrüßung und bei Taste 1 eine Testansage.
+Die deutsche Piper-Begrüßung bietet Taste 1 für Annika und Taste 2 für Tobias;
+die Weiterleitungen verwenden fest konfigurierte Mobilnummern. Eine lokale
+Home-Assistant-Aktion ist separat durch eine PIN geschützt.
 Vodafone-Zugangsdaten bleiben in der ignorierten lokalen `.env`.
 
 ```bash
@@ -140,6 +142,6 @@ docker compose --env-file .env up -d --build asterisk
 `ASTERISK_MODE=local` ermöglicht den lokalen SIP-Test ohne Provider-Registrierung;
 für Vodafone ist eine vollständige Konfiguration mit `ASTERISK_MODE=vodafone` nötig.
 Der manuelle Deployment-Workflow kann den Service künftig über `asterisk` oder `all`
-starten. Die Vodafone-Registrierung ist produktiv verifiziert; die Audio-/DTMF-Abnahme
-ist nach dem Update noch offen.
+starten. Vodafone-Registrierung, Ansagen und DTMF sind produktiv verifiziert.
+Die neuen Weiterleitungen und die HA-Anbindung benötigen noch eine Abnahme.
 Betrieb, SIP/NAT-Konfiguration und nächste HA-Stufe: [IVR-Runbook](docs/asterisk-ivr.md).

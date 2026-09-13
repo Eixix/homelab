@@ -6,3 +6,4 @@
 !prompts/**
 !entrypoint.py
 !healthcheck.py
+!menu.py

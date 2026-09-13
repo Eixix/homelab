@@ -180,11 +180,14 @@ registration with baresip was previously tested successfully; this does not
 validate Asterisk. The service is included in the main Compose stack and is available
 to the manual deployment workflow as `asterisk` (also included in `all`). The user
 deployed it through GitHub Actions; production registration and health were verified.
-The first incoming call exposed poor eSpeak audio and missing DTMF recognition.
-Piper prompts and expanded DTMF support require a new deployment and real-call acceptance.
+The user confirmed that the Piper prompts and DTMF update work with real calls.
+The next update adds two fixed mobile forwarding targets and one PIN-protected
+local Home Assistant action.
 
 - [x] Verify Asterisk Vodafone registration and healthy container on production.
-- [ ] Verify incoming greeting, bidirectional RTP, key 1, invalid input and timeout with real calls.
-- [ ] Add and test local Home Assistant integration after IVR acceptance.
+- [x] Verify the Piper greeting and key 1 with a real incoming call.
+- [ ] Verify invalid-input and timeout handling with real calls.
+- [ ] Deploy and accept the two fixed mobile forwarding destinations, including busy/no-answer handling and bidirectional audio.
+- [ ] Deploy and accept the PIN-protected local kitchen-light action, including wrong PIN and HA failure handling.
 - [x] Initial deployment through the manual GitHub workflow with `services: asterisk` and production `ENV_FILE`.
-- [ ] Deploy the Piper/DTMF update and verify speech quality and key 1 with a real call.
+- [x] Deploy the Piper/DTMF update and verify speech quality and key 1 with a real call.

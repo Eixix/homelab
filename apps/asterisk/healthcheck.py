@@ -15,10 +15,11 @@ def cli(command):
 def healthy(mode):
     if mode not in ("local", "vodafone"):
         return False
-    modules = cli("module show like chan_pjsip.so")
-    if not re.search(r"chan_pjsip\.so[^\n]*\bRunning\b", modules):
-        return False
-    if "Playback(custom/test)" not in cli("dialplan show ivr"):
+    modules = cli("module show")
+    for module in ("chan_pjsip.so", "res_agi.so", "app_dial.so", "bridge_simple.so"):
+        if not re.search(re.escape(module) + r"[^\n]*\bRunning\b", modules):
+            return False
+    if "AGI(/usr/local/bin/menu.py,forward,annika)" not in cli("dialplan show ivr"):
         return False
     endpoints = cli("pjsip show endpoints")
     endpoint = "local-test" if mode == "local" else "vodafone"

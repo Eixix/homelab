@@ -2,9 +2,13 @@
 
 Uses only loopback and synthetic SIP/RTP calls, never provider credentials.
 Python 3.12 audioop encodes synthetic in-band tones as G.711 A-law.
+A loopback HTTP mock checks the PIN gate without changing any real HA state.
 """
 import audioop
 import math
+import json
+import threading
+from http.server import BaseHTTPRequestHandler, HTTPServer
 import os
 from pathlib import Path
 import re
@@ -21,7 +25,8 @@ def cli(command):
     return subprocess.run(['asterisk', '-rx', command], capture_output=True, text=True, timeout=3)
 
 
-def call(method, delay=1):
+def call(method, delay=1, steps=None, expected="custom/unavailable"):
+    steps = [("1", delay)] if steps is None else steps
     sip = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sip.bind(('127.0.0.1', 0))
     sip.settimeout(5)
@@ -82,35 +87,81 @@ def call(method, delay=1):
                 except BlockingIOError:
                     break
 
-        for _ in range(round(delay * 50)):
+        cseq = 2
+        for digits, pause in steps:
+            for _ in range(round(pause * 50)):
+                packet(b'\xd5' * 160)
+            assert received > 10, f'{method}: no usable outbound audio'
+            for digit in digits:
+                event = '0123456789*#'.index(digit)
+                if method == 'info':
+                    request('INFO', cseq, f'Signal={digit}\r\nDuration=160\r\n', 'application/dtmf-relay')
+                    cseq += 1
+                elif method == 'rfc4733':
+                    event_timestamp = timestamp
+                    for i in range(1, 9):
+                        packet(struct.pack('!BBH', event, 10, i * 160), 101, event_timestamp, i == 1)
+                    for _ in range(3):
+                        packet(struct.pack('!BBH', event, 0x80 | 10, 1280), 101, event_timestamp)
+                else:
+                    assert digit in ('1', '2')
+                    high = 1209 if digit == '1' else 1336
+                    for frame in range(10):
+                        pcm = b''.join(struct.pack('<h', int(6000 * (math.sin(2 * math.pi * 697 * n / 8000)
+                                                                + math.sin(2 * math.pi * high * n / 8000))))
+                                       for n in range(frame * 160, (frame + 1) * 160))
+                        packet(audioop.lin2alaw(pcm, 2))
+                for _ in range(7):
+                    packet(b'\xd5' * 160)
+        for _ in range(250):
             packet(b'\xd5' * 160)
-        assert received > 10, f'{method}: no usable outbound audio'
-        if method == 'info':
-            request('INFO', 2, 'Signal=1\r\nDuration=160\r\n', 'application/dtmf-relay')
-        elif method == 'rfc4733':
-            event_timestamp = timestamp
-            for i in range(1, 9):
-                packet(struct.pack('!BBH', 1, 10, i * 160), 101, event_timestamp, i == 1)
-            for _ in range(3):
-                packet(struct.pack('!BBH', 1, 0x80 | 10, 1280), 101, event_timestamp)
-        else:
-            for frame in range(10):
-                pcm = b''.join(struct.pack('<h', int(6000 * (math.sin(2 * math.pi * 697 * n / 8000)
-                                                        + math.sin(2 * math.pi * 1209 * n / 8000))))
-                               for n in range(frame * 160, (frame + 1) * 160))
-                packet(audioop.lin2alaw(pcm, 2))
-        for _ in range(75):
-            packet(b'\xd5' * 160)
-            if re.search(r'Executing.*Playback.*custom/test', LOG.read_text()[offset:]):
-                print(f'{method} at {delay}s: key 1 reached test announcement; audio received', flush=True)
+            if expected in LOG.read_text()[offset:]:
+                print(f'{method}: expected menu branch reached; audio received', flush=True)
                 break
         else:
-            raise AssertionError(f'{method}: key 1 did not reach test announcement')
-        request('BYE', 3)
+            raise AssertionError(f'{method}: expected menu branch was not reached')
+        request('BYE', cseq)
         time.sleep(0.2)
     finally:
         sip.close()
         rtp.close()
+
+
+class SipBusyPeer:
+    """Only a loopback peer: record destination and reject calls as busy."""
+    def __init__(self):
+        self.numbers = []
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socket.bind(('127.0.0.1', 0))
+        self.socket.settimeout(0.2)
+        self.port = self.socket.getsockname()[1]
+        self.stop = threading.Event()
+        self.thread = threading.Thread(target=self.run, daemon=True)
+        self.thread.start()
+
+    def run(self):
+        while not self.stop.is_set():
+            try:
+                data, address = self.socket.recvfrom(65535)
+            except socket.timeout:
+                continue
+            message = data.decode()
+            if not message.startswith('INVITE '):
+                continue
+            self.numbers.append(re.search(r'^INVITE sip:([^@]+)@', message)[1])
+            headers = []
+            for name in ('Via', 'From', 'To', 'Call-ID', 'CSeq'):
+                value = re.search(r'^' + name + r':\s*(.+)', message, re.MULTILINE | re.IGNORECASE)[1].strip()
+                if name == 'To':
+                    value += ';tag=busy-test'
+                headers.append(name + ': ' + value)
+            response = 'SIP/2.0 486 Busy Here\r\n' + '\r\n'.join(headers) + '\r\nContent-Length: 0\r\n\r\n'
+            self.socket.sendto(response.encode(), address)
+
+    def close(self):
+        self.stop.set()
+        self.thread.join()
+        self.socket.close()
 
 
 def main():
@@ -118,6 +169,23 @@ def main():
     config = Path('/etc/asterisk/asterisk.conf')
     config.write_text(config.read_text().replace('verbose = 0', 'verbose = 3'))
     Path('/etc/asterisk/logger.conf').write_text('[logfiles]\nconsole => warning,error,verbose,dtmf\n')
+    peer = SipBusyPeer()
+    pjsip = Path('/etc/asterisk/pjsip.local.conf')
+    pjsip.write_text(pjsip.read_text() + '\n[vodafone]\ntype=endpoint\ntransport=transport-udp\ndisallow=all\nallow=alaw\ndirect_media=no\n')
+    requests = []
+    class Handler(BaseHTTPRequestHandler):
+        def do_POST(self):
+            requests.append((self.path, self.headers.get('Authorization'),
+                             json.loads(self.rfile.read(int(self.headers['Content-Length'])))))
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b'[]')
+        def log_message(self, *args): pass
+    server = HTTPServer(('127.0.0.1', 0), Handler)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    os.environ.update(ASTERISK_MENU_PIN='012345', ASTERISK_HA_TOKEN='synthetic-test-token',
+                      ASTERISK_HA_URL=f'http://127.0.0.1:{server.server_port}',
+                      ASTERISK_HA_KITCHEN_ENTITY='light.synthetic_kitchen')
     with LOG.open('w') as log:
         proc = subprocess.Popen(['python3', '/usr/local/bin/asterisk-entrypoint.py'], stdout=log, stderr=log)
         try:
@@ -130,13 +198,34 @@ def main():
             else:
                 raise RuntimeError('Asterisk startup timed out')
             cli('core set verbose 3')
+            runtime = Path('/run/asterisk/menu.json')
+            config = json.loads(runtime.read_text())
+            config.update(mode='vodafone', domain=f'127.0.0.1:{peer.port}',
+                          destinations={'annika': '+4915112345678', 'tobias': '+4915112345679'})
+            runtime.write_text(json.dumps(config))
+            health = subprocess.run(['python3', '/usr/local/bin/asterisk-healthcheck.py'])
+            assert health.returncode == 0, 'IVR healthcheck failed'
+
             for method in ('rfc4733', 'info', 'inband'):
                 call(method)
-            call('rfc4733', delay=5)
+            call('rfc4733', delay=8)
+            call('rfc4733', steps=[('2', 1)])
+            assert peer.numbers == ['+4915112345678'] * 4 + ['+4915112345679'], 'Wrong outbound destination'
+            print('Both fixed forwarding targets and busy fallback verified', flush=True)
+            assert not requests, 'Public menu must never call Home Assistant'
+            call('rfc4733', steps=[('9', 1), ('000000#', 0.5)], expected='custom/denied')
+            assert not requests, 'Wrong PIN must never call Home Assistant'
+            call('rfc4733', steps=[('9', 1), ('012345#', 0.5), ('1', 0.5)], expected='custom/action-ok')
+            assert requests == [('/api/services/light/turn_on', 'Bearer synthetic-test-token',
+                                 {'entity_id': 'light.synthetic_kitchen'})]
+            print('PIN gate and exactly one kitchen turn_on request verified', flush=True)
         except Exception:
             print(LOG.read_text())
             raise
         finally:
+            peer.close()
+            server.shutdown()
+            server.server_close()
             cli('core stop now')
             try:
                 proc.wait(timeout=5)

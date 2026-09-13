@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Generate private PJSIP configuration without logging environment values."""
 import os
+import json
 from pathlib import Path
 import sys
 
@@ -86,14 +87,19 @@ match = {v['INBOUND_SBC']}
 
 def main():
     os.umask(0o077)
+    from menu import build_config
     try:
         config = render()
+        menu_config = build_config()
     except ValueError as error:
         print(str(error), file=sys.stderr)
         return 1
     target = Path("/run/asterisk/pjsip.conf")
     target.write_text(config)
     target.chmod(0o600)
+    menu_target = Path("/run/asterisk/menu.json")
+    menu_target.write_text(json.dumps(menu_config))
+    menu_target.chmod(0o600)
     # Avoid forwarding credentials to Asterisk's process environment.
     for key in list(os.environ):
         if key.startswith("ASTERISK_"):
