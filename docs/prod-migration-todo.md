@@ -173,15 +173,18 @@ Use this checklist only for future services that are added to the Git-managed st
 - Verify logs have no startup migration errors.
 - Only then remove or archive old service definition.
 
-## Asterisk IVR Service (not deployed)
+## Asterisk IVR Service
 
 Service configuration and runbook: [Asterisk IVR](asterisk-ivr.md). Direct Vodafone
 registration with baresip was previously tested successfully; this does not
 validate Asterisk. The service is included in the main Compose stack and is available
-to the manual deployment workflow as `asterisk` (also included in `all`). No production
-deployment has been performed.
+to the manual deployment workflow as `asterisk` (also included in `all`). The user
+deployed it through GitHub Actions; production registration and health were verified.
+The first incoming call exposed poor eSpeak audio and missing DTMF recognition.
+Piper prompts and expanded DTMF support require a new deployment and real-call acceptance.
 
-- [ ] Validate Asterisk Vodafone registration on the local test host.
+- [x] Verify Asterisk Vodafone registration and healthy container on production.
 - [ ] Verify incoming greeting, bidirectional RTP, key 1, invalid input and timeout with real calls.
 - [ ] Add and test local Home Assistant integration after IVR acceptance.
-- [ ] Deploy through the manual GitHub workflow with `services: asterisk` after completing production `ENV_FILE`; user will trigger the job.
+- [x] Initial deployment through the manual GitHub workflow with `services: asterisk` and production `ENV_FILE`.
+- [ ] Deploy the Piper/DTMF update and verify speech quality and key 1 with a real call.

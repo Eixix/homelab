@@ -8,6 +8,7 @@ services:
     network_mode: host
     environment:
       TZ: ${TZ:-Europe/Berlin}
+      ASTERISK_DTMF_MODE: ${ASTERISK_DTMF_MODE:-auto}
       ASTERISK_MODE: ${ASTERISK_MODE:-local}
       ASTERISK_BIND: ${ASTERISK_BIND:-}
       ASTERISK_REGISTRATION_EXPIRATION: ${ASTERISK_REGISTRATION_EXPIRATION:-3600}

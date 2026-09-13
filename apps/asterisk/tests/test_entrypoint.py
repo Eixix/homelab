@@ -28,6 +28,15 @@ class ConfigTests(unittest.TestCase):
         self.assertIn("external_media_address = 198.51.100.10", config)
         self.assertIn("contact_user = ivr", config)
         self.assertIn("expiration = 600\n", config)
+        self.assertIn("dtmf_mode = auto\n", config)
+
+    def test_dtmf_modes(self):
+        for mode in ("auto", "auto_info", "rfc4733", "inband", "info"):
+            with patch.dict(os.environ, self.environment() | {"ASTERISK_DTMF_MODE": mode}, clear=True):
+                self.assertIn("dtmf_mode = " + mode + "\n", entrypoint.render())
+        with patch.dict(os.environ, self.environment() | {"ASTERISK_DTMF_MODE": "invalid"}, clear=True):
+            with self.assertRaises(ValueError):
+                entrypoint.render()
 
     def test_invalid_registration_expiration_rejected(self):
         for value in ("0", "86401", "invalid"):

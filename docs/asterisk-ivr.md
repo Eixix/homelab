@@ -1,8 +1,9 @@
 # Asterisk IVR-Service
 
-Status: regulärer Homelab-Service, noch nicht produktiv deployt. Die direkte
-Vodafone-SIP-Registrierung wurde laut Vorarbeit mit baresip erfolgreich getestet.
-Asterisk muss Registrierung, eingehende Anrufe, RTP und DTMF separat nachweisen.
+Status: regulärer Homelab-Service, über den manuellen GitHub-Job deployt. Asterisk
+ist bei Vodafone registriert und hat einen echten Anruf angenommen. Nach Problemen
+mit eSpeak-Sprachqualität und Tastenerkennung stehen das Piper-/DTMF-Update und
+dessen Abnahme mit einem echten Anruf noch aus.
 
 ## Aufbau
 
@@ -10,16 +11,19 @@ Asterisk muss Registrierung, eingehende Anrufe, RTP und DTMF separat nachweisen.
 Containername sind `asterisk`, Compose-Projekt ist `homelab`. Der Service startet
 mit dem Hauptstack und wird bei Prozessabbruch automatisch neu gestartet
 (`unless-stopped`). Der manuelle Deployment-Workflow kann ihn gezielt über
-`asterisk` oder zusammen mit dem Stack über `all` deployen. Es wurde noch kein
-produktives Deployment durchgeführt; die Produktions-Abnahme bleibt offen.
+`asterisk` oder zusammen mit dem Stack über `all` deployen. Die initiale
+Bereitstellung ist erfolgt; die Audio-/DTMF-Abnahme des Updates bleibt offen.
 Linux-Host-Netzwerk vermeidet eine zusätzliche Docker-NAT-Schicht. Keine Traefik-Route.
 Der Prozess läuft als Container-root ohne Linux-Capabilities. Einstellungen kommen
 aus der ignorierten `.env`; beim Start entsteht `/run/asterisk/pjsip.conf` mit
 Modus 600 auf einem tmpfs. RTP nutzt UDP 10000–10019.
 
 Das Image baut Asterisk 20 aus Alpine 3.22 und erzeugt deutsche WAV-Ansagen lokal
-mit eSpeak NG und SoX (8 kHz, mono, signed PCM 16 Bit). Es braucht keinen
-Cloud-TTS-Dienst. Texte stehen in `apps/asterisk/prompts/`; Änderungen brauchen
+mit Piper 1.8.0, der deutschen Stimme Thorsten (medium, CC0-Datensatz) und SoX
+(8 kHz, mono, signed PCM 16 Bit, Pegel auf −3 dBFS normalisiert). Der Modellstand
+ist im Dockerfile festgelegt. Das Modell wird beim Build heruntergeladen; die
+Synthese läuft lokal. Im Laufzeit-Image liegen nur die WAV-Dateien, kein TTS-Modell
+und kein Cloud-TTS-Zugang. Texte stehen in `apps/asterisk/prompts/`; Änderungen brauchen
 einen erneuten Build. Paketupdates innerhalb des Alpine-Zweigs sind nicht gepinnt.
 
 Ablauf: Begrüßung → Taste 1 → Testansage → Auflegen. DTMF funktioniert auch
@@ -43,8 +47,10 @@ docker compose --env-file .env up -d --build asterisk
 Die lokale Vorlage bindet ausschließlich `127.0.0.1:5060` und akzeptiert nur
 SIP-Verkehr vom selben Host. Ein Softphone/baresip auf diesem Host nutzt einen
 anderen lokalen SIP-Port, keine Registrierung und wählt `sip:ivr@127.0.0.1:5060`.
-Als DTMF-Modus RFC 4733 (häufig „RFC 2833“ genannt) verwenden. RTP-Portbereich
-auch im lokalen Firewall-Setup berücksichtigen. Loopback-IP-Zuordnung ist nur
+RFC 4733 (häufig „RFC 2833“ genannt), SIP INFO und Inband-DTMF werden unterstützt.
+`auto` verwendet RFC 4733 bei erfolgreicher Aushandlung und sonst Inband-Erkennung.
+Das zusätzlich geladene SIP-INFO-Modul nimmt Tastensignale als INFO-Nachrichten an.
+RTP-Portbereich auch im lokalen Firewall-Setup berücksichtigen. Loopback-IP-Zuordnung ist nur
 für diesen lokalen Test gedacht.
 
 ```bash
@@ -66,6 +72,7 @@ docker compose --env-file .env stop asterisk
 
    | Variable | Wert |
    | --- | --- |
+   | `ASTERISK_DTMF_MODE` | Standard `auto`; optional `rfc4733`, `inband`, `info` oder `auto_info` für gezielte Diagnose |
    | `ASTERISK_BIND` | Lokale LAN-IP mit Port, z. B. `192.0.2.10:5060` |
    | `ASTERISK_REGISTRATION_EXPIRATION` | Registrierung in Sekunden (Standard 3600; baresip-`regint` übernehmen) |
    | `ASTERISK_REGISTRAR` | Registrar-Host, optional mit Port, ohne `sip:` |
@@ -170,7 +177,7 @@ Audio aus und benötigt noch keinen HA-Token.
 ## Lokale technische Prüfung
 
 Compose-Validierung des Hauptstacks sowie Image-Build erfolgreich.
-Sechs Generator-Tests prüfen Vodafone-Parameter, Sonderzeichen, Pflichtwerte,
+Sieben Generator-Tests prüfen Vodafone-Parameter, Sonderzeichen, Pflichtwerte,
 lokalen Modus und das Ablehnen ungültiger Konfiguration. Vier weitere Tests prüfen
 den Healthcheck einschließlich abgelehnter Registrierung und CLI-Timeout. Ausführen mit
 `PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s apps/asterisk/tests`.
@@ -178,4 +185,39 @@ Im isolierten Container ohne Netzwerk wurden PJSIP-Endpoint, SIP-Kanalmodul und
 IVR-Dialplan geladen. Die Isolation verursachte erwartete DNS-/Interface-Hinweise.
 Auf dieser Entwicklungsumgebung benötigte der Build `docker build --network host
 -t homelab-asterisk apps/asterisk`, weil Docker-Bridge/veth nicht verfügbar war.
-Echte Vodafone-Anrufe und hörbare DTMF-/Audio-Abnahme stehen noch aus.
+Die Registrierung und ein eingehender Vodafone-Anruf wurden produktiv verifiziert;
+die DTMF-/Audio-Abnahme des Updates steht noch aus.
+
+
+## Audio- und DTMF-Regressionstest
+
+Der ursprüngliche eSpeak-Klang wurde nach dem ersten echten Testanruf durch Piper
+ersetzt. Zusätzlich sind `res_pjsip_dtmf_info` und `res_timing_timerfd` geladen;
+der bisher fest auf RFC 4733 gesetzte Trunk verwendet standardmäßig `auto`.
+Das tatsächlich beim Vodafone-Test verwendete DTMF-Verfahren wurde nicht
+mitgeschnitten und ist daher noch nicht nachgewiesen. Auf dem Server ist ein
+privates Default-Gateway aktiv, während `ASTERISK_LOCAL_NET` und
+`ASTERISK_PUBLIC_IP` leer sind. Beim nächsten echten Anruf daher auch prüfen, ob
+eingehende RTP-/DTMF-Pakete ankommen; lokale Tests belegen die Provider-NAT-Strecke
+nicht.
+
+Der folgende Test baut ausschließlich synthetische Anrufe über Loopback auf. Er
+sendet Taste 1 als RFC-4733-Event, SIP INFO und als G.711-A-law-Ton und prüft Audio
+sowie den Sprung zur Testansage während und nach der Begrüßung. Er lädt keine
+`.env` und registriert sich nicht:
+
+```bash
+docker build -t homelab-asterisk apps/asterisk
+docker run --rm --network none --cap-drop ALL --security-opt no-new-privileges \
+  --tmpfs /run/asterisk:mode=0700 -e ASTERISK_MODE=local \
+  --mount type=bind,src="$(pwd)/apps/asterisk/tests/smoke_dtmf.py",dst=/tmp/smoke_dtmf.py,readonly \
+  --entrypoint python3 homelab-asterisk /tmp/smoke_dtmf.py
+```
+
+Nach dem manuellen Deploy erneut einen echten Vodafone-Anruf mit Taste 1 prüfen.
+`ASTERISK_DTMF_MODE` muss für das Update nicht ergänzt werden, solange der Standard
+`auto` gewünscht ist. Nur bei bereits explizit gesetztem Wert diesen anpassen.
+
+Stimme und Technik: [Thorsten-Modellkarte](https://huggingface.co/rhasspy/piper-voices/blob/1162a9173d0ce503555aed757976b7a9912eae4c/de/de_DE/thorsten/medium/MODEL_CARD),
+[Piper CLI](https://github.com/OHF-Voice/piper1-gpl/blob/main/docs/CLI.md),
+[Asterisk DTMF-Modi](https://docs.asterisk.org/Certified-Asterisk_20.7_Documentation/API_Documentation/Module_Configuration/res_pjsip/#dtmf_mode).

@@ -1,9 +1,15 @@
-FROM alpine:3.22 AS prompts
-RUN apk add --no-cache espeak-ng sox
+FROM python:3.12-slim-bookworm AS prompts
+RUN apt-get update && apt-get install -y --no-install-recommends sox ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install --no-cache-dir piper-tts==1.8.0
+WORKDIR /voice
+# Pin the public CC0 Thorsten voice; models never enter the runtime image.
+ARG VOICE_REVISION=1162a9173d0ce503555aed757976b7a9912eae4c
+RUN python -c 'import os, urllib.request; base = "https://huggingface.co/rhasspy/piper-voices/resolve/" + os.environ["VOICE_REVISION"] + "/de/de_DE/thorsten/medium/"; [urllib.request.urlretrieve(base + name, name) for name in ("de_DE-thorsten-medium.onnx", "de_DE-thorsten-medium.onnx.json", "MODEL_CARD")]'
 COPY prompts/ /prompts/
-RUN mkdir /sounds && for name in greeting test invalid goodbye; do \
-      espeak-ng -v de -s 145 -f /prompts/$name.txt -w /tmp/$name.wav && \
-      sox /tmp/$name.wav -r 8000 -c 1 -b 16 -e signed-integer /sounds/$name.wav; \
+RUN set -eu; mkdir /sounds; for name in greeting test invalid goodbye; do \
+      python -m piper -m /voice/de_DE-thorsten-medium.onnx --input-file /prompts/$name.txt -f /tmp/$name.wav; \
+      sox /tmp/$name.wav -r 8000 -c 1 -b 16 -e signed-integer /sounds/$name.wav gain -n -3; \
     done
 
 FROM alpine:3.22

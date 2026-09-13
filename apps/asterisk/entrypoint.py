@@ -28,6 +28,9 @@ def render():
     expiration = setting("REGISTRATION_EXPIRATION", "3600")
     if not expiration.isascii() or not expiration.isdecimal() or not 60 <= int(expiration) <= 86400:
         raise ValueError("ASTERISK_REGISTRATION_EXPIRATION must be 60..86400 seconds")
+    dtmf_mode = setting("DTMF_MODE", "auto")
+    if dtmf_mode not in ("auto", "auto_info", "rfc4733", "inband", "info"):
+        raise ValueError("ASTERISK_DTMF_MODE must be auto, auto_info, rfc4733, inband or info")
     nat = ""
     for env, option in (("LOCAL_NET", "local_net"), ("PUBLIC_IP", "external_signaling_address"), ("PUBLIC_IP", "external_media_address")):
         value = setting(env)
@@ -68,7 +71,7 @@ from_user = {v['SIP_USER']}
 from_domain = {v['SIP_DOMAIN']}
 disallow = all
 allow = alaw,ulaw
-dtmf_mode = rfc4733
+dtmf_mode = {dtmf_mode}
 direct_media = no
 rtp_symmetric = yes
 force_rport = yes
