@@ -13,6 +13,7 @@ import os
 from pathlib import Path
 import re
 import socket
+import socketserver
 import struct
 import subprocess
 import time
@@ -25,7 +26,7 @@ def cli(command):
     return subprocess.run(['asterisk', '-rx', command], capture_output=True, text=True, timeout=3)
 
 
-def call(method, delay=1, steps=None, expected="custom/unavailable"):
+def call(method, delay=1, steps=None, expected="custom/forward-fallback"):
     steps = [("1", delay)] if steps is None else steps
     sip = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sip.bind(('127.0.0.1', 0))
@@ -88,9 +89,20 @@ def call(method, delay=1, steps=None, expected="custom/unavailable"):
                     break
 
         cseq = 2
+        wait_offset = offset
         for digits, pause in steps:
-            for _ in range(round(pause * 50)):
-                packet(b'\xd5' * 160)
+            if isinstance(pause, str):
+                for frame in range(1000):
+                    packet(b'\xd5' * 160)
+                    if frame >= 15 and 'custom/' + pause in LOG.read_text()[wait_offset:]:
+                        break
+                else:
+                    raise AssertionError('Timed out waiting for prompt: ' + pause)
+            else:
+                for _ in range(round(pause * 50)):
+                    packet(b'\xd5' * 160)
+            if digits:
+                wait_offset = len(LOG.read_text())
             assert received > 10, f'{method}: no usable outbound audio'
             for digit in digits:
                 event = '0123456789*#'.index(digit)
@@ -115,7 +127,7 @@ def call(method, delay=1, steps=None, expected="custom/unavailable"):
                     packet(b'\xd5' * 160)
         for _ in range(250):
             packet(b'\xd5' * 160)
-            if expected in LOG.read_text()[offset:]:
+            if expected in LOG.read_text()[wait_offset:]:
                 print(f'{method}: expected menu branch reached; audio received', flush=True)
                 break
         else:
@@ -173,16 +185,36 @@ def main():
     pjsip = Path('/etc/asterisk/pjsip.local.conf')
     pjsip.write_text(pjsip.read_text() + '\n[vodafone]\ntype=endpoint\ntransport=transport-udp\ndisallow=all\nallow=alaw\ndirect_media=no\n')
     requests = []
+    get_requests = []
     class Handler(BaseHTTPRequestHandler):
+        light_state = 'off'
+        def do_GET(self):
+            get_requests.append(self.path)
+            self.send_response(200)
+            self.end_headers()
+            body = {'state': Handler.light_state} if self.path.startswith('/api/states/') else {'message': 'API running.'}
+            self.wfile.write(json.dumps(body).encode())
         def do_POST(self):
             requests.append((self.path, self.headers.get('Authorization'),
                              json.loads(self.rfile.read(int(self.headers['Content-Length'])))))
+            Handler.light_state = 'on' if self.path.endswith('/turn_on') else 'off'
             self.send_response(200)
             self.end_headers()
             self.wfile.write(b'[]')
         def log_message(self, *args): pass
     server = HTTPServer(('127.0.0.1', 0), Handler)
     threading.Thread(target=server.serve_forever, daemon=True).start()
+    status_requests = []
+    class StatusHandler(socketserver.StreamRequestHandler):
+        def handle(self):
+            action = json.loads(self.rfile.readline())['action']
+            status_requests.append(action)
+            assert action in ('status', 'backup'), 'Status interface must never mutate'
+            self.wfile.write(json.dumps({'homeassistant': 'running', 'traefik': 'running',
+                                         'adguardhome': 'running', 'backup': 'recent'}).encode() + b'\n')
+    Path('/run/ivr-status').mkdir(mode=0o700, exist_ok=True)
+    status_server = socketserver.ThreadingUnixStreamServer('/run/ivr-status/status.sock', StatusHandler)
+    threading.Thread(target=status_server.serve_forever, daemon=True).start()
     os.environ.update(ASTERISK_MENU_PIN='012345', ASTERISK_HA_TOKEN='synthetic-test-token',
                       ASTERISK_HA_URL=f'http://127.0.0.1:{server.server_port}',
                       ASTERISK_HA_KITCHEN_ENTITY='light.synthetic_kitchen')
@@ -212,18 +244,33 @@ def main():
             call('rfc4733', steps=[('2', 1)])
             assert peer.numbers == ['+4915112345678'] * 4 + ['+4915112345679'], 'Wrong outbound destination'
             print('Both fixed forwarding targets and busy fallback verified', flush=True)
-            assert not requests, 'Public menu must never call Home Assistant'
-            call('rfc4733', steps=[('9', 1), ('000000#', 0.5)], expected='custom/denied')
-            assert not requests, 'Wrong PIN must never call Home Assistant'
-            call('rfc4733', steps=[('9', 1), ('012345#', 0.5), ('1', 0.5)], expected='custom/action-ok')
+            assert not requests and not get_requests and not status_requests, 'Public menu must not access private state'
+            call('rfc4733', steps=[('9', 'greeting'), ('000000#', 'pin')], expected='custom/denied')
+            assert not requests and not get_requests and not status_requests, 'Wrong PIN must never access private state'
+            call('rfc4733', steps=[
+                ('9', 'greeting'), ('012345#', 'pin'),
+                ('1', 'home-menu'), ('1', 'devices-menu'), ('2', 'devices-menu'), ('0', 'devices-menu'),
+                ('2', 'home-menu'), ('1', 'status-menu'), ('2', 'status-menu'), ('3', 'status-menu'), ('0', 'status-menu'),
+                ('3', 'home-menu'), ('1', 'homelab-menu'), ('2', 'homelab-menu'), ('0', 'homelab-menu'),
+                ('0', 'home-menu'), ('0', 'greeting'), ('8', 'greeting')], expected='custom/invalid')
             assert requests == [('/api/services/light/turn_on', 'Bearer synthetic-test-token',
+                                 {'entity_id': 'light.synthetic_kitchen'}),
+                                ('/api/services/light/turn_off', 'Bearer synthetic-test-token',
                                  {'entity_id': 'light.synthetic_kitchen'})]
-            print('PIN gate and exactly one kitchen turn_on request verified', flush=True)
+            assert get_requests == ['/api/states/light.synthetic_kitchen', '/api/states/light.synthetic_kitchen',
+                                    '/api/', '/api/states/light.synthetic_kitchen']
+            assert status_requests == ['status', 'status', 'backup']
+            print('Complete protected tree, kitchen on/off, read-only status and back navigation verified', flush=True)
+            # Silence and repeated invalid public input terminate without private requests.
+            call('rfc4733', steps=[('', 14)], expected='custom/goodbye')
+            print('Public timeout verified', flush=True)
         except Exception:
             print(LOG.read_text())
             raise
         finally:
             peer.close()
+            status_server.shutdown()
+            status_server.server_close()
             server.shutdown()
             server.server_close()
             cli('core stop now')

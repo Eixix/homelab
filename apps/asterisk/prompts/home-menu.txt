@@ -1,1 +1,1 @@
-Für das Einschalten der Küchenlampe drücken Sie die Eins. Zum Beenden drücken Sie die Null.
+Für Zuhause steuern drücken Sie die Eins. Für Statusabfragen die Zwei. Für Homelab-Auskünfte die Drei. Zurück mit Null.

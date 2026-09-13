@@ -1,1 +1,1 @@
-Der Einschaltbefehl konnte nicht bestätigt werden.
+Die Ausführung konnte nicht vollständig bestätigt werden. Bitte prüfen Sie den Zustand, bevor Sie den Auftrag wiederholen.

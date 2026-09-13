@@ -181,8 +181,9 @@ validate Asterisk. The service is included in the main Compose stack and is avai
 to the manual deployment workflow as `asterisk` (also included in `all`). The user
 deployed it through GitHub Actions; production registration and health were verified.
 The user confirmed that the Piper prompts and DTMF update work with real calls.
-The next update adds two fixed mobile forwarding targets and one PIN-protected
-local Home Assistant action.
+The next update adds two fixed mobile forwarding targets and a PIN-protected
+phone tree for kitchen-light on/off and read-only HA, container and backup status.
+Deploy both `asterisk asterisk-status`; no remote restart or lock action is included.
 
 - [x] Verify Asterisk Vodafone registration and healthy container on production.
 - [x] Verify the Piper greeting and key 1 with a real incoming call.
@@ -191,3 +192,6 @@ local Home Assistant action.
 - [ ] Deploy and accept the PIN-protected local kitchen-light action, including wrong PIN and HA failure handling.
 - [x] Initial deployment through the manual GitHub workflow with `services: asterisk` and production `ENV_FILE`.
 - [x] Deploy the Piper/DTMF update and verify speech quality and key 1 with a real call.
+- [ ] Accept the complete protected IVR tree: kitchen on/off/state, HA API availability, all back-navigation and reauthentication.
+- [ ] Accept read-only status for Home Assistant, Traefik and AdGuard Home, including a missing/unavailable status broker.
+- [ ] After the next successful scheduled backup, verify the IVR backup marker and recent/stale announcement.

@@ -2,35 +2,69 @@
 
 Asterisk läuft als regulärer Homelab-Service. Vodafone-Registrierung, deutsche
 Piper-Ansagen und DTMF wurden mit einem echten Anruf bestätigt. Die Erweiterung
-um Mobilfunk-Weiterleitungen und eine geschützte Home-Assistant-Aktion ist lokal
+um Mobilfunk-Weiterleitungen, den geschützten Telefonbaum und Homelab-Auskünfte ist lokal
 getestet und muss nach dem manuellen Deployment am echten Anschluss abgenommen werden.
 
 ## Öffentliches Telefonmenü
 
-Die Begrüßung nennt ausschließlich zwei Optionen:
+Die Begrüßung bietet:
 
 - Taste 1 verbindet mit Annika.
 - Taste 2 verbindet mit Tobias.
+- Taste 0 wiederholt die Begrüßung.
 
 Die Zielnummern werden ausschließlich vom Betreiber konfiguriert. Es gibt keine
 freie Rufnummerneingabe und keine Übernahme einer vom Anrufer angegebenen Ziel-URI.
 Eine Weiterleitung baut einen zusätzlichen ausgehenden Anruf über Vodafone auf und
 verbindet beide Gesprächsseiten. Der Anschluss muss diese parallelen Verbindungen
-unterstützen. Der Rufversuch dauert höchstens 35 Sekunden; das vermittelte Gespräch
+unterstützen. Der Rufversuch dauert höchstens 25 Sekunden; das vermittelte Gespräch
 ist auf 30 Minuten begrenzt. Bei besetztem, fehlendem oder nicht erreichbarem Ziel
-folgt eine Fehleransage. Im lokalen Modus wird kein Provider angerufen.
+folgt eine erneute Auswahl zwischen beiden Personen und der Begrüßung. Im lokalen
+Modus wird kein Provider angerufen. Eine Mobilfunk-Mailbox kann den Anruf annehmen;
+eine persönliche Annahmebestätigung ist derzeit nicht eingebaut.
 
-Ungültige Eingaben im Hauptmenü sind auf drei Versuche begrenzt. Ohne Eingabe endet
-das Menü nach fünf Sekunden Wartezeit. Die Menüphase hat eine absolute Grenze von
-120 Sekunden; maximal zwei eingehende Gespräche sind gleichzeitig erlaubt.
-Asterisk erlaubt vier Kanäle, damit die beiden ausgehenden Gesprächsseiten Platz haben.
+Im öffentlichen Menü sind insgesamt fünf Auswahlen möglich, einschließlich
+Wiederholungen und erneuter Weiterleitungen. Ohne Eingabe endet es sieben Sekunden
+nach der Ansage. Die öffentliche Menüphase hat eine Grenze von 120 Sekunden;
+nach einer Rückkehr aus Weiterleitung oder geschütztem Bereich beginnt diese neu.
+Maximal zwei eingehende Gespräche sind gleichzeitig erlaubt. Asterisk erlaubt vier
+Kanäle, damit die beiden ausgehenden Gesprächsseiten Platz haben.
+
+## Geschützter Telefonbaum
+
+Der Zugang bleibt in öffentlichen Ansagen unerwähnt. Nach Eingabe des numerischen
+Passworts und Bestätigung mit der Raute stehen diese Menüs bereit:
+
+| Menü | Taste | Funktion |
+| --- | --- | --- |
+| Hauptmenü | 1 | Zuhause steuern |
+| Hauptmenü | 2 | Statusabfragen |
+| Hauptmenü | 3 | Homelab-Auskünfte |
+| Zuhause | 1 | Küchenlicht einschalten |
+| Zuhause | 2 | Küchenlicht ausschalten |
+| Status | 1 | Home-Assistant-API erreichbar? |
+| Status | 2 | Küchenlicht an, aus oder Zustand unbekannt? |
+| Status | 3 | Kurze Zusammenfassung der Container und des Backup-Status |
+| Homelab | 1 | Einzelstatus von Home Assistant, Traefik und AdGuard Home |
+| Homelab | 2 | Letzter erfolgreicher Backup-Upload innerhalb von 24 Stunden? |
+
+**0 führt immer eine Ebene zurück**, aus dem geschützten Hauptmenü zur öffentlichen
+Begrüßung. Ein erneuter Zugang verlangt wieder das Passwort. Sieben Sekunden ohne
+Eingabe verlassen den geschützten Bereich. Dieser ist auf 30 Auswahlen und fünf
+Minuten pro Zugang begrenzt. Ungültige Eingaben lösen keine Aktion aus.
+
+Vorerst steuert der Baum ausschließlich die eine konfigurierte Küchenlampe.
+Weitere Lampen, Szenen, Neustarts und Türschloss-Aktionen sind nicht implementiert.
+Ein späteres Nuki-Schloss benötigt eine eigene, bewusste Erweiterung; `lock.*`
+wird in der Küchenlicht-Konfiguration abgelehnt.
 
 ## Konfiguration
 
 `compose/apps/asterisk.yaml` ist in `compose.yaml` eingebunden. Service- und
-Containername sind `asterisk`; das Projekt heißt `homelab`. Der manuelle
-GitHub-Deployment-Workflow kann den Service über `services: asterisk` oder zusammen
-mit allen Diensten über `all` starten. Das Deployment bleibt manuell.
+Containername sind `asterisk`; der Auskunftsdienst heißt `asterisk-status`. Das
+Projekt heißt `homelab`. Im manuellen GitHub-Deployment-Workflow für dieses Update
+**`asterisk asterisk-status`** ins Feld `services` eintragen. `all` enthält beide
+Dienste ebenfalls. Es sind keine zusätzlichen `.env`-Variablen nötig.
 
 Alle echten Werte stehen ausschließlich in der ignorierten `.env` beziehungsweise
 im GitHub-Secret `ENV_FILE`. Der Deploy-Job überschreibt die Server-`.env` mit
@@ -63,26 +97,55 @@ Passwörter und PIN in der `.env` bei Bedarf einfach quotieren, damit beispielsw
 `$` nicht interpoliert wird und führende Nullen erhalten bleiben. SIP-Werte mit
 Steuerzeichen oder Backslashes werden abgelehnt. Fehlende SIP-Pflichtwerte verhindern
 im Vodafone-Modus den Start. Fehlende Zielnummern deaktivieren nur die jeweilige
-Weiterleitung; fehlende PIN/HA-Werte deaktivieren nur die geschützte Funktion.
+Weiterleitung. Ohne PIN ist der gesamte geschützte Bereich deaktiviert. Fehlende
+HA-Werte deaktivieren nur HA-Funktionen; die Homelab-Auskunft bleibt nach korrektem
+Passwort verfügbar, auch wenn Home Assistant ausgefallen ist.
 
-Die HA-Anbindung erlaubt genau eine Aktion: `turn_on` für die konfigurierte
-Küchenlampe. URL, Ziel und Aktion werden nicht aus Anrufereingaben übernommen.
-Die Zugangsdaten werden pro Anruf geprüft, nicht anhand der Anrufernummer.
-Pro Anruf sind drei PIN-Versuche möglich; über alle Anrufe hinweg höchstens zehn
-Versuche in fünf Minuten. Der globale Zähler liegt gesperrt gegen parallele Zugriffe
-im tmpfs und wird bei einem Container-Neustart zurückgesetzt.
+Die Zugangsdaten werden pro Zugang geprüft, nicht anhand der Anrufernummer. Pro
+Anruf sind insgesamt drei PIN-Versuche möglich, auch nach Rückkehr ins öffentliche
+Menü; über alle Anrufe hinweg höchstens zehn Versuche in fünf Minuten. Der globale
+Zähler liegt gesperrt gegen parallele Zugriffe im tmpfs und wird bei einem
+Container-Neustart zurückgesetzt.
 
-HA-Aufrufe erfolgen lokal mit einem Timeout von drei Sekunden und ohne automatische
-Wiederholung oder HTTP-Redirects. Erfolg bedeutet, dass HA den Einschaltbefehl
-angenommen hat; ein Fehler oder Timeout wird als fehlende Bestätigung angesagt.
-Ein Timeout beweist nicht, dass HA die Aktion nicht ausgeführt hat. Es gibt keine
-allgemeine Fernsteuer-API, keinen Shell-Zugriff aus dem Menü und keine weiteren
-HA-Aktionen. Die öffentlichen Ansagen nennen den geschützten Zugang nicht.
+HA-Aufrufe erfolgen lokal mit einem Timeout von drei Sekunden, ohne automatische
+Wiederholung, Umgebungs-Proxy oder HTTP-Redirects. Ein- und Ausschalten verwenden
+feste `turn_on`-/`turn_off`-Aktionen und die konfigurierte Entity. Nach erfolgreichem
+Aufruf wird der Zustand einmal separat gelesen. Nur bei passendem Zustand wird
+„eingeschaltet“ beziehungsweise „ausgeschaltet“ angesagt. Andernfalls lautet die
+Ansage, dass der Auftrag angenommen, der Endzustand jedoch nicht bestätigt wurde.
+Ein Fehler oder Timeout beweist nicht, dass HA die Aktion nicht ausgeführt hat.
+URL, Entity, Docker-Ziele und API-Pfade stammen nie aus Anrufereingaben.
+
+## Nur lesende Homelab-Auskunft
+
+`asterisk-status` stellt ausschließlich `ping`, `status` und `backup` über einen
+privaten Unix-Socket bereit. Er hat kein Netzwerk und keinen veröffentlichten Port.
+Asterisk erhält nur das Socket-Volume, schreibgeschützt, und keinen Docker-Socket.
+Der Statusdienst liest genau die Container `homeassistant`, `traefik` und
+`adguardhome` und prüft deren Compose-Projekt- und Service-Labels. Er gibt nur feste
+Zustandswerte zurück, niemals Docker-Umgebungsvariablen, Logs oder andere Rohdaten.
+Ein laufender Container ist kein Nachweis funktionierender Anwendung, DNS-Auflösung
+oder externer Erreichbarkeit. Deshalb ist die HA-API-Prüfung separat verfügbar.
+
+Der Statusdienst besitzt den Docker-Socket. Dessen `:ro`-Mount verhindert **keine**
+schreibenden Docker-API-Aufrufe; die Begrenzung auf feste GET-Inspektionen erfolgt
+im Anwendungscode. Der kleine Dienst gehört daher zur vertrauenswürdigen
+Infrastruktur. Es gibt keine Weiterleitung beliebiger Docker-Anfragen und keine
+Neustart-/Exec-Funktion. Die Dateisystemrechte des Socket-Verzeichnisses sind 0700,
+die des Sockets 0600. Beide Container laufen ohne zusätzliche Capabilities.
+
+Nach erfolgreichem verschlüsseltem S3-Upload schreibt `backup.sh` atomar einen
+Unix-Zeitstempel nach `data/asterisk-status/last-backup-success`. Nur dieses
+Statusverzeichnis wird in den Auskunftsdienst eingebunden. Bis zum ersten
+Backup-Lauf mit der neuen Skriptversion lautet die Ansage „keine gültige
+Statusmeldung“. Alte, fehlende oder unlesbare Marker werden nicht als aktuelles
+Backup ausgegeben. Der Marker belegt einen erfolgreichen Upload, keinen
+Wiederherstellungstest. Fehlgeschlagene Backups erneuern ihn nicht.
 
 ## Audio, SIP und Netzwerk
 
 Die Ansagen werden beim Image-Build lokal mit Piper 1.8.0 und der deutschen
-Thorsten-Stimme (medium, CC0-Datensatz) erzeugt. Der Modellstand ist festgelegt;
+Thorsten-Stimme (high, CC0-Datensatz) erzeugt. Der Modellstand ist festgelegt;
 das Modell wird beim Build heruntergeladen. Nur die fertigen WAV-Dateien gelangen
 in das Laufzeit-Image: 8 kHz, mono, PCM 16 Bit, auf −3 dBFS normalisiert.
 Änderungen an `apps/asterisk/prompts/*.txt` erfordern einen neuen Build.
@@ -107,8 +170,8 @@ Quelle für Anschlusswerte; keine universellen Vodafone-Zugangswerte annehmen.
 
 ```bash
 docker compose --env-file .env --profile external config --quiet
-docker compose --env-file .env up -d --build asterisk
-docker compose --env-file .env ps asterisk
+docker compose --env-file .env up -d --build asterisk asterisk-status
+docker compose --env-file .env ps asterisk asterisk-status
 docker compose --env-file .env exec asterisk python3 /usr/local/bin/asterisk-healthcheck.py
 docker compose --env-file .env logs --tail 50 asterisk
 # Stoppt nur Asterisk:
@@ -138,19 +201,26 @@ Gesprächs- oder HA-Daten. `.env` und `data/` liegen im Umfang des Repo-Backups.
 Für eine konsistente manuelle SQLite-Kopie den Service vorher stoppen. Bei
 künftigem fachlichem Datenbankeinsatz einen SQLite-Backup-Schritt ergänzen.
 Zur Wiederherstellung den passenden Git-Stand, die geschützte `.env` und bei Bedarf
-`data/asterisk/db` wiederherstellen und nur Asterisk starten.
+`data/asterisk/db` wiederherstellen und beide Telefondienste starten. Nach einer
+Wiederherstellung den Backup-Statusmarker nur übernehmen, wenn er noch den
+tatsächlichen letzten Upload beschreibt.
 
 ## Tests
 
-Unit- und HTTP-Mock-Tests brauchen keine echten Zugangsdaten und keine HA-Instanz:
+Der Workflow `Test phone tree` führt Unit- und Integrationstests bei relevanten
+Änderungen automatisch aus; er führt kein Deployment aus. Die Tests brauchen
+keine echten Zugangsdaten und keine HA-Instanz:
 
 ```bash
 PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s apps/asterisk/tests
+PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s apps/asterisk-status/tests
 ```
 
 Der Integrationstest verwendet synthetische Anrufe, Loopback-RTP, einen SIP-Mock
 für beide Weiterleitungsziele und einen lokalen HTTP-Mock. Er prüft korrekte Ziele,
-Besetzt-Behandlung, alle drei DTMF-Verfahren sowie die PIN-Sperre vor dem HA-Aufruf. Er lädt keine `.env`, ruft keine Mobilnummer an und schaltet kein Gerät.
+Besetzt-Behandlung, alle drei DTMF-Verfahren, die PIN-Sperre sowie jeden Zweig des
+geschützten Baums und die Rücknavigation. HA und der Unix-Statusdienst werden
+simuliert. Er lädt keine `.env`, ruft keine Mobilnummer an und schaltet kein Gerät.
 
 ```bash
 docker build -t homelab-asterisk apps/asterisk
@@ -159,6 +229,12 @@ docker run --rm --network none --cap-drop ALL --security-opt no-new-privileges \
   --mount type=bind,src="$(pwd)/apps/asterisk/tests/smoke_dtmf.py",dst=/tmp/smoke_dtmf.py,readonly \
   --entrypoint python3 homelab-asterisk /tmp/smoke_dtmf.py
 ```
+
+Der separate Image-Test für `asterisk-status` simuliert auch den Docker-Daemon
+über einen Unix-Socket und prüft, dass ausschließlich die drei festen GET-Abfragen
+erfolgen. Befehle dafür stehen in `.github/workflows/asterisk-test.yml`. Der
+Backup-Test führt das echte Skript in einem temporären Verzeichnis mit simulierten
+Datenbank-, Archiv-, Verschlüsselungs- und Upload-Werkzeugen aus.
 
 Auf Entwicklungsumgebungen ohne Docker-Bridge/veth kann der Build mit
 `docker build --network host -t homelab-asterisk apps/asterisk` erfolgen.
@@ -172,5 +248,5 @@ dem manuellen Deploy abnehmen. Die verbindliche Checkliste steht in
 - [Asterisk: PJSIP-Konfigurationsbeziehungen](https://docs.asterisk.org/Configuration/Channel-Drivers/SIP/Configuring-res_pjsip/PJSIP-Configuration-Sections-and-Relationships/)
 - [Asterisk: AGI GET DATA](https://docs.asterisk.org/Asterisk_22_Documentation/API_Documentation/AGI_Commands/get_data/)
 - [Home Assistant: REST API](https://developers.home-assistant.io/docs/api/rest/)
-- [Thorsten-Modellkarte](https://huggingface.co/rhasspy/piper-voices/blob/1162a9173d0ce503555aed757976b7a9912eae4c/de/de_DE/thorsten/medium/MODEL_CARD)
+- [Thorsten-Modellkarte](https://huggingface.co/rhasspy/piper-voices/blob/1162a9173d0ce503555aed757976b7a9912eae4c/de/de_DE/thorsten/high/MODEL_CARD)
 - [Piper CLI](https://github.com/OHF-Voice/piper1-gpl/blob/main/docs/CLI.md)

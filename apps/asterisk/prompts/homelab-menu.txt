@@ -1,0 +1,1 @@
+Den Zustand der wichtigsten Dienste abfragen mit Eins. Den Backup-Status abfragen mit Zwei. Zurück mit Null.

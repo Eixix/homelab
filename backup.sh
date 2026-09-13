@@ -158,5 +158,12 @@ aws s3 cp "$ENCRYPTED_ARCHIVE" "$S3_BUCKET/${S3_PREFIX:-homelab}/$BACKUP_ID.tar.
   --storage-class "${AWS_STORAGE_CLASS:-DEEP_ARCHIVE}" \
   --metadata "sha256=$ARCHIVE_SHA256"
 
+# Publish a non-secret success timestamp only after the encrypted S3 upload succeeded.
+# Atomic replacement lets the read-only phone status distinguish missing/stale backups.
+mkdir -p "$HOMELAB_ROOT/data/asterisk-status"
+backup_status_tmp="$(mktemp "$HOMELAB_ROOT/data/asterisk-status/.last-backup-success.XXXXXX")"
+date +%s > "$backup_status_tmp"
+mv -f "$backup_status_tmp" "$HOMELAB_ROOT/data/asterisk-status/last-backup-success"
+
 printf '%s Backup completed: %s\n' "$(date -u +%FT%TZ)" "$BACKUP_ID"
 notify_backup "success" 0 "Homelab backup completed: $BACKUP_ID"

@@ -1,0 +1,1 @@
+Die Container für Home Assistant, den Webzugang und den DNS-Dienst laufen. Die Erreichbarkeit von Home Assistant können Sie separat prüfen.

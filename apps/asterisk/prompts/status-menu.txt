@@ -1,0 +1,1 @@
+Home Assistant prüfen mit Eins. Küchenlicht abfragen mit Zwei. Homelab-Kurzstatus mit Drei. Zurück mit Null.

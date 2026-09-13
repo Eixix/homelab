@@ -1,1 +1,1 @@
-Der Einschaltbefehl für die Küchenlampe wurde an Home Assistant übergeben.
+Home Assistant hat den Auftrag angenommen. Der endgültige Zustand wurde noch nicht bestätigt.

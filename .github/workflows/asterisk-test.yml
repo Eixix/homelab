@@ -1,0 +1,53 @@
+name: Test phone tree
+
+on:
+  pull_request:
+    paths:
+      - 'apps/asterisk/**'
+      - 'apps/asterisk-status/**'
+      - 'compose/apps/asterisk.yaml'
+      - 'backup.sh'
+      - '.github/workflows/asterisk-test.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/asterisk/**'
+      - 'apps/asterisk-status/**'
+      - 'compose/apps/asterisk.yaml'
+      - 'backup.sh'
+      - '.github/workflows/asterisk-test.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unit, protocol and simulated backup tests
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          python3 -m unittest discover -s apps/asterisk/tests
+          python3 -m unittest discover -s apps/asterisk-status/tests
+          bash -n backup.sh
+      - name: Build phone services
+        run: |
+          docker build --network host -t homelab-asterisk apps/asterisk
+          docker build --network host -t homelab-asterisk-status apps/asterisk-status
+      - name: Simulated calls through the complete phone tree
+        run: |
+          docker run --rm --network none --cap-drop ALL --security-opt no-new-privileges \
+            --tmpfs /run/asterisk:mode=0700 -e ASTERISK_MODE=local \
+            --mount type=bind,src="$PWD/apps/asterisk/tests/smoke_dtmf.py",dst=/tmp/smoke_dtmf.py,readonly \
+            --entrypoint python3 homelab-asterisk /tmp/smoke_dtmf.py
+      - name: Read-only status service with a simulated Docker daemon
+        run: |
+          docker run --rm --network none --read-only --cap-drop ALL --security-opt no-new-privileges \
+            --tmpfs /run --tmpfs /tmp --tmpfs /status \
+            --mount type=bind,src="$PWD/apps/asterisk-status/tests/smoke_status.py",dst=/tmp/smoke_status.py,readonly \
+            --mount type=bind,src="$PWD/apps/asterisk/menu.py",dst=/tmp/menu.py,readonly \
+            --entrypoint python3 homelab-asterisk-status /tmp/smoke_status.py

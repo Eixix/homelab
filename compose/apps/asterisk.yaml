@@ -29,6 +29,7 @@ services:
       ASTERISK_PUBLIC_IP: ${ASTERISK_PUBLIC_IP:-}
     volumes:
       - ../../data/asterisk/db:/var/lib/asterisk/db
+      - ivr-status-socket:/run/ivr-status:ro
     logging:
       driver: json-file
       options:
@@ -48,3 +49,34 @@ services:
       retries: 3
     labels:
       - traefik.enable=false
+
+  asterisk-status:
+    container_name: asterisk-status
+    build:
+      context: ../../apps/asterisk-status
+    restart: unless-stopped
+    network_mode: none
+    read_only: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ivr-status-socket:/run/ivr-status
+      - ../../data/asterisk-status:/status:ro
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 64
+    mem_limit: 128m
+    healthcheck:
+      test: [CMD, python3, /app/status.py, health]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "2"
+    labels:
+      - traefik.enable=false
+
+volumes:
+  ivr-status-socket:

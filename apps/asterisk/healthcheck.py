@@ -19,7 +19,7 @@ def healthy(mode):
     for module in ("chan_pjsip.so", "res_agi.so", "app_dial.so", "bridge_simple.so"):
         if not re.search(re.escape(module) + r"[^\n]*\bRunning\b", modules):
             return False
-    if "AGI(/usr/local/bin/menu.py,forward,annika)" not in cli("dialplan show ivr"):
+    if "AGI(/usr/local/bin/menu.py,public)" not in cli("dialplan show ivr"):
         return False
     endpoints = cli("pjsip show endpoints")
     endpoint = "local-test" if mode == "local" else "vodafone"

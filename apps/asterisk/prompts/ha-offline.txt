@@ -1,0 +1,1 @@
+Home Assistant antwortet nicht auf die Statusabfrage.

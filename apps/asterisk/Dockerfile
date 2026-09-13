@@ -5,10 +5,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends sox ca-certific
 WORKDIR /voice
 # Pin the public CC0 Thorsten voice; models never enter the runtime image.
 ARG VOICE_REVISION=1162a9173d0ce503555aed757976b7a9912eae4c
-RUN python -c 'import os, urllib.request; base = "https://huggingface.co/rhasspy/piper-voices/resolve/" + os.environ["VOICE_REVISION"] + "/de/de_DE/thorsten/medium/"; [urllib.request.urlretrieve(base + name, name) for name in ("de_DE-thorsten-medium.onnx", "de_DE-thorsten-medium.onnx.json", "MODEL_CARD")]'
+RUN python -c 'import os, urllib.request; base = "https://huggingface.co/rhasspy/piper-voices/resolve/" + os.environ["VOICE_REVISION"] + "/de/de_DE/thorsten/high/"; [urllib.request.urlretrieve(base + name, name) for name in ("de_DE-thorsten-high.onnx", "de_DE-thorsten-high.onnx.json", "MODEL_CARD")]'
 COPY prompts/ /prompts/
 RUN set -eu; mkdir /sounds; for text in /prompts/*.txt; do name=$(basename "$text" .txt); \
-      python -m piper -m /voice/de_DE-thorsten-medium.onnx --input-file /prompts/$name.txt -f /tmp/$name.wav; \
+      python -m piper -m /voice/de_DE-thorsten-high.onnx --input-file /prompts/$name.txt -f /tmp/$name.wav; \
       sox /tmp/$name.wav -r 8000 -c 1 -b 16 -e signed-integer /sounds/$name.wav gain -n -3; \
     done
 

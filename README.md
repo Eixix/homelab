@@ -132,16 +132,17 @@ Asterisk ist als regulärer Service `asterisk` in `compose.yaml` integriert, mit
 automatischem Neustart, Healthcheck und Zustand unter `data/asterisk/db`.
 Die deutsche Piper-Begrüßung bietet Taste 1 für Annika und Taste 2 für Tobias;
 die Weiterleitungen verwenden fest konfigurierte Mobilnummern. Eine lokale
-Home-Assistant-Aktion ist separat durch eine PIN geschützt.
+Home-Assistant-Steuerung für die Küchenlampe sowie Dienst- und Backup-Auskünfte
+sind separat durch eine PIN geschützt. `asterisk-status` liefert nur feste Statuswerte.
 Vodafone-Zugangsdaten bleiben in der ignorierten lokalen `.env`.
 
 ```bash
-docker compose --env-file .env up -d --build asterisk
+docker compose --env-file .env up -d --build asterisk asterisk-status
 ```
 
 `ASTERISK_MODE=local` ermöglicht den lokalen SIP-Test ohne Provider-Registrierung;
 für Vodafone ist eine vollständige Konfiguration mit `ASTERISK_MODE=vodafone` nötig.
-Der manuelle Deployment-Workflow kann den Service künftig über `asterisk` oder `all`
+Der manuelle Deployment-Workflow kann den Service über `asterisk asterisk-status` oder `all`
 starten. Vodafone-Registrierung, Ansagen und DTMF sind produktiv verifiziert.
 Die neuen Weiterleitungen und die HA-Anbindung benötigen noch eine Abnahme.
 Betrieb, SIP/NAT-Konfiguration und nächste HA-Stufe: [IVR-Runbook](docs/asterisk-ivr.md).
