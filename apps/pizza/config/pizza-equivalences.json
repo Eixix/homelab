@@ -58,6 +58,17 @@
       ]
     },
     {
+      "name": "Pizza Capricciosa",
+      "description": "mit frischen Egerlingen, Hinterschinken, Artischocken und Oliven",
+      "extraIds": [
+        "funghi",
+        "salami",
+        "schinken",
+        "artischocken",
+        "oliven"
+      ]
+    },
+    {
       "name": "Pizza Caprese",
       "description": "mit frischen Tomaten, italienischer Mozzarellakugel und frischem Basilikum",
       "extraIds": [
