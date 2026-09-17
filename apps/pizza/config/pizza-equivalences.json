@@ -65,7 +65,16 @@
         "salami",
         "schinken",
         "artischocken",
-        "oliven"
+        "oliven-mit-kern-6-stueck"
+      ]
+    },
+    {
+      "name": "Pizza Mafia (scharf)",
+      "description": "mit scharfer, italienischer Salami, Jalapenos und roten Zwiebeln",
+      "extraIds": [
+        "zwiebeln-rot",
+        "jalapenos",
+        "diavolo-salami"
       ]
     },
     {
