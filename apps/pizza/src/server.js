@@ -5,21 +5,29 @@ import { fileURLToPath } from 'node:url';
 import { classifyIp, normalizeIp, parseCidrs } from './network.js';
 import { loadCatalog } from './catalog.js';
 import { Store } from './store.js';
+import { PushService } from './push.js';
+import { effectiveCatalog, validateDeal } from './availability.js';
 import { priceOrder, summarizeItems } from './orders.js';
 import { buildRecommendations } from '../public/recommendations.js';
 
 const publicDir = fileURLToPath(new URL('../public/', import.meta.url));
-const files = new Map(await Promise.all(['index.html', 'admin.html', 'app.js', 'box-scene.js', 'admin.js', 'style.css', 'box.css', 'scene-overrides.css', 'admin.css', 'recommendations.js'].map(async name => [
+const files = new Map(await Promise.all(['index.html', 'admin.html', 'app.js', 'box-scene.js', 'admin.js', 'style.css', 'box.css', 'scene-overrides.css', 'admin.css', 'recommendations.js', 'push.js', 'sw.js', 'manifest.webmanifest', 'pizza-icon.svg'].map(async name => [
   name === 'index.html' ? '/' : name === 'admin.html' ? '/admin' : `/${name}`,
   await readFile(`${publicDir}/${name}`),
 ])));
 files.set('/three.module.js', await readFile(new URL('../node_modules/three/build/three.module.js', import.meta.url)));
 files.set('/three.core.js', await readFile(new URL('../node_modules/three/build/three.core.js', import.meta.url)));
 const types = { '/': 'text/html; charset=utf-8', '/admin': 'text/html; charset=utf-8', '/app.js': 'text/javascript; charset=utf-8', '/box-scene.js': 'text/javascript; charset=utf-8', '/three.module.js': 'text/javascript; charset=utf-8', '/three.core.js': 'text/javascript; charset=utf-8', '/admin.js': 'text/javascript; charset=utf-8', '/style.css': 'text/css; charset=utf-8', '/box.css': 'text/css; charset=utf-8', '/scene-overrides.css': 'text/css; charset=utf-8', '/admin.css': 'text/css; charset=utf-8' };
+types['/push.js'] = types['/sw.js'] = 'text/javascript; charset=utf-8';
+types['/manifest.webmanifest'] = 'application/manifest+json';
+types['/pizza-icon.svg'] = 'image/svg+xml';
 types['/recommendations.js'] = 'text/javascript; charset=utf-8';
 const equivalences = JSON.parse(await readFile(new URL('../config/pizza-equivalences.json', import.meta.url), 'utf8'));
 const store = new Store(process.env.PIZZA_DATA_PATH || '/data/orders.json');
 await store.load();
+const pushHost = process.env.PIZZA_HOST;
+const push = new PushService(store, pushHost ? `https://${pushHost}` : null);
+await push.init();
 let catalog = await loadCatalog(process.env.PIZZA_CATALOG_PATH || '/config/menu.txt');
 const boschCidrs = parseCidrs(process.env.PIZZA_BOSCH_CIDRS || '139.15.0.0/16 185.112.176.0/22 192.48.31.0/24 193.108.217.0/24 193.141.57.0/24 194.39.218.0/23 2a03:cc00::/32');
 const ownerCidrs = parseCidrs(process.env.PIZZA_OWNER_CIDRS);
@@ -95,7 +103,19 @@ createServer(async (req, res) => {
     const admin = isAdmin(req);
     if (url.pathname === '/api/state' && req.method === 'GET') {
       await closeAndSummarize(); const date = today(); const day = store.day(date);
-      return json(res, 200, { date, audience, admin, restaurant: catalog.restaurant, restaurantWebsite: catalog.website, deadline: '10:30', unlocked: day.unlocked, open: orderingOpen(day), items: catalog.items, recommendations: buildRecommendations(catalog.items, equivalences), orders: admin ? Object.values(day.orders).map(order => ({ ...order, tokenHash: undefined, totalCents: total(order) })) : undefined, summarySent: admin ? day.summarySent : undefined, summaryError: admin ? day.summaryError : undefined, paymentBase });
+      return json(res, 200, { date, audience, admin, restaurant: catalog.restaurant, restaurantWebsite: catalog.website, deadline: '10:30', unlocked: day.unlocked, open: orderingOpen(day), items: effectiveCatalog(catalog, store.data.settings).items, deal: store.data.settings || { dealEnabled: true, regularPriceCents: 1040 }, arrived: Boolean(day.arrived), recommendations: buildRecommendations(effectiveCatalog(catalog, store.data.settings).items, equivalences), orders: admin ? Object.values(day.orders).map(order => ({ ...order, tokenHash: undefined, totalCents: total(order) })) : undefined, pushPublicKey: push.publicKey, pushResult: admin ? day.pushResult : undefined, summarySent: admin ? day.summarySent : undefined, summaryError: admin ? day.summaryError : undefined, paymentBase });
+    }
+    if (url.pathname === '/api/push/subscription' && ['POST', 'DELETE'].includes(req.method)) {
+      if (!push.publicKey) return json(res, 503, { error: 'Push ist noch nicht eingerichtet.' });
+      // Requiring JSON prevents cross-origin form posts without allowing CORS.
+      if (req.headers['content-type']?.split(';')[0].trim() !== 'application/json') return json(res, 415, { error: 'JSON erforderlich.' });
+      let input;
+      try { input = await body(req); }
+      catch { return json(res, 400, { error: 'Ungültiges Push-Abonnement.' }); }
+      try {
+        if (req.method === 'POST') await push.subscribe(input); else await push.unsubscribe(input);
+      } catch { return json(res, 400, { error: 'Push-Abonnement konnte nicht gespeichert werden.' }); }
+      return json(res, 200, { ok: true });
     }
     if (url.pathname === '/api/admin/login' && req.method === 'POST') {
       const input = await body(req); if (!adminPassword || !cookieSecret || !safeEqual(input.password, adminPassword)) return json(res, 401, { error: 'Falsches Passwort.' });
@@ -105,10 +125,23 @@ createServer(async (req, res) => {
       if (!admin) return json(res, 401, { error: 'Admin-Anmeldung erforderlich.' });
       const input = await body(req); const day = store.day(today());
       if (input.action === 'open' && !afterDeadline()) { day.unlocked = true; day.closed = false; }
+      else if (input.action === 'arrived') day.arrived = true;
+      else if (input.action === 'not-arrived') day.arrived = false;
       else if (input.action === 'close') day.closed = true;
       else if (input.action === 'retry-summary') { day.summarySent = false; await notify('daily_summary', today()); day.summarySent = true; day.summaryError = null; }
       else if (input.action === 'clear-orders') { const deleted = Object.keys(day.orders).length; day.orders = {}; await store.save(); return json(res, 200, { ok: true, deleted }); }
       else return json(res, 400, { error: 'Aktion ist jetzt nicht möglich.' });
+      await store.save();
+      if (input.action === 'open' || input.action === 'arrived') {
+        push.announce(input.action, today()).catch(() => console.error('Push announcement failed.'));
+      }
+      return json(res, 200, { ok: true });
+    }
+    if (url.pathname === '/api/admin/deal' && req.method === 'POST') {
+      if (!admin) return json(res, 401, { error: 'Admin-Anmeldung erforderlich.' });
+      const input = await body(req);
+      try { store.data.settings = validateDeal(input); }
+      catch (error) { return json(res, 400, { error: error.message }); }
       await store.save(); return json(res, 200, { ok: true });
     }
     const adminOrderMatch = url.pathname.match(/^\/api\/admin\/orders\/([^/]+)$/);
@@ -125,8 +158,9 @@ createServer(async (req, res) => {
       if (!orderingOpen(day)) return json(res, 409, { error: 'Bestellungen sind geschlossen.' });
       const name = String(input.name || '').trim().slice(0, 80); if (!name) return json(res, 400, { error: 'Bitte Namen angeben.' });
       let items;
-      try { items = priceOrder(input.items, catalog); }
+      try { items = priceOrder(input.items, effectiveCatalog(catalog, store.data.settings)); }
       catch (error) { return json(res, 400, { error: error.message }); }
+      if (input.quotedTotalCents !== undefined && input.quotedTotalCents !== total({ items })) return json(res, 409, { error: 'Der Preis hat sich geändert. Bitte aktuelle Preise prüfen und erneut bestellen.' });
       const existing = input.id ? day.orders[input.id] : null;
       if (existing && !safeEqual(existing.tokenHash, hashToken(input.token || ''))) return json(res, 403, { error: 'Diese Bestellung gehört zu einem anderen Browser.' });
       const token = existing ? input.token : randomBytes(24).toString('base64url'); const id = existing?.id || randomBytes(10).toString('base64url');

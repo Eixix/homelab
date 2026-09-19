@@ -1,0 +1,12 @@
+{
+  "id": "/",
+  "name": "Pizza-Fernschreiber",
+  "short_name": "Pizza",
+  "lang": "de",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fff4a8",
+  "theme_color": "#c53528",
+  "icons": [{ "src": "/pizza-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

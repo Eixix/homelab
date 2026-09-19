@@ -10,8 +10,8 @@ const mapping = JSON.parse(await readFile(new URL('../config/pizza-equivalences.
 const connections = buildRecommendations(catalog.items, mapping);
 const line = (name, extraIds = [], quantity = 1) => ({ itemId: catalog.items.find(item => item.name === name).id, extraIds, quantity });
 
-test('all eight configured recipes produce cheaper, server-valid replacements', () => {
-  assert.equal(connections.length, 8);
+test('all configured recipes produce cheaper, server-valid replacements', () => {
+  assert.equal(connections.length, mapping.connections.length);
   for (const connection of mapping.connections) {
     const original = line(connection.name);
     const alternative = cheaperAlternative(original, catalog.items, connections);
@@ -49,7 +49,7 @@ test('recalculates current prices and skips equal or more expensive replacements
 
 test('changed recipes or missing toppings disable their connections', () => {
   const changed = catalog.items.map(item => item.name === 'Pizza Funghi' ? { ...item, description: 'different recipe' } : item);
-  assert.equal(buildRecommendations(changed, mapping).length, 7);
+  assert.equal(buildRecommendations(changed, mapping).length, mapping.connections.length - 1);
   const missing = catalog.items.map(item => ({ ...item, extras: [] }));
   assert.deepEqual(buildRecommendations(missing, mapping), []);
 });

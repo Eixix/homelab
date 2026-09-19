@@ -101,3 +101,57 @@ and review the configured list periodically.
 After submission, the browser links to `zahldeineschuldenan` with both the exact
 amount and a `Pizza YYYY-MM-DD – Name` payment reference. The payment app now
 uses that reference in its display, clipboard data, and EPC/GiroCode payload.
+
+## Availability and live updates
+
+The admin menu can switch the Margherita deal off and set its regular price
+(default €10.40). With the deal enabled, the catalog price (€9.36) applies.
+The setting is persisted across days and restarts. Extras retain their listed
+prices; cheaper-pizza suggestions use the active price. Existing orders retain
+their saved prices; edits use current prices. The browser sends its quoted total
+so a price change during submission is rejected rather than silently charged.
+
+Both pages refresh state every 15 seconds and when returning to a visible tab.
+The ordering page preserves draft names, quantities and toppings. It announces
+ordering status and the admin's “Pizza ist da!” message, including on the packed
+order view. Arrival can be withdrawn and resets on the next Berlin calendar day.
+A connection warning appears if updates fail. No new n8n events are sent.
+
+## Optional browser push notifications
+
+Users can choose “Benachrichtigungen einschalten” and grant browser permission to
+receive ordering-open and pizza-arrival notifications even with the page closed.
+The same button turns them off again. Each event is announced at most once per
+Berlin calendar day; reopening orders or toggling arrival does not send duplicates.
+Notifications contain only the announcement, never names or order details.
+Clicking one focuses the existing page without losing its draft, or opens the site.
+
+Push requires HTTPS, browser/OS notification support and permission. On iPhone
+and iPad, add the site to the Home Screen and open it there before subscribing
+([Apple guidance](https://webkit.org/blog/13878/web-push-for-web-apps-on-ios-and-ipados/)).
+Delivery depends on the browser/OS and network; the app does not guarantee delivery
+when the browser is force-quit or notifications are blocked by device policy.
+The manifest enables Home Screen installation. The service worker handles push
+only; it does not cache private pages or bypass the IP allowlist. Opening the site
+or changing subscriptions still requires access from an allowed network.
+
+No new environment secrets are required. With the existing `PIZZA_HOST` set,
+the app creates VAPID keys once and saves them and device subscriptions in the
+private runtime `orders.json` (`PIZZA_DATA_PATH`, mode 0600). Preserve this file
+across deploys/restarts and include it in protected backups. Never commit it or
+log subscription URLs or private keys. If the keys are lost, users need to visit
+the page and enable notifications again. Without `PIZZA_HOST`, push is disabled.
+
+Outbound HTTPS must reach the browser push providers (Google FCM, Mozilla,
+Apple or Windows). Subscription endpoints are restricted to these providers;
+expired subscriptions are removed on HTTP 404/410. Requests use a five-second
+socket timeout and a five-minute delivery TTL to limit stale announcements.
+The admin page reports accepted, failed and expired sends; accepted means the
+push service accepted the message, not that a device displayed it. Delivery is
+best effort: failed or interrupted broadcasts are not automatically retried,
+to avoid sending duplicate or outdated announcements. The live page status
+continues to update independently.
+
+After manual deployment, verify opt-in on a supported browser, close its page,
+and use the admin opening/arrival controls to check delivery and click-through.
+Then disable notifications on the device and confirm it receives no later alerts.

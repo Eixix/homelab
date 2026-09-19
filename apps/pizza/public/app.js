@@ -1,4 +1,5 @@
 import { createPizzaBoxScene } from './box-scene.js';
+import { initPush } from './push.js';
 import { recommendOrder } from './recommendations.js';
 
 const euro = cents => new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(cents / 100);
@@ -106,7 +107,8 @@ function startCountdown() {
   const format = milliseconds => { const seconds = Math.max(0, Math.ceil(milliseconds / 1000)); const hours = Math.floor(seconds / 3600); const minutes = Math.floor((seconds % 3600) / 60); const rest = seconds % 60; return [hours, minutes, rest].map(value => String(value).padStart(2, '0')).join(':'); };
   const update = () => {
     const now = Date.now();
-    if (now < deadline) label.textContent = `SCHLIESST IN ${format(deadline - now)}`;
+    if (state.arrived) label.textContent = '🍕 PIZZA IST DA!';
+    else if (now < deadline) label.textContent = `SCHLIESST IN ${format(deadline - now)}`;
     else if (now < arrival) label.textContent = `🔒 PIZZA IN CA. ${format(arrival - now)}`;
     else label.textContent = '🔒 PIZZA MÜSSTE DA SEIN';
     boxScene?.setCountdown(label.textContent);
@@ -136,6 +138,7 @@ async function load() {
     $('#cancel').hidden = false;
   }
   updateTotal();
+  applyLiveState(state);
   if (saved?.date === state.date) await showPackedOrder(saved, false);
   else if (state.open) await playBoxIntro();
 }
@@ -162,12 +165,12 @@ $('#order-form').addEventListener('submit', async event => {
     `${alternative.name} kostet ${euro(alternative.priceCents)} statt ${euro(alternative.originalPriceCents)} für ${alternative.originalName}.\n\nLaut Speisekarte gleicher Belag – du sparst ${euro(alternative.savingCents)} pro Pizza.\n\nAlle ausgewählten Pizzen dieser Kombination durch die günstigere Variante ersetzen?`
   ));
   restoreSelection(items);
-  const payload = { id: saved?.date === state.date ? saved.id : undefined, token: saved?.date === state.date ? saved.token : undefined, name: $('#name').value, items };
+  const payload = { id: saved?.date === state.date ? saved.id : undefined, token: saved?.date === state.date ? saved.token : undefined, name: $('#name').value, items, quotedTotalCents: items.reduce((sum, line) => sum + line.quantity * linePrice(line), 0) };
   try {
     const result = await api('/api/orders', { method: 'POST', body: JSON.stringify(payload) });
     const record = { ...payload, items: result.items, id: result.id, token: result.token || payload.token, totalCents: result.totalCents, date: state.date }; localStorage.setItem('pizza-order', JSON.stringify(record)); saved = record;
     $('#cancel').hidden = false; await showPackedOrder(record); if (result.warning) $('#status').textContent = result.warning;
-  } catch (error) { $('#status').textContent = error.message; }
+  } catch (error) { $('#status').textContent = error.message; await refreshState(); }
 });
 async function cancelOrder() {
   const record = JSON.parse(localStorage.getItem('pizza-order') || 'null'); if (!record || !confirm('Bestellung wirklich stornieren?')) return;
@@ -176,4 +179,42 @@ async function cancelOrder() {
 $('#cancel').addEventListener('click', cancelOrder);
 document.querySelector('[data-cancel-order]').addEventListener('click', cancelOrder);
 $('#edit-order').addEventListener('click', async () => { $('#box-stage').className = 'box-stage reopening'; await boxScene.open(); document.body.classList.remove('box-mode'); $('#box-stage').hidden = true; $('#box-stage').className = 'box-stage'; $('#order-form').scrollIntoView({ behavior: 'smooth' }); });
-load().catch(error => { $('#closed').hidden = false; $('#closed-copy').textContent = error.message; });
+function applyLiveState(next) {
+  const previous = state;
+  state = next;
+  $('#closed').hidden = state.open;
+  $('#closed-copy').textContent = state.open ? '' : ' Tobias muss die Ausgabe erst öffnen – oder 10:30 ist bereits durch.';
+  $('#order-form').hidden = !state.open;
+  const priceChanged = previous && previous.items.some(item => state.items.find(nextItem => nextItem.id === item.id)?.priceCents !== item.priceCents);
+  const message = state.arrived ? '🍕 Pizza ist da! Bereit zur Abholung.' : state.open ? 'Bestellungen sind geöffnet – bis 10:30.' : 'Bestellungen sind aktuell geschlossen.';
+  $('#live-notice').hidden = false;
+  $('#live-notice').textContent = message + (priceChanged ? ' Preise wurden aktualisiert. Bitte vor dem Bestellen prüfen.' : '');
+  document.querySelectorAll('[data-item]').forEach(input => {
+    const item = state.items.find(item => item.id === input.dataset.item);
+    if (item) input.closest('.menu-item').querySelector('strong').textContent = euro(item.priceCents);
+  });
+  updateTotal();
+  if (saved) fillOrderNote(saved);
+}
+let refreshing = false;
+async function refreshState() {
+  if (!state || refreshing) return;
+  refreshing = true;
+  try {
+    const next = await api('/api/state');
+    if (next.date !== state.date) {
+      // A new ordering day must not reuse yesterday's order token or draft.
+      localStorage.removeItem('pizza-order'); location.reload(); return;
+    }
+    applyLiveState(next);
+    $('#connection-notice').hidden = true;
+  } catch { $('#connection-notice').hidden = false; }
+  finally { refreshing = false; }
+}
+load().then(() => {
+  initPush(state.pushPublicKey);
+  navigator.serviceWorker?.addEventListener('message', event => { if (event.data?.type === 'pizza-refresh') refreshState(); });
+  setInterval(refreshState, 15000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshState(); });
+  window.addEventListener('online', refreshState);
+}).catch(error => { $('#closed').hidden = false; $('#closed-copy').textContent = error.message; });

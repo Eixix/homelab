@@ -6,6 +6,8 @@
         <meta name="viewport" content="width=device-width,initial-scale=1">
         <meta name="robots" content="noindex,nofollow,noarchive">
         <title>Pizza-Fernschreiber</title>
+        <link rel="manifest" href="/manifest.webmanifest">
+        <meta name="theme-color" content="#c53528">
         <link rel="stylesheet" href="/style.css">
         <link rel="stylesheet" href="/box.css">
         <link rel="stylesheet" href="/scene-overrides.css">
@@ -19,6 +21,12 @@
                 <div class="clock">BESTELLSCHLUSS <strong>10:30</strong> EUROPE/BERLIN</div>
             </section>
 
+            <section class="push-controls" aria-label="Benachrichtigungen">
+                <button id="push-toggle" type="button" hidden>Benachrichtigungen einschalten</button>
+                <p id="push-status" role="status"></p>
+            </section>
+            <section class="notice" id="live-notice" role="status" hidden></section>
+            <section class="notice" id="connection-notice" role="status" hidden>Live-Update unterbrochen. Verbindung wird erneut versucht.</section>
             <section class="notice" id="closed" hidden><b>DER OFEN IST AUS.</b><span id="closed-copy"></span></section>
             <form id="order-form" hidden>
                 <div class="form-head"><label for="name">WER BIST DU?</label><input id="name" maxlength="80"

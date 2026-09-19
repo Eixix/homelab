@@ -22,12 +22,23 @@
             </form>
             <div id="dashboard" hidden>
                 <p id="day-state"></p>
+                <p id="push-delivery" role="status"></p>
                 <div class="admin-actions">
                     <button data-action="open">Für heute öffnen</button>
+                    <button data-action="arrived">Pizza ist da!</button>
+                    <button data-action="not-arrived">Ankunft zurücknehmen</button>
                     <button data-action="close">Früher schließen</button>
                     <button data-action="retry-summary">Zusammenfassung erneut senden</button>
                     <button class="danger" data-action="clear-orders">Alle Bestellungen löschen</button>
                 </div>
+                <h2>Margherita-Angebot</h2>
+                <form id="deal-form">
+                    <label><input id="deal-enabled" type="checkbox"> Angebot aktiv</label>
+                    <label>Regulärer Preis (€) <input id="regular-price" type="number" min="0.01" max="1000" step="0.01" required></label>
+                    <button>Preis-Einstellung speichern</button>
+                    <p>Gilt bis zur nächsten Änderung, auch an folgenden Tagen. Bestehende Bestellungen behalten ihren Preis.</p>
+                    <p id="deal-status" role="status"></p>
+                </form>
                 <h2>Heutige Bestellungen</h2>
                 <div id="orders"></div>
             </div>
