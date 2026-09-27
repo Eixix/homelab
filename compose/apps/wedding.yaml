@@ -1,0 +1,61 @@
+services:
+  wedding:
+    container_name: wedding
+    profiles: [wedding]
+    build:
+      context: ../../apps/wedding
+    restart: unless-stopped
+    user: ${DEPLOY_UID:-1003}:${DEPLOY_GID:-1003}
+    read_only: true
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 64
+    mem_limit: 256m
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    environment:
+      WEDDING_CONFIG: /run/secrets/wedding/config.json
+      WEDDING_DB: /data/game-v2.sqlite3
+      WEDDING_ORIGIN: https://${WEDDING_EXTERNAL_HOST:-cupweddinggift.${DOMAIN_EXTERNAL}}
+      WEDDING_ORIGINS: https://${WEDDING_HOST:-cupweddinggift.${DOMAIN_INTERNAL}} https://${WEDDING_EXTERNAL_HOST:-cupweddinggift.${DOMAIN_EXTERNAL}}
+    volumes:
+      - type: bind
+        source: ../../secrets/wedding-v2/config.json
+        target: /run/secrets/wedding/config.json
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ../../data/wedding
+        target: /data
+        bind:
+          create_host_path: false
+    networks:
+      - external_network
+      - internal_network
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/healthz', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.wedding-external.rule=Host(`${WEDDING_EXTERNAL_HOST:-cupweddinggift.${DOMAIN_EXTERNAL}}`)
+      - traefik.http.routers.wedding-external.entrypoints=websecure
+      - traefik.http.routers.wedding-external.tls=true
+      - traefik.http.routers.wedding-external.tls.certresolver=externalresolver
+      - traefik.http.routers.wedding-external.middlewares=security-headers@file,wedding-privacy
+      - traefik.http.routers.wedding-external.service=wedding
+      - traefik.http.routers.wedding-internal.rule=Host(`${WEDDING_HOST:-cupweddinggift.${DOMAIN_INTERNAL}}`)
+      - traefik.http.routers.wedding-internal.entrypoints=websecure
+      - traefik.http.routers.wedding-internal.tls=true
+      - traefik.http.routers.wedding-internal.tls.certresolver=internalresolver
+      - traefik.http.routers.wedding-internal.middlewares=lan-only@file,security-headers@file,wedding-privacy
+      - traefik.http.routers.wedding-internal.service=wedding
+      - traefik.http.routers.wedding-internal.observability.accesslogs=false
+      - traefik.http.services.wedding.loadbalancer.server.port=8080
+      - traefik.docker.network=internal_network
+      - traefik.http.middlewares.wedding-privacy.headers.referrerPolicy=strict-origin
+      - traefik.http.routers.wedding-external.observability.accesslogs=false

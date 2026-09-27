@@ -1,0 +1,54 @@
+# Same application and canonical HTTPS origin, isolated local data and TLS edge.
+name: cup-wedding-local
+
+services:
+  wedding:
+    container_name: wedding-local-domain
+    extends:
+      file: compose/apps/wedding.yaml
+      service: wedding
+    build:
+      context: ./apps/wedding
+    user: ${WEDDING_LOCAL_UID:-1000}:${WEDDING_LOCAL_GID:-1000}
+    volumes: !override
+      - type: bind
+        source: ./secrets/wedding-local-v2/config.json
+        target: /run/secrets/wedding/config.json
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./data/wedding-local-v2
+        target: /data
+        bind:
+          create_host_path: false
+    networks: !override
+      - external_network
+    labels:
+      traefik.enable: "false"
+
+  wedding-local-https:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    user: ${WEDDING_LOCAL_UID:-1000}:${WEDDING_LOCAL_GID:-1000}
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs: [/tmp:size=16m,mode=1777]
+    ports:
+      - 127.0.0.1:443:443
+    environment:
+      WEDDING_HOST: ${WEDDING_HOST:-cupweddinggift.${DOMAIN_INTERNAL:-home}}
+      WEDDING_EXTERNAL_HOST: ${WEDDING_EXTERNAL_HOST:-cupweddinggift.${DOMAIN_EXTERNAL:-betz.coffee}}
+    volumes:
+      - ./config/wedding/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./data/wedding-local-tls:/data
+      - ./data/wedding-local-caddy:/config
+    depends_on:
+      wedding:
+        condition: service_healthy
+    networks: [external_network]
+
+networks:
+  external_network:
+    name: cup-wedding-local

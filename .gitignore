@@ -20,3 +20,6 @@ backups/
 .DS_Store
 .vscode/
 .idea/
+
+# Python app caches
+apps/wedding/**/__pycache__/

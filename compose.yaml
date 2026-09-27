@@ -24,6 +24,7 @@ include:
   - ./compose/apps/evcc.yaml
   - ./compose/apps/zahldeineschuldenan.yaml
   - ./compose/apps/pizza.yaml
+  - ./compose/apps/wedding.yaml
 
 networks:
   external_network:

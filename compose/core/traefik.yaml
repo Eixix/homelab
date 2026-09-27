@@ -87,6 +87,8 @@ services:
           - ${GRAFANA_HOST}
           - ${EVCC_HOST}
           - ${ZAHLDEINESCHULDENAN_HOST}
+          - ${WEDDING_HOST:-cupweddinggift.${DOMAIN_INTERNAL}}
+          - ${WEDDING_EXTERNAL_HOST:-cupweddinggift.${DOMAIN_EXTERNAL}}
     extra_hosts:
       - host.docker.internal:172.17.0.1
     labels:
