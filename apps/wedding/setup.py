@@ -7,6 +7,9 @@ import json
 import os
 from pathlib import Path
 import secrets
+import sys
+import tempfile
+from urllib.parse import urlsplit
 from game import make_game
 
 
@@ -16,14 +19,52 @@ def password_hash(password):
     return f'scrypt${salt}${digest}'
 
 
+def install_config(directory, content):
+    if len(content)>1024*1024:raise ValueError('Konfiguration ist zu groß.')
+    config=json.loads(content)
+    parsed=urlsplit(config['origin'])
+    if parsed.scheme!='https' or not parsed.netloc or parsed.path or parsed.query or parsed.fragment or parsed.username:
+        raise ValueError('Konfiguration benötigt eine HTTPS-Origin.')
+    algorithm,salt,digest=config['password_hash'].split('$')
+    if algorithm!='scrypt' or len(bytes.fromhex(salt))!=16 or len(bytes.fromhex(digest))!=64:
+        raise ValueError('Ungültiger Passworthash.')
+    roles=config['roles']
+    if sorted(roles.values())!=['a','b'] or any(len(bytes.fromhex(token))!=32 for token in roles):
+        raise ValueError('Ungültige Rollenkennungen.')
+    if config['game']['schema']!=2 or len(config['game']['stages'])!=5:
+        raise ValueError('Ungültige Spielversion.')
+    directory=Path(directory)
+    target=directory/'config.json'
+    if target.exists():
+        if json.loads(target.read_text())!=config:
+            raise ValueError('Vorhandene Spielkonfiguration weicht ab; sie wird nicht überschrieben.')
+        return False
+    os.umask(0o077)
+    directory.mkdir(parents=True,exist_ok=True,mode=0o700)
+    with tempfile.NamedTemporaryFile(mode='w',dir=directory,delete=False) as staged:
+        temporary=Path(staged.name)
+        json.dump(config,staged,ensure_ascii=False,indent=2)
+        staged.write('\n')
+    try:
+        os.link(temporary,target)
+    finally:
+        temporary.unlink()
+    return True
+
+
 def main():
     parser = argparse.ArgumentParser(description='Privates Hochzeitsspiel einrichten')
     parser.add_argument('--directory', type=Path, required=True)
     parser.add_argument('--origin', default='https://cupweddinggift.betz.coffee', help='Kanonische HTTPS-Origin für lokale und entfernte Bereitstellung')
     parser.add_argument('--personalize', type=Path)
     parser.add_argument('--generate-password', action='store_true', help='Zufälliges Passwort in privater password.txt speichern')
+    parser.add_argument('--install-config', action='store_true', help='Private Konfiguration vom Deploy-Workflow über stdin übernehmen')
     args = parser.parse_args()
-    from urllib.parse import urlsplit
+    if args.install_config:
+        try:install_config(args.directory,sys.stdin.buffer.read(1024*1024+1))
+        except (ValueError,KeyError,TypeError) as error:parser.error(str(error))
+        print('Private Spielkonfiguration geprüft und bereitgestellt.')
+        return
     parsed = urlsplit(args.origin)
     if parsed.scheme != 'https' or not parsed.netloc or parsed.path or parsed.query or parsed.fragment or parsed.username:
         parser.error('Die Adresse muss eine HTTPS-Origin ohne Pfad sein.')

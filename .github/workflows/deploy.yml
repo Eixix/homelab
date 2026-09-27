@@ -82,6 +82,24 @@ jobs:
           printf '%s' "$DEPLOY_ENV_FILE" | ssh "$DEPLOY_USER@$DEPLOY_HOST" "umask 077; cat > '$DEPLOY_PATH/.env'"
           printf '%s' "$CLOUDFLARE_API_TOKEN" | ssh "$DEPLOY_USER@$DEPLOY_HOST" "umask 077; cat > '$DEPLOY_PATH/secrets/cloudflare_api_token'"
 
+      - name: Provision wedding configuration when selected
+        env:
+          WEDDING_CONFIG_JSON: ${{ secrets.WEDDING_CONFIG_JSON }}
+        run: |
+          set -euo pipefail
+          case " $DEPLOY_SERVICES " in
+            *" wedding "*|" all ") ;;
+            *) exit 0 ;;
+          esac
+          if [ -n "$WEDDING_CONFIG_JSON" ]; then
+            printf '%s' "$WEDDING_CONFIG_JSON" | ssh "$DEPLOY_USER@$DEPLOY_HOST" "cd '$DEPLOY_PATH'; python3 apps/wedding/setup.py --directory secrets/wedding-v2 --install-config && install -d -m 700 data/wedding"
+          else
+            ssh "$DEPLOY_USER@$DEPLOY_HOST" "cd '$DEPLOY_PATH'; test -s secrets/wedding-v2/config.json && install -d -m 700 data/wedding" || {
+              echo 'Wedding needs WEDDING_CONFIG_JSON or an existing private configuration.' >&2
+              exit 1
+            }
+          fi
+
       - name: Validate and optionally deploy services
         run: |
           set -euo pipefail

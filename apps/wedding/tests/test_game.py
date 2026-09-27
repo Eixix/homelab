@@ -12,7 +12,7 @@ from unittest.mock import patch
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from game import make_game
 from server import App
-from setup import password_hash
+from setup import password_hash, install_config
 from engine import initial, advance, command, snake_tick, GameError, RACE_SECONDS, TRAIN_SECONDS, view
 
 
@@ -97,6 +97,22 @@ class GameTest(unittest.TestCase):
         self.act('a',3,'switch',index=0);self.act('b',3,'switch',index=2)
         self.act('a',3,'check');self.assertEqual(self.call('/api/b/archive',role='b')[0]['status'],403)
         self.act('b',3,'check')
+
+    def test_workflow_provisioning_is_private_and_does_not_overwrite(self):
+        directory=Path(self.tmp.name)/'provisioned'
+        content=self.config.read_bytes()
+        self.assertTrue(install_config(directory,content))
+        target=directory/'config.json'
+        self.assertEqual(target.stat().st_mode & 0o777,0o600)
+        self.assertEqual(directory.stat().st_mode & 0o777,0o700)
+        self.assertFalse(install_config(directory,content))
+        before=target.read_bytes()
+        different=json.loads(content);different['game']['title']='A new game'
+        with self.assertRaises(ValueError):install_config(directory,json.dumps(different).encode())
+        self.assertEqual(target.read_bytes(),before)
+        invalid=json.loads(content);invalid['password_hash']='plaintext'
+        with self.assertRaises(ValueError):install_config(Path(self.tmp.name)/'invalid',json.dumps(invalid).encode())
+        self.assertFalse((Path(self.tmp.name)/'invalid').exists())
 
     def test_access_origins_csrf_and_role_boundaries(self):
         for path in ['/a','/app.js','/arcade.js','/vendor/phaser.min.js','/api/a/state','/api/a/events']:
