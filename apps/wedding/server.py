@@ -155,7 +155,7 @@ class App:
     def headers(self):
         return [('Cache-Control','no-store'),('Referrer-Policy','strict-origin'),('X-Content-Type-Options','nosniff'),
                 ('X-Frame-Options','DENY'),('X-Robots-Tag','noindex, nofollow, noarchive'),
-                ('Content-Security-Policy',"default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"),
+                ('Content-Security-Policy',"default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"),
                 ('Permissions-Policy','camera=(), microphone=(), geolocation=()')]
 
     def handle(self, env, start):
@@ -178,14 +178,17 @@ class App:
                              extra=[('X-CUP-Next','/lab/manifest.json')])
             if path == '/lab/manifest.json':
                 return reply(200,{'format':'CUP-Lab/1','artifact':'L2xhYi9nYWxsZXJ5',
-                                  'hint':'Das Artefakt ist Base64-kodiert. Dekodiere es als UTF-8-Pfad.'})
+                                  'hint':'Das Artefakt ist Base64-kodiert. Dekodiere es als UTF-8-Pfad.',
+                                  'decryptor':'/lab/decryptor.js', 'cipher':'CUPX1 · XOR mit wiederholtem UTF-8-Schlüssel'})
             if path == '/lab/gallery':
                 return reply(200,(PUBLIC/'lab-gallery.html').read_bytes(),mime='text/html; charset=utf-8')
-            placeholders={'bibliothek':'study-library.svg','labor':'study-lab.svg','feierabend':'study-afterhours.svg'}
+            if path == '/lab/decryptor.js':
+                return reply(200,(PUBLIC/'lab-decryptor.js').read_bytes(),mime='text/javascript; charset=utf-8')
+            placeholders={'bibliothek':'study-library.cup','labor':'study-lab.cup','feierabend':'study-afterhours.cup'}
             if path.startswith('/lab/images/'):
                 name=placeholders.get(path.removeprefix('/lab/images/'))
                 if name:
-                    return reply(200,(PUBLIC/name).read_bytes(),mime='image/svg+xml')
+                    return reply(200,(PUBLIC/name).read_bytes(),mime='application/octet-stream')
             return reply(404,{'error':'Nicht gefunden.'})
         # Only neutral login styling is public; every game asset requires a role session.
         if path == '/login.js' and method=='GET':

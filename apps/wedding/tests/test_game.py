@@ -12,6 +12,7 @@ import unittest
 from unittest.mock import patch
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from game import make_game, previous_pin_game
+from encrypt_gallery import encode, KEY
 from server import App
 from setup import password_hash, install_config
 from engine import initial, advance, command, snake_tick, GameError, RACE_SECONDS, TRAIN_SECONDS, view
@@ -142,7 +143,7 @@ class GameTest(unittest.TestCase):
             meta,_=self.call(path,role='a')
             self.assertEqual(meta['status'],200)
             self.assertIn("script-src 'self';",meta['headers']['Content-Security-Policy'])
-            self.assertIn("img-src 'self' data:;",meta['headers']['Content-Security-Policy'])
+            self.assertIn("img-src 'self' data: blob:;",meta['headers']['Content-Security-Policy'])
         self.assertEqual(self.call('/api/b/state',role='a')[0]['status'],401)
         self.assertEqual(self.call('/api/a/action','POST',dict(stage=0,kind='confirm'),role='a',csrf=False)[0]['status'],403)
         self.assertEqual(self.call('/api/a/archive',role='a')[0]['status'],403)
@@ -167,11 +168,26 @@ class GameTest(unittest.TestCase):
         self.assertEqual(meta['status'],200)
         gallery=base64.b64decode(manifest['artifact']).decode()
         self.assertEqual(gallery,'/lab/gallery')
-        self.assertEqual(self.call(gallery,role='b')[0]['status'],200)
+        self.assertEqual(manifest['decryptor'],'/lab/decryptor.js')
+        meta,page=self.call(gallery,role='b')
+        self.assertEqual(meta['status'],200)
+        self.assertIn(b'Bilder entschl',page)
+        self.assertNotIn(b'src="/lab/images/',page)
+        self.assertEqual(self.call(manifest['decryptor'],role='b')[0]['status'],200)
         for image in ('bibliothek','labor','feierabend'):
             meta,data=self.call('/lab/images/'+image,role='b')
             self.assertEqual(meta['status'],200)
-            self.assertTrue(data.startswith(b'<svg'))
+            self.assertEqual(meta['headers']['Content-Type'],'application/octet-stream')
+            self.assertTrue(data.startswith(b'CUPX1'))
+            self.assertEqual(data[5],1)
+            self.assertNotIn(b'<svg',data)
+            decoded=bytes(value ^ KEY[i%len(KEY)] for i,value in enumerate(data[6:]))
+            self.assertTrue(decoded.startswith(b'<svg'))
+        temporary=Path(self.tmp.name)/'sample.svg'
+        temporary.write_bytes(b'<svg xmlns="http://www.w3.org/2000/svg"/>')
+        encrypted=encode(temporary)
+        self.assertNotIn(b'<svg',encrypted)
+        self.assertEqual(bytes(value ^ KEY[i%len(KEY)] for i,value in enumerate(encrypted[6:])),temporary.read_bytes())
         self.assertEqual(self.call('/lab/images/../style.css',role='b')[0]['status'],404)
 
     def test_full_cooperative_game_with_restart_and_final_gate(self):
