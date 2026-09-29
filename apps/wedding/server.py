@@ -168,6 +168,25 @@ class App:
             with self.db() as db:
                 db.execute('SELECT 1 FROM progress').fetchone()
             return reply(200,{'status':'ok'})
+        if path == '/robots.txt' and method=='GET':
+            return reply(200,'User-agent: *\nDisallow: /lab/\n\n# Manche Verzeichnisse sind für neugierige Menschen gedacht.\n',mime='text/plain; charset=utf-8')
+        if path.startswith('/lab/') and method=='GET':
+            if not self.session(env,'b'):
+                return reply(404,{'error':'Nicht gefunden.'})
+            if path == '/lab/':
+                return reply(200,(PUBLIC/'lab.html').read_bytes(),mime='text/html; charset=utf-8',
+                             extra=[('X-CUP-Next','/lab/manifest.json')])
+            if path == '/lab/manifest.json':
+                return reply(200,{'format':'CUP-Lab/1','artifact':'L2xhYi9nYWxsZXJ5',
+                                  'hint':'Das Artefakt ist Base64-kodiert. Dekodiere es als UTF-8-Pfad.'})
+            if path == '/lab/gallery':
+                return reply(200,(PUBLIC/'lab-gallery.html').read_bytes(),mime='text/html; charset=utf-8')
+            placeholders={'bibliothek':'study-library.svg','labor':'study-lab.svg','feierabend':'study-afterhours.svg'}
+            if path.startswith('/lab/images/'):
+                name=placeholders.get(path.removeprefix('/lab/images/'))
+                if name:
+                    return reply(200,(PUBLIC/name).read_bytes(),mime='image/svg+xml')
+            return reply(404,{'error':'Nicht gefunden.'})
         # Only neutral login styling is public; every game asset requires a role session.
         if path == '/login.js' and method=='GET':
             return reply(200,(PUBLIC/'login.js').read_bytes(),mime='text/javascript; charset=utf-8')

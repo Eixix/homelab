@@ -1,4 +1,5 @@
 import concurrent.futures
+import base64
 import hashlib
 from io import BytesIO
 import json
@@ -148,6 +149,30 @@ class GameTest(unittest.TestCase):
         self.assertEqual(self.call('/api/a/answer','POST',dict(stage=0,answer='2'),role='a')[0]['status'],404)
         self.assertEqual(self.act('a',0,'move',direction='down')[0]['status'],400)
         self.assertEqual(self.act('a',0,'confirm')[0]['status'],400)
+
+    def test_security_easter_egg_is_discoverable_but_role_protected(self):
+        meta,robots=self.call('/robots.txt')
+        self.assertEqual(meta['status'],200)
+        self.assertIn(b'Disallow: /lab/',robots)
+        for path in ('/lab/','/lab/manifest.json','/lab/gallery','/lab/images/bibliothek'):
+            self.assertEqual(self.call(path)[0]['status'],404)
+        self.login('a')
+        self.assertEqual(self.call('/lab/',role='a')[0]['status'],404)
+        self.login('b')
+        meta,page=self.call('/lab/',role='b')
+        self.assertEqual(meta['status'],200)
+        self.assertIn(b'Du hast das Labor gefunden',page)
+        self.assertEqual(meta['headers']['X-CUP-Next'],'/lab/manifest.json')
+        meta,manifest=self.call(meta['headers']['X-CUP-Next'],role='b')
+        self.assertEqual(meta['status'],200)
+        gallery=base64.b64decode(manifest['artifact']).decode()
+        self.assertEqual(gallery,'/lab/gallery')
+        self.assertEqual(self.call(gallery,role='b')[0]['status'],200)
+        for image in ('bibliothek','labor','feierabend'):
+            meta,data=self.call('/lab/images/'+image,role='b')
+            self.assertEqual(meta['status'],200)
+            self.assertTrue(data.startswith(b'<svg'))
+        self.assertEqual(self.call('/lab/images/../style.css',role='b')[0]['status'],404)
 
     def test_full_cooperative_game_with_restart_and_final_gate(self):
         self.login('a');self.login('b');self.train();self.race();self.album();self.circuit()
