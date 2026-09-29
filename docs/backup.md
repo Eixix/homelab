@@ -95,39 +95,9 @@ sudo systemctl status homelab-backup.service
 sudo journalctl -u homelab-backup.service -n 120 --no-pager
 ```
 
-## Replacing the Old Docker Backup
+## Storage and Retention
 
-The old production Docker backup entry point is `/docker-compose-services/backup-script.sh`. It belongs to the pre-migration bind-mount layout and should not remain the authoritative Docker backup after the Git-managed stack is verified. Keep it untouched until the new encrypted backup has succeeded and a restore drill has proven the archive.
-
-Keep the existing outer storage-array backup job, including its notification webhook and `/storage_array` S3 sync, but replace only the Docker backup call:
-
-```diff
-- /docker-compose-services/backup-script.sh
-+ /home/github/homelab/backup.sh
-```
-
-After one successful encrypted homelab backup and one restore drill, archive or remove `/docker-compose-services/backup-script.sh` as part of the production server cleanup.
-
-If you keep the existing wrapper shape, its Docker-backup section can either keep wrapping notifications or simply call the repo script. When `N8N_WEBHOOK` is set in `/etc/homelab-backup.env`, this is enough:
-
-```sh
-####################################
-# Homelab Docker backup
-####################################
-/home/github/homelab/backup.sh
-```
-
-Keep the existing `/storage_array` S3 sync section after this block.
-
-If `homelab-backup.timer` is enabled, do not also run the repo backup from the old weekly cron wrapper. Convert the old wrapper into storage-array-only on the server:
-
-```bash
-sudo bash -euxo pipefail <<'EOF'
-cp /etc/cron.weekly/aws-docker-backup /etc/cron.weekly/aws-docker-backup.pre-homelab-systemd
-perl -0pi -e 's/\n####################################\n# Docker backup\n####################################\n.*?(?=\n####################################\n# AWS S3 sync)/\n####################################\n# Homelab Docker backup\n####################################\n# Handled by homelab-backup.timer.\n/s' /etc/cron.weekly/aws-docker-backup
-grep -n -E 'backup-script|homelab-backup|AWS S3 sync|storage_array' /etc/cron.weekly/aws-docker-backup
-EOF
-```
+The weekly storage-array job handles only the `/storage_array` S3 sync. Docker/app backups run through `homelab-backup.timer`; do not schedule the same backup through cron as well.
 
 Use an S3 lifecycle policy for retention. Deep Archive is unsuitable for frequent restore drills, so periodically restore an archive into a temporary location and verify the encrypted archive checksum recorded in its S3 object metadata.
 

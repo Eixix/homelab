@@ -6,7 +6,7 @@ The current production network model is deliberately simple:
 - `internal_network`: LAN-only services and most private app backends.
 - `network_mode: host`: only where the service genuinely needs host networking, currently Home Assistant, Beszel Agent, and Cloudflare DDNS.
 
-This was a good migration target because it kept the cutover understandable and let Traefik continue to discover retained legacy containers. It is not the final hardening model.
+Shared networks keep routing simple but also allow connectivity between unrelated application backends. The target model below narrows those boundaries.
 
 ## Target Model
 
@@ -35,5 +35,3 @@ Do not create one network per container just for symmetry. The useful boundary i
 2. Then split KitchenOwl frontend/backend if needed.
 3. Leave Home Assistant, Beszel Agent, and Cloudflare DDNS as host-network exceptions.
 4. After each split, deploy only that service set and verify app login plus Traefik routing.
-
-This is post-migration hardening, not a migration blocker.

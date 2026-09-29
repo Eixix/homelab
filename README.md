@@ -1,6 +1,32 @@
 # Homelab Docker Repo
 
-Ziel: laufende Docker-Konfiguration schrittweise in ein Git-basiertes Compose-Setup migrieren, mit sauberem Secret-Handling, dynamischen Hostnames, Traefik und testbarer Backupstrategie.
+Modulares Docker-Compose-Setup mit Traefik als zentralem Reverse Proxy, getrennten internen und öffentlichen Zugängen sowie gemeinsamem Deployment und Backup.
+
+## Aufbau
+
+| Pfad | Aufgabe |
+| --- | --- |
+| `compose.yaml` | Einstiegspunkt; bindet Services ein und definiert gemeinsame Netzwerke und Secrets. |
+| `compose/core/` | Infrastruktur wie Reverse Proxy, Zertifizierungsstelle und DNS. |
+| `compose/apps/` | Compose-Dateien der einzelnen Anwendungen. |
+| `config/` | Versionierte Konfiguration, unter anderem Traefik-Middlewares. |
+| `apps/` | Quellcode und Dockerfiles eigener Anwendungen. |
+| `data/<service>/` | Persistente Laufzeitdaten, nicht in Git. |
+| `secrets/`, `.env` | Lokale Zugangsdaten und umgebungsspezifische Werte, nicht in Git. |
+| `backups/` | Lokale Backupartefakte, nicht in Git. |
+| `docs/` | Betriebsanleitungen und technische Details. |
+
+## Traefik und Netzwerke
+
+Traefik läuft als Compose-Service `reverse-proxy` mit dem Containernamen `traefik` und nimmt HTTP/HTTPS auf Port 80/443 entgegen. HTTP wird auf HTTPS umgeleitet. Docker-Labels legen Host-Regeln, Zielports, TLS und Middlewares fest; Services werden nur mit `traefik.enable=true` veröffentlicht.
+
+- `external_network` verbindet Traefik mit öffentlich erreichbaren Services.
+- `internal_network` verbindet Traefik mit internen Services und privaten Backends. Den Zugriff auf interne Web-Routen begrenzt die Middleware `lan-only`; der Netzwerkname allein ist keine Zugriffssperre.
+- Dienste mit benötigtem direktem Host-Zugriff können eigene Portfreigaben oder Host-Networking verwenden.
+
+Traefik liest gemeinsame Middlewares und zusätzliche Router aus `config/traefik/dynamic/`. Das Verzeichnis ist als Ganzes eingebunden, damit Konfigurationsupdates sichtbar werden. `internal-app@file` bündelt LAN-Zugriffsschutz, Fehlerseiten und Security-Header.
+
+Hostnamen werden über `.env` konfiguriert. Lokal sind `*.home.localhost` und `*.betz.localhost` vorgesehen, produktiv interne und externe Domains. Interne Zertifikate stellt Step CA über den Resolver `internalresolver` bereit. Für öffentliche Routen stehen Cloudflare-DNS-ACME über `externalresolver` und eine konfigurierbare Origin-Zertifikatsdatei zur Verfügung. Clients müssen der internen CA vertrauen.
 
 ## Lokaler Start
 
@@ -14,63 +40,17 @@ chmod 600 secrets/cloudflare_api_token
 docker network create external_network || true
 docker network create internal_network || true
 
-docker compose config
+docker compose --env-file .env --profile external config --quiet
 docker compose up -d step-ca reverse-proxy homepage adguardhome
 ```
 
-Lokale URLs werden aus `.env` gebaut. Interne lokale Hosts nutzen eine punktierte `.home.localhost`-Zone. Externe lokale Test-Hosts nutzen `.betz.localhost`.
+Die lokale Einstiegsseite ist unter `https://homepage.home.localhost` erreichbar. Weitere Hostnamen stehen in der gewählten Environment-Datei.
 
-```text
-https://homepage.home.localhost
-https://docs.home.localhost
-https://traefik.home.localhost
-https://adguard.home.localhost
-https://budget.home.localhost
-https://n8n.home.localhost
-https://go2rtc.home.localhost
-https://dokumente.home.localhost
-https://hass.home.localhost
-https://fotos.home.localhost
-https://reader.home.localhost
-https://beszel.home.localhost
-https://shlink.home.localhost
-https://shopping.betz.localhost
-https://fotos.betz.localhost
-https://hass.betz.localhost/auth
-https://hass.betz.localhost/api/alexa
-https://passwort.betz.localhost
-https://l.betz.localhost
-https://ca.localhost:9000
-```
+Optionale Services werden über Compose-Profile aktiviert: `external` für Cloudflare DDNS, `agent` für den Monitoring-Agent. Vor dem Start müssen die jeweiligen Zugangsdaten gesetzt sein.
 
-Homepage nutzt Environment-Variablen aus `compose/apps/homepage.yaml`, damit dieselbe Konfiguration lokal und produktiv funktioniert.
+## Produktion
 
-Der lokale Step-CA-Name ist `Homelab Local Development CA`; produktiv wird fuer frische CA-Daten `Homelab Internal CA` verwendet. Eine bestehende CA unter `data/step-ca` behaelt ihren urspruenglichen Namen, bis diese Runtime-Daten bewusst neu erzeugt werden.
-
-`cloudflare-ddns` startet lokal nicht automatisch, weil er im Profil `external` liegt. Produktiv startest du ihn mit:
-
-```bash
-docker compose --profile external up -d cloudflare-ddns
-```
-
-`beszel-agent` liegt im Profil `agent`, damit lokale Starts mit Platzhalter-Keys sauber bleiben. Produktiv startest du ihn nach dem Setzen von `BESZEL_AGENT_KEY` und `BESZEL_AGENT_TOKEN` mit:
-
-```bash
-docker compose --profile agent up -d beszel-agent
-```
-
-## Produktiver Start auf dem Server
-
-```bash
-cp .env.example .env
-nano .env
-mkdir -p secrets backups data/traefik/letsencrypt
-chmod 700 secrets
-printf 'NEUER_CLOUDFLARE_TOKEN_HIER' > secrets/cloudflare_api_token
-chmod 600 secrets/cloudflare_api_token
-```
-
-Wichtig: Der alte Cloudflare Token aus der bisherigen Compose-Datei muss rotiert werden.
+Für eine neue Installation `.env.example` nach `.env` kopieren, die Werte anpassen und den Cloudflare-Token in `secrets/cloudflare_api_token` mit Dateimodus `600` ablegen. Die gemeinsamen Docker-Netzwerke müssen auch auf dem Server vorhanden sein. Persistente Daten liegen unter `/home/github/homelab/data`.
 
 ## GitHub Deployment
 
@@ -94,55 +74,16 @@ Each workflow run records the containers that were actually created or recreated
 
 The production backup setup and restore outline are documented in [`docs/backup.md`](docs/backup.md).
 
-## Validieren
+## Neue Services ergänzen
+
+1. Compose-Datei unter `compose/apps/` oder `compose/core/` anlegen.
+2. Datei in `compose.yaml` unter `include` eintragen.
+3. Benötigte Variablen in `.env.example`, `.env.local.example` und der lokalen `.env` ergänzen.
+4. Netzwerk, Traefik-Router, TLS und Zugriffsschutz festlegen; Daten unter `data/<service>/` ablegen.
+5. Konfiguration prüfen:
 
 ```bash
-docker compose config
-docker compose pull
-docker compose up -d step-ca reverse-proxy homepage
+docker compose --env-file .env --profile external config --quiet
 ```
 
-## Migrationsprinzip
-
-1. Repo parallel zum alten Stack aufbauen.
-2. Service-Dateien modular replizieren.
-3. Secrets aus Compose entfernen.
-4. Alle Hostnames nur über `.env` steuern.
-5. Traefik ohne insecure dashboard testen.
-6. Dienste nach und nach als Compose-Dateien exportieren/nachbauen.
-7. Erst nach Restore- und Smoke-Test den alten Stand ersetzen.
-
-## Services Migrieren
-
-Neue App-Dateien liegen unter `compose/apps/`, Core-Infrastruktur unter `compose/core/`. Für jeden migrierten Dienst:
-
-1. Hostname in `.env.example`, `.env.local.example` und lokaler `.env` ergänzen.
-2. Compose-Datei in `compose/apps/<service>.yaml` anlegen.
-3. Datei in `compose.yaml` unter `include` eintragen.
-4. Router zuerst mit `lan-only@file,security-headers@file` starten.
-5. `docker compose config --quiet` ausführen.
-
-Persistente Daten liegen standardmäßig unter `data/<service>` im Repo-Root. Alte Pfade wie `/docker-compose-services/<service>` werden nur übernommen, wenn ein Dienst bewusst während der Migration weiter auf bestehende Produktivdaten zeigen soll.
-
-Die laufende Produktions-Checkliste liegt in `docs/prod-migration-todo.md` und wird beim Portieren aktualisiert.
-
-## Asterisk IVR
-
-Asterisk ist als regulärer Service `asterisk` in `compose.yaml` integriert, mit
-automatischem Neustart, Healthcheck und Zustand unter `data/asterisk/db`.
-Die deutsche Piper-Begrüßung bietet Taste 1 für Annika und Taste 2 für Tobias;
-die Weiterleitungen verwenden fest konfigurierte Mobilnummern. Eine lokale
-Home-Assistant-Steuerung für die Küchenlampe sowie Dienst- und Backup-Auskünfte
-sind separat durch eine PIN geschützt. `asterisk-status` liefert nur feste Statuswerte.
-Vodafone-Zugangsdaten bleiben in der ignorierten lokalen `.env`.
-
-```bash
-docker compose --env-file .env up -d --build asterisk asterisk-status
-```
-
-`ASTERISK_MODE=local` ermöglicht den lokalen SIP-Test ohne Provider-Registrierung;
-für Vodafone ist eine vollständige Konfiguration mit `ASTERISK_MODE=vodafone` nötig.
-Der manuelle Deployment-Workflow kann den Service über `asterisk asterisk-status` oder `all`
-starten. Vodafone-Registrierung, Ansagen und DTMF sind produktiv verifiziert.
-Die neuen Weiterleitungen und die HA-Anbindung benötigen noch eine Abnahme.
-Betrieb, SIP/NAT-Konfiguration und nächste HA-Stufe: [IVR-Runbook](docs/asterisk-ivr.md).
+Ein Beispiel bietet das [Service-Template](docs/service-template.md). Weitere Grundlagen: [Netzwerkisolation](docs/network-isolation.md), [Traefik-Access-Logs](docs/traefik-access-logs.md) und [Backup und Restore](docs/backup.md). Anwendungsspezifische Bedienung steht in den jeweiligen Runbooks unter `docs/`.

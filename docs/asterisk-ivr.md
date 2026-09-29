@@ -239,8 +239,7 @@ Datenbank-, Archiv-, Verschlüsselungs- und Upload-Werkzeugen aus.
 Auf Entwicklungsumgebungen ohne Docker-Bridge/veth kann der Build mit
 `docker build --network host -t homelab-asterisk apps/asterisk` erfolgen.
 Echte Weiterleitungen, bidirektionales Audio und die gezielte HA-Aktion erst nach
-dem manuellen Deploy abnehmen. Die verbindliche Checkliste steht in
-[Production Migration TODO](prod-migration-todo.md).
+dem manuellen Deploy abnehmen.
 
 ## Quellen
 

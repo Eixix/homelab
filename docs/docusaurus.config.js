@@ -4,7 +4,7 @@ import {themes as prismThemes} from 'prism-react-renderer';
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'Homelab Docs',
-  tagline: 'Runbooks, migration notes, and operating decisions',
+  tagline: 'Runbooks, infrastructure, and operating decisions',
   url: 'https://docs.home',
   baseUrl: '/',
   organizationName: 'Eixix',
@@ -28,7 +28,6 @@ const config = {
             'src/**',
             'static/**',
             'build/**',
-            'inventory/**',
           ],
         },
         blog: false,

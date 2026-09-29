@@ -66,7 +66,7 @@ sudo zfs create storage_array/books
 sudo zfs create storage_array/documents
 ```
 
-Only do that with a migration plan, because paths such as `/storage_array/Photos`, `/storage_array/books`, and `/storage_array/documents` are already used by services and backups.
+Only do that with a planned data move, because paths such as `/storage_array/Photos`, `/storage_array/books`, and `/storage_array/documents` are already used by services and backups.
 
 Security properties need service-by-service review before changing:
 

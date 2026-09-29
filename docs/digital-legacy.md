@@ -34,7 +34,6 @@ This address only works from the home network or through VPN.
 Useful starting points:
 
 - [Backups](./backup.md)
-- [Post-Migration Ops](./post-migration-ops.md)
 - [Network Isolation](./network-isolation.md)
 - [Storage Array ZFS](./storage-array-zfs.md)
 

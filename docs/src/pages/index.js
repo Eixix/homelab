@@ -4,11 +4,6 @@ import styles from './index.module.css';
 
 const links = [
   {
-    title: 'Migration TODO',
-    href: '/docs/prod-migration-todo',
-    description: 'Current production migration status, remaining decisions, and cleanup work.',
-  },
-  {
     title: 'Backups',
     href: '/docs/backup',
     description: 'Encrypted homelab backups, scheduling, storage-array sync, and restore outline.',
@@ -17,11 +12,6 @@ const links = [
     title: 'Digital Legacy',
     href: '/docs/digital-legacy',
     description: 'Emergency plan, Bitwarden Emergency Access, and technical points of contact.',
-  },
-  {
-    title: 'Post-Migration Ops',
-    href: '/docs/post-migration-ops',
-    description: 'Restore drill, credential rotation, Step CA choice, and independent project follow-ups.',
   },
   {
     title: 'Storage Array',
@@ -38,11 +28,6 @@ const links = [
     href: '/docs/presentations/homelab-onboarding',
     description: 'Deutschsprachige Marp-Schulung fuer neue Homelab-Nutzer mit leichtem Corporate-Augenzwinkern.',
   },
-  {
-    title: 'Remaining Projects',
-    href: '/docs/remaining-projects',
-    description: 'Live services still outside this repo, their routes, data paths, and next decisions.',
-  },
 ];
 
 export default function Home() {
@@ -53,7 +38,7 @@ export default function Home() {
           <p className={styles.eyebrow}>Homelab</p>
           <h1>Operations notes without the archeology.</h1>
           <p className={styles.lede}>
-            Runbooks, migration state, backup paths, and infrastructure decisions collected in one internal place.
+            Runbooks, backup paths, and infrastructure decisions collected in one internal place.
           </p>
         </section>
         <section className={styles.grid}>
