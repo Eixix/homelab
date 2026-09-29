@@ -1,5 +1,6 @@
 """CUP v2: private personalization, public rules, no plaintext relationship date."""
 import hashlib
+import copy
 import secrets
 from datetime import date
 
@@ -22,17 +23,17 @@ def make_game(personal=None):
     def stage(title, subtitle, minutes, reward, a, b, ha, hb):
         return dict(title=title,subtitle=subtitle,minutes=minutes,reward=reward,copy={'a':a,'b':b},hints={'a':ha,'b':hb})
     stages = [
-        stage('Du navigierst. Ich fahre.', 'Zwei Rollen. Ein gemeinsamer Zug.',4,['Einstieg','2'],
+        stage('Du navigierst. Ich fahre.', 'Zwei Rollen. Ein gemeinsamer Zug.',4,['Einstieg','9'],
             f"Du stellst die Weiche im Stellwerk. {p['b']} bedient Gas und Bremse und kennt die Sperren. Frage nach einem freien Gleis und stelle dann die Fahrtrichtung ein.",
             f"Du bedienst Gas und Bremse. {p['a']} stellt die Weiche. Melde die Sperren, prüfe das Signal und gib Gas. An jedem Halt stoppt der Zug automatisch. Am Zwischenziel tauscht ihr die Rollen.",
             ['Du stellst die Weiche am aktuellen Halt. Dein Gegenüber bedient Gas und Bremse.', 'Frage den Fahrer nach gesperrten Richtungen, bevor du die Weiche stellst.', 'Ein sicherer Weg: A → D → E → H → I. Zurück: I → F → E → B → A.'],
             ['Du bedienst Gas und Bremse. Die Fahrtrichtung legt das Stellwerk fest.', 'Nenne deinem Gegenüber die Sperren. Fahre erst bei grünem Signal; an jedem Halt stoppt der Zug automatisch.', 'Ein sicherer Weg: A → D → E → H → I. Zurück: I → F → E → B → A.']),
-        stage('Der Japan-CUP', 'Ein kleiner Wettkampf. Ein gemeinsamer Reisepass.',5,['Japan','8'],
+        stage('Der Japan-CUP', 'Ein kleiner Wettkampf. Ein gemeinsamer Reisepass.',5,['Japan','5'],
             'Sammelt mit eurer Schlange Reisestationen. Ihr habt dieselbe Geschwindigkeit und drei Minuten Zeit. Manche Stempel gehören deinem Gegenüber: Schicke sie weiter, damit euer gemeinsamer Reisepass voll wird.',
             'Sammelt mit eurer Schlange Reisestationen. Ihr habt dieselbe Geschwindigkeit und drei Minuten Zeit. Manche Stempel gehören deinem Gegenüber: Schicke sie weiter, damit euer gemeinsamer Reisepass voll wird.',
             ['Übe zuerst ohne Punkte. Steuere mit den Richtungstasten oder wische über das Spielfeld.', 'Eine Kollision bringt dich zum letzten Abschnitt zurück. Deine Punkte und Stempel bleiben erhalten.', 'Nach dem Rennen könnt ihr fehlende Stationen zusammen ergänzen. Die eingeblendete Reisehilfe nennt bei Bedarf den nächsten Halt.'],
             ['Übe zuerst ohne Punkte. Benutze die Pfeiltasten oder die Tasten unter dem Spielfeld.', 'Eine Kollision bringt dich zum letzten Abschnitt zurück. Deine Punkte und Stempel bleiben erhalten.', 'Nach dem Rennen könnt ihr fehlende Stationen zusammen ergänzen. Die eingeblendete Reisehilfe nennt bei Bedarf den nächsten Halt.']),
-        stage('Zwei Ansichten, ein Album', 'Wieder im selben Team.',6,[p['honeymoon'],'4'],
+        stage('Zwei Ansichten, ein Album', 'Wieder im selben Team.',6,[p['honeymoon'],'2'],
             f"Ordne die vier Bildkarten. {p['b']} ordnet die passenden Beschriftungen. Ihr seht eure Änderungen sofort, aber nicht den Inhalt der anderen Seite. Beschreibt einander, was auf welchen Platz gehört.",
             f"Ordne die vier Beschriftungen. {p['a']} hat die Bildkarten und weitere Hinweise. Die Änderungen sind auf beiden Seiten sichtbar. Einigt euch auf die vier Plätze.",
             ['Die Orte sind beschriftet. Die Bilder sind Illustrationen, keine behaupteten Urlaubsfotos.', 'Die Insel liegt unter Tokio. Kyoto liegt rechts von Tokio. Frage nach der Lage der noch kommenden Reise.', f'Oben: Tokio und Kyoto. Unten: Amami und {p["honeymoon"]}.'],
@@ -50,4 +51,16 @@ def make_game(personal=None):
     ]
     return dict(schema=2,title='CUP · Team Ehe',names={'a':p['a'],'b':p['b']},date=p['date'],greeting=p['greeting'],
                 destination=p['destination'],boarding=p['boarding'],honeymoon=p['honeymoon'],route=route,
-                code=f'824{value}',stages=stages,archive=dict(fragment=fragment,salt=salt,cipher_hex=cipher,receipt=receipt,value=value))
+                code=''.join(stages[i]['reward'][1] for i in (1,0,2,3)),stages=stages,
+                archive=dict(fragment=fragment,salt=salt,cipher_hex=cipher,receipt=receipt,value=value))
+
+
+def previous_pin_game(game):
+    """Reconstruct only the previous PIN mapping for a narrow progress-preserving migration."""
+    old = copy.deepcopy(game)
+    if old['code'] != '592' + str(old['archive']['value']):
+        raise ValueError('Unerwartete neue PIN-Konfiguration.')
+    for index, digit in enumerate(('2', '8', '4')):
+        old['stages'][index]['reward'][1] = digit
+    old['code'] = '824' + str(old['archive']['value'])
+    return old

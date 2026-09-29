@@ -10,7 +10,7 @@ import secrets
 import sys
 import tempfile
 from urllib.parse import urlsplit
-from game import make_game
+from game import make_game, previous_pin_game
 
 
 def password_hash(password):
@@ -36,9 +36,19 @@ def install_config(directory, content):
     directory=Path(directory)
     target=directory/'config.json'
     if target.exists():
-        if json.loads(target.read_text())!=config:
+        current=json.loads(target.read_text())
+        if current==config:return False
+        previous=json.loads(json.dumps(config))
+        previous['game']=previous_pin_game(config['game'])
+        if current!=previous:
             raise ValueError('Vorhandene Spielkonfiguration weicht ab; sie wird nicht überschrieben.')
-        return False
+        os.umask(0o077)
+        with tempfile.NamedTemporaryFile(mode='w',dir=directory,delete=False) as staged:
+            temporary=Path(staged.name)
+            json.dump(config,staged,ensure_ascii=False,indent=2)
+            staged.write('\n')
+        os.replace(temporary,target)
+        return True
     os.umask(0o077)
     directory.mkdir(parents=True,exist_ok=True,mode=0o700)
     with tempfile.NamedTemporaryFile(mode='w',dir=directory,delete=False) as staged:

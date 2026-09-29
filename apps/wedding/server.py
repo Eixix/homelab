@@ -12,6 +12,7 @@ import time
 import unicodedata
 from urllib.parse import parse_qs, urlsplit
 from engine import TRAIN_HINTS, initial, advance, command, view, GameError
+from game import previous_pin_game
 
 PUBLIC = Path(__file__).parent / 'public'
 
@@ -51,7 +52,11 @@ class App:
             fingerprint = hashlib.sha256(json.dumps(self.game, sort_keys=True).encode()).hexdigest()
             existing = db.execute("SELECT value FROM metadata WHERE key='game'").fetchone()
             if existing and existing[0] != fingerprint:
-                raise ValueError('Spielinhalt geändert. Für eine neue Version eine neue Datenbank verwenden; Fortschritt nicht überschreiben.')
+                previous = previous_pin_game(self.game)
+                old_fingerprint = hashlib.sha256(json.dumps(previous, sort_keys=True).encode()).hexdigest()
+                if existing[0] != old_fingerprint:
+                    raise ValueError('Spielinhalt geändert. Für eine neue Version eine neue Datenbank verwenden; Fortschritt nicht überschreiben.')
+                db.execute("UPDATE metadata SET value=? WHERE key='game'", (fingerprint,))
             db.execute("INSERT OR IGNORE INTO metadata VALUES ('game',?)", (fingerprint,))
         os.chmod(self.db_path, 0o600)
 

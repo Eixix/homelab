@@ -10,7 +10,7 @@ import time
 import unittest
 from unittest.mock import patch
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-from game import make_game
+from game import make_game, previous_pin_game
 from server import App
 from setup import password_hash, install_config
 from engine import initial, advance, command, snake_tick, GameError, RACE_SECONDS, TRAIN_SECONDS, view
@@ -114,6 +114,23 @@ class GameTest(unittest.TestCase):
         with self.assertRaises(ValueError):install_config(Path(self.tmp.name)/'invalid',json.dumps(invalid).encode())
         self.assertFalse((Path(self.tmp.name)/'invalid').exists())
 
+    def test_pin_migration_preserves_completed_progress_and_credentials(self):
+        updated=json.loads(self.config.read_text())
+        old=json.loads(json.dumps(updated))
+        old['game']=previous_pin_game(updated['game'])
+        self.config.write_text(json.dumps(old))
+        with self.app.db() as db:
+            db.execute("UPDATE metadata SET value=? WHERE key='game'", (
+                hashlib.sha256(json.dumps(old['game'],sort_keys=True).encode()).hexdigest(),))
+            db.execute('UPDATE progress SET stage=5, version=42 WHERE id=1')
+        self.assertTrue(install_config(self.config.parent, json.dumps(updated).encode()))
+        self.app=App(self.config,self.database)
+        with self.app.db() as db:
+            self.assertEqual(tuple(db.execute('SELECT stage,version FROM progress').fetchone()),(5,42))
+        self.login('a')
+        self.assertEqual(self.state('a')['code'],'5927')
+        self.assertEqual(json.loads(self.config.read_text())['password_hash'],old['password_hash'])
+
     def test_access_origins_csrf_and_role_boundaries(self):
         for path in ['/a','/app.js','/arcade.js','/vendor/phaser.min.js','/api/a/state','/api/a/events']:
             self.assertEqual(self.call(path)[0]['status'],401)
@@ -163,7 +180,8 @@ class GameTest(unittest.TestCase):
         self.assertEqual(self.act('b',4,'confirm')[0]['status'],400)
         self.act('b',4,'rotate',position=0,step=1)
         self.act('a',4,'confirm');self.act('b',4,'confirm');state=self.state('a')
-        self.assertEqual(state['code'],'8247');self.assertTrue(state['complete']);self.assertEqual(len(state['rewards']),4)
+        self.assertEqual(state['code'],'5927');self.assertTrue(state['complete']);self.assertEqual(len(state['rewards']),4)
+        self.assertEqual([reward[1] for reward in state['rewards']], ['9','5','2','7'])
         self.assertEqual(self.act('a',4,'confirm')[0]['status'],409)
 
     def test_no_plaintext_date_or_future_content_in_views(self):
