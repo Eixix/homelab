@@ -23,3 +23,6 @@ backups/
 
 # Python app caches
 apps/wedding/**/__pycache__/
+
+# Original wedding photos remain local; only the encrypted bundle is versioned.
+/images/

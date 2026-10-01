@@ -1,5 +1,6 @@
 """CUP v2: private personalization, public rules, no plaintext relationship date."""
 import hashlib
+import hmac
 import copy
 import secrets
 from datetime import date
@@ -64,3 +65,11 @@ def previous_pin_game(game):
         old['stages'][index]['reward'][1] = digit
     old['code'] = '824' + str(old['archive']['value'])
     return old
+
+
+def gallery_key(config):
+    """Derive an independent gallery key from the existing private password verifier."""
+    digest = bytes.fromhex(config['password_hash'].split('$')[2])
+    if len(digest) != 64:
+        raise ValueError('Ungültiger privater Passworthash.')
+    return hmac.digest(digest, b'cup/gallery/v2', hashlib.sha256)

@@ -1,6 +1,7 @@
 import concurrent.futures
 import base64
 import hashlib
+import hmac
 from io import BytesIO
 import json
 import os
@@ -11,8 +12,9 @@ import time
 import unittest
 from unittest.mock import patch
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-from game import make_game, previous_pin_game
-from encrypt_gallery import encode, KEY
+from game import make_game, previous_pin_game, gallery_key
+from encrypt_gallery import encode_bundle
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from server import App
 from setup import password_hash, install_config
 from engine import initial, advance, command, snake_tick, GameError, RACE_SECONDS, TRAIN_SECONDS, view
@@ -26,6 +28,7 @@ class GameTest(unittest.TestCase):
         self.password='test-only-long-password'
         self.game=make_game(dict(relationship_date='2019-06-13'))
         self.config.write_text(json.dumps(dict(origin='https://wedding.example',password_hash=password_hash(self.password),roles={hashlib.sha256(r.encode()).hexdigest():r for r in ('a','b')},game=self.game)))
+        self.lab_key=gallery_key(json.loads(self.config.read_text()))
         self.app=App(self.config,self.database)
         self.cookies={};self.csrf={}
 
@@ -155,10 +158,11 @@ class GameTest(unittest.TestCase):
         meta,robots=self.call('/robots.txt')
         self.assertEqual(meta['status'],200)
         self.assertIn(b'Disallow: /lab/',robots)
-        for path in ('/lab/','/lab/manifest.json','/lab/gallery','/lab/images/bibliothek'):
+        for path in ('/lab/','/lab/manifest.json','/lab/gallery','/lab/gallery.cup','/lab/decryptor.js'):
             self.assertEqual(self.call(path)[0]['status'],404)
         self.login('a')
-        self.assertEqual(self.call('/lab/',role='a')[0]['status'],404)
+        for path in ('/lab/','/lab/manifest.json','/lab/gallery.cup'):
+            self.assertEqual(self.call(path,role='a')[0]['status'],404)
         self.login('b')
         meta,page=self.call('/lab/',role='b')
         self.assertEqual(meta['status'],200)
@@ -169,25 +173,31 @@ class GameTest(unittest.TestCase):
         gallery=base64.b64decode(manifest['artifact']).decode()
         self.assertEqual(gallery,'/lab/gallery')
         self.assertEqual(manifest['decryptor'],'/lab/decryptor.js')
+        self.assertEqual(manifest['key_hex'],self.lab_key.hex())
+        self.assertEqual(manifest['bundle'],'/lab/gallery.cup')
         meta,page=self.call(gallery,role='b')
         self.assertEqual(meta['status'],200)
         self.assertIn(b'Bilder entschl',page)
         self.assertNotIn(b'src="/lab/images/',page)
         self.assertEqual(self.call(manifest['decryptor'],role='b')[0]['status'],200)
-        for image in ('bibliothek','labor','feierabend'):
-            meta,data=self.call('/lab/images/'+image,role='b')
-            self.assertEqual(meta['status'],200)
-            self.assertEqual(meta['headers']['Content-Type'],'application/octet-stream')
-            self.assertTrue(data.startswith(b'CUPX1'))
-            self.assertEqual(data[5],1)
-            self.assertNotIn(b'<svg',data)
-            decoded=bytes(value ^ KEY[i%len(KEY)] for i,value in enumerate(data[6:]))
-            self.assertTrue(decoded.startswith(b'<svg'))
-        temporary=Path(self.tmp.name)/'sample.svg'
-        temporary.write_bytes(b'<svg xmlns="http://www.w3.org/2000/svg"/>')
-        encrypted=encode(temporary)
-        self.assertNotIn(b'<svg',encrypted)
-        self.assertEqual(bytes(value ^ KEY[i%len(KEY)] for i,value in enumerate(encrypted[6:])),temporary.read_bytes())
+        meta,data=self.call(manifest['bundle'],role='b')
+        self.assertEqual(meta['status'],200)
+        self.assertEqual(meta['headers']['Content-Type'],'application/octet-stream')
+        self.assertTrue(data.startswith(b'CUPX2'))
+        self.assertNotIn(b'\xff\xd8\xff',data[:100])
+        directory=Path(self.tmp.name)/'photos';directory.mkdir()
+        (directory/'a.jpg').write_bytes(b'\xff\xd8\xfffirst')
+        (directory/'b.jpg').write_bytes(b'\xff\xd8\xffsecond')
+        encoded,count=encode_bundle(directory,self.lab_key)
+        self.assertEqual(count,2)
+        header,tag,ciphertext=encoded[:21],encoded[21:53],encoded[53:]
+        mac_key=hmac.digest(self.lab_key,b'cup-gallery/mac','sha256')
+        self.assertEqual(tag,hmac.digest(mac_key,header+ciphertext,'sha256'))
+        enc_key=hmac.digest(self.lab_key,b'cup-gallery/enc','sha256')
+        decryptor=Cipher(algorithms.AES(enc_key),modes.CTR(header[5:])).decryptor()
+        album=json.loads(decryptor.update(ciphertext)+decryptor.finalize())
+        self.assertEqual([base64.b64decode(item['data']) for item in album['images']],
+                         [b'\xff\xd8\xfffirst',b'\xff\xd8\xffsecond'])
         self.assertEqual(self.call('/lab/images/../style.css',role='b')[0]['status'],404)
 
     def test_full_cooperative_game_with_restart_and_final_gate(self):

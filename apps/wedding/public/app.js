@@ -4,6 +4,7 @@ const role=location.pathname.split('/')[1];
 document.body.className=role==='a'?'romantic':'security';
 const $=id=>document.getElementById(id);
 let current,source,screen='',selected=null,polling=false,actionQueue=Promise.resolve(),lastVersion=-1;
+const welcomeKey=`cup-welcome-2026-${role}`;
 const directions={up:'↑',left:'←',down:'↓',right:'→'};
 function el(tag,text,cls){const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;}
 function button(text,fn,cls='secondary'){const b=el('button',text,cls);b.type='button';b.onclick=fn;return b;}
@@ -42,6 +43,12 @@ function makeConfirm(parent){
  },'primary');b.id='confirm';parent.append(note,b);
 }
 function render(state){
+ if(state.stage===0&&!sessionStorage.getItem(welcomeKey)){
+  current=state;$('game').hidden=true;$('welcome').hidden=false;connected();
+  if(document.activeElement!==$('welcome-start'))$('welcome-title').focus({preventScroll:true});
+  return;
+ }
+ $('welcome').hidden=true;
  if(state.version<lastVersion)return;
  lastVersion=state.version;current=state;document.body.classList.toggle('arcade-mode',!state.complete&&state.stage!==2);
  $('game').hidden=false;$('identity').textContent=`${state.name} / ${role==='a'?'Das Album':'Das Protokoll'}`;
@@ -206,8 +213,9 @@ function updateCircuit(){const p=current.play;CupArcade.update(current);for(cons
  if(p.unlocked&&role==='a')$('fragment').textContent=p.fragment;
  if(current.solved){$('receipt-submit').disabled=true;$('receipt-submit').textContent='Dein Beitrag ist bestätigt ✓';}
 }
+$('welcome-start').onclick=()=>{sessionStorage.setItem(welcomeKey,'seen');$('welcome').hidden=true;render(current);};
 $('hint').onclick=async()=>{try{render(await request('hint',{stage:current.stage}));}catch(error){$('feedback').textContent=error.message;}};
-$('logout').onclick=async()=>{try{await request('logout',{});source?.close();location.replace('/');}catch(error){$('feedback').textContent=error.message;}};
+$('logout').onclick=async()=>{try{await request('logout',{});sessionStorage.removeItem(welcomeKey);source?.close();location.replace('/');}catch(error){$('feedback').textContent=error.message;}};
 async function refresh(){if(polling)return;polling=true;try{render(await request('state'));}catch(error){$('connection').textContent=error.message||'Verbindung unterbrochen.';$('connection').className='offline';$('connection').hidden=false;}finally{polling=false;}}
 function listen(){source=new EventSource(`/api/${role}/events`);source.onmessage=e=>{connected();render(JSON.parse(e.data));};source.addEventListener('expired',()=>{source.close();refresh();});source.onerror=()=>{$('connection').textContent='Verbindung wird erneuert …';$('connection').className='offline';$('connection').hidden=false;};}
 refresh().then(()=>{if(current)listen();});
@@ -215,7 +223,7 @@ setInterval(()=>{if(current&&!current.complete&&current.stage<2&&!document.hidde
 setInterval(()=>{if(current?.stage>=2&&!document.hidden)refresh();},5000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});window.addEventListener('online',refresh);
 window.addEventListener('keydown',e=>{
- if(!current||current.complete||/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)||e.ctrlKey||e.metaKey||e.altKey)return;
+ if(!current||!$('welcome').hidden||current.complete||/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)||e.ctrlKey||e.metaKey||e.altKey)return;
  const d={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',w:'up',a:'left',s:'down',d:'right'}[e.key.length===1?e.key.toLowerCase():e.key];
  if(current.stage===0){
   if(current.play.driver===role&&[' ','b','B'].includes(e.key)&&(e.key!==' '||e.target.tagName!=='BUTTON')){

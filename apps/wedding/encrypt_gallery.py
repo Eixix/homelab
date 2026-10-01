@@ -1,29 +1,53 @@
 #!/usr/bin/env python3
-"""Encode a gallery image as a CUPX1 XOR artifact; keep source photos outside this public repo."""
+"""Pack local photos into one authenticated, AES-CTR-XORed gallery file."""
 import argparse
+import base64
+import hashlib
+import hmac
+import json
 from pathlib import Path
+import secrets
 
-KEY = b'CUP-LAB-2026'
-TYPES = {'.svg': 1, '.jpg': 2, '.jpeg': 2, '.png': 3, '.webp': 4}
-NAMES = {'bibliothek': 'study-library.cup', 'labor': 'study-lab.cup', 'feierabend': 'study-afterhours.cup'}
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from game import gallery_key
+
+MEDIA = {'.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp'}
+SIGNATURES = {'image/jpeg': b'\xff\xd8\xff', 'image/png': b'\x89PNG\r\n\x1a\n', 'image/webp': b'RIFF'}
+MARKER = b'CUPX2'
 
 
-def encode(source):
-    source = Path(source)
-    kind = TYPES.get(source.suffix.lower())
-    if kind is None:
-        raise ValueError('Erlaubt sind SVG, JPEG, PNG und WebP.')
-    image = source.read_bytes()
-    if not image or len(image) > 8 * 1024 * 1024:
-        raise ValueError('Bild muss zwischen 1 Byte und 8 MiB groß sein.')
-    return b'CUPX1' + bytes([kind]) + bytes(value ^ KEY[i % len(KEY)] for i, value in enumerate(image))
+def encode_bundle(directory, key):
+    if len(key) != 32:
+        raise ValueError('Der private Galerieschlüssel muss 32 Byte lang sein.')
+    photos = sorted(path for path in Path(directory).iterdir() if path.is_file())
+    if not photos:
+        raise ValueError('Der Bilderordner ist leer.')
+    images = []
+    for number, path in enumerate(photos, 1):
+        mime = MEDIA.get(path.suffix.lower())
+        if not mime:
+            raise ValueError(f'Nicht unterstütztes Bildformat: {path.suffix}')
+        data = path.read_bytes()
+        if not data.startswith(SIGNATURES[mime]) or len(data) > 8 * 1024 * 1024:
+            raise ValueError(f'Bild ist beschädigt oder zu groß: {path.name}')
+        images.append({'id': f'{number:02d}', 'mime': mime, 'data': base64.b64encode(data).decode('ascii')})
+    plain = json.dumps({'version': 2, 'images': images}, separators=(',', ':')).encode()
+    nonce = secrets.token_bytes(16)
+    enc_key = hmac.digest(key, b'cup-gallery/enc', hashlib.sha256)
+    mac_key = hmac.digest(key, b'cup-gallery/mac', hashlib.sha256)
+    encryptor = Cipher(algorithms.AES(enc_key), modes.CTR(nonce)).encryptor()
+    ciphertext = encryptor.update(plain) + encryptor.finalize()
+    header = MARKER + nonce
+    tag = hmac.digest(mac_key, header + ciphertext, hashlib.sha256)
+    return header + tag + ciphertext, len(images)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('name', choices=sorted(NAMES))
-    parser.add_argument('source', type=Path)
+    parser.add_argument('source_dir', type=Path, help='Lokaler, nicht versionierter Bilderordner')
+    parser.add_argument('--config', type=Path, required=True, help='Bestehende private Wedding-Konfiguration')
+    parser.add_argument('--output', type=Path, default=Path(__file__).parent / 'public/study-gallery.cup')
     args = parser.parse_args()
-    target = Path(__file__).parent / 'public' / NAMES[args.name]
-    target.write_bytes(encode(args.source))
-    print(f'{target.name} geschrieben; Quelldatei bleibt unverändert.')
+    bundle, count = encode_bundle(args.source_dir, gallery_key(json.loads(args.config.read_text())))
+    args.output.write_bytes(bundle)
+    print(f'{count} Bilder als {args.output.name} kodiert. Originale bleiben unverändert.')

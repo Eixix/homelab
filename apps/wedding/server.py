@@ -12,7 +12,7 @@ import time
 import unicodedata
 from urllib.parse import parse_qs, urlsplit
 from engine import TRAIN_HINTS, initial, advance, command, view, GameError
-from game import previous_pin_game
+from game import previous_pin_game, gallery_key
 
 PUBLIC = Path(__file__).parent / 'public'
 
@@ -25,6 +25,7 @@ class App:
     def __init__(self, config_path, db_path):
         self.config = json.loads(Path(config_path).read_text())
         self.game = self.config['game']
+        self.lab_key = gallery_key(self.config)
         if self.game.get('schema') != 2:
             raise ValueError('CUP v2 benötigt eine neu eingerichtete Konfiguration und einen eigenen Spielstand.')
         self.origin = os.getenv('WEDDING_ORIGIN') or self.config['origin']
@@ -179,16 +180,15 @@ class App:
             if path == '/lab/manifest.json':
                 return reply(200,{'format':'CUP-Lab/1','artifact':'L2xhYi9nYWxsZXJ5',
                                   'hint':'Das Artefakt ist Base64-kodiert. Dekodiere es als UTF-8-Pfad.',
-                                  'decryptor':'/lab/decryptor.js', 'cipher':'CUPX1 · XOR mit wiederholtem UTF-8-Schlüssel'})
+                                  'decryptor':'/lab/decryptor.js','bundle':'/lab/gallery.cup',
+                                  'cipher':'CUPX2 · AES-CTR-Keystream XOR + HMAC-SHA-256',
+                                  'key_hex':self.lab_key.hex()})
             if path == '/lab/gallery':
                 return reply(200,(PUBLIC/'lab-gallery.html').read_bytes(),mime='text/html; charset=utf-8')
             if path == '/lab/decryptor.js':
                 return reply(200,(PUBLIC/'lab-decryptor.js').read_bytes(),mime='text/javascript; charset=utf-8')
-            placeholders={'bibliothek':'study-library.cup','labor':'study-lab.cup','feierabend':'study-afterhours.cup'}
-            if path.startswith('/lab/images/'):
-                name=placeholders.get(path.removeprefix('/lab/images/'))
-                if name:
-                    return reply(200,(PUBLIC/name).read_bytes(),mime='application/octet-stream')
+            if path == '/lab/gallery.cup':
+                return reply(200,(PUBLIC/'study-gallery.cup').read_bytes(),mime='application/octet-stream')
             return reply(404,{'error':'Nicht gefunden.'})
         # Only neutral login styling is public; every game asset requires a role session.
         if path == '/login.js' and method=='GET':
