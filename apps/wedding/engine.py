@@ -21,7 +21,17 @@ class GameError(ValueError):
 
 
 def snake_world():
-    return dict(body=[[4,6],[3,6],[2,6]],direction='right',pending=None,index=0,score=0,held=[],cooldown=0,acc=0,practice=False,practiced=False,practice_ticks=0)
+    return dict(body=[[4,6],[3,6],[2,6]],direction='right',pending=None,index=0,target=list(TARGETS[0]),score=0,held=[],cooldown=0,acc=0,practice=False,practiced=False,practice_ticks=0)
+
+
+def snake_target(w):
+    for offset in range(len(TARGETS)):
+        target=list(TARGETS[(w['index']+offset)%len(TARGETS)])
+        if target not in w['body']: return target
+    for y in range(12):
+        for x in range(12):
+            if [x,y] not in w['body']: return [x,y]
+    return None
 
 
 def initial(stage):
@@ -36,6 +46,7 @@ def initial(stage):
 def collide(w):
     w['body']=[[4,6],[3,6],[2,6]]
     w['direction']='right';w['pending']=None;w['cooldown']=3
+    w['target']=snake_target(w)
 
 
 def snake_tick(w,role,state,practice=False):
@@ -46,7 +57,9 @@ def snake_tick(w,role,state,practice=False):
         w['direction']=w['pending'];w['pending']=None
     dx,dy=DIRECTIONS[w['direction']]
     x,y=w['body'][0];head=[x+dx,y+dy]
-    target=list(TARGETS[w['index'] % len(TARGETS)])
+    target=w.get('target')
+    if target is None or target in w['body']:
+        target=w['target']=snake_target(w)
     eating=head==target
     body=w['body'] if eating else w['body'][:-1]
     if not (0<=head[0]<12 and 0<=head[1]<12) or head in body:
@@ -57,6 +70,7 @@ def snake_tick(w,role,state,practice=False):
     if eating:
         index=w['index'] % 11
         w['index']+=1
+        w['target']=snake_target(w)
         if practice: return
         w['score']+=1
         owner='a' if index%2==0 else 'b'
@@ -256,9 +270,9 @@ def view(game,stage,state,role,now=None):
         return result
     if stage==1:
         own=state['snakes'][role];peer=state['snakes']['b' if role=='a' else 'a']
-        result=dict(phase=state['phase'],ready=state['ready'],body=own['body'],direction=own['direction'],score=own['score'],peer_score=peer['score'],held=len(own['held']),
+        result=dict(phase=state['phase'],ready=state['ready'],body=own['body'],direction=own['direction'],index=own['index'],cooldown=own['cooldown'],score=own['score'],peer_score=peer['score'],held=len(own['held']),
                     practice=own['practice'],practiced=own['practiced'],remaining=max(0,int(RACE_SECONDS-state['elapsed']+.999)),paused=state.get('paused',False),
-                    target=list(TARGETS[own['index']%11]),station=game['route'][own['index']%11],target_owner='a' if own['index']%11%2==0 else 'b',
+                    target=own.get('target') or snake_target(own),station=game['route'][own['index']%11],target_owner='a' if own['index']%11%2==0 else 'b',
                     countdown=max(0,int(state.get('starts_at',0)-state.get('last',0)+.999)),passport=state['passport'],route=game['route'],winner=state['winner'],last_action=state['last_action'])
         missing=next((i for i,x in enumerate(state['passport']) if not x),None)
         result['missing']=missing;result['stamp_role']=('a' if missing%2==0 else 'b') if missing is not None else None

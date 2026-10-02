@@ -22,6 +22,7 @@ async function request(path,data){
  connected();return body;
 }
 function act(kind,extra={}){
+ if(current?.stage===1&&kind==='turn')CupArcade.turn(extra.direction);
  if(kind==='throttle'&&current.stage===0&&current.play.driver===role&&current.play.motion==='stopped'&&current.play.signal!=='green'){
   $('feedback').textContent=current.play.signal==='red'?'Rotes Signal: Bitte das Stellwerk um ein freies Gleis.':'Das Stellwerk muss zuerst die Weiche stellen.';
   return Promise.resolve();

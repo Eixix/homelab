@@ -1,7 +1,30 @@
 'use strict';
-// Phaser 3 scenes display server-authoritative state; they never award points.
+// Phaser 3 keeps Snake movement responsive locally; the server awards points.
 window.CupArcade=(()=>{
- let game,scene,pending,mode,send,own;
+ let game,scene,pending,mode,send,own,localSnake;
+ const snakeTargets=[[9,6],[9,2],[2,2],[2,9],[9,9],[6,9],[6,3],[10,3],[10,10],[3,10],[3,4]];
+ const vectors={up:[0,-1],right:[1,0],down:[0,1],left:[-1,0]};
+ const opposite={up:'down',right:'left',down:'up',left:'right'};
+ const same=(a,b)=>a[0]===b[0]&&a[1]===b[1];
+ function freeTarget(w){
+  for(let i=0;i<snakeTargets.length;i++){const t=snakeTargets[(w.index+i)%snakeTargets.length];if(!w.body.some(cell=>same(cell,t)))return [...t];}
+  for(let y=0;y<12;y++)for(let x=0;x<12;x++)if(!w.body.some(cell=>same(cell,[x,y])))return [x,y];
+  return null;
+ }
+ function localTick(){
+  const w=localSnake;if(!w||!pending?.play||!(pending.play.phase==='race'||pending.play.practice)||pending.play.paused)return;
+  if(w.cooldown){w.cooldown--;return;}
+  if(w.pending){w.direction=w.pending;w.pending=null;}
+  const [dx,dy]=vectors[w.direction],head=[w.body[0][0]+dx,w.body[0][1]+dy],eating=w.target&&same(head,w.target);
+  const collision=head[0]<0||head[0]>=12||head[1]<0||head[1]>=12||w.body.slice(0,eating?undefined:-1).some(cell=>same(cell,head));
+  if(collision){w.body=[[4,6],[3,6],[2,6]];w.direction='right';w.pending=null;w.cooldown=3;w.target=freeTarget(w);}
+  else{w.body.unshift(head);if(!eating)w.body.pop();else{w.index++;w.target=freeTarget(w);}}
+  if(scene?.sys?.isActive())scene.paint(pending);
+ }
+ function turn(direction){
+  if(mode!=='snake'||!localSnake||!vectors[direction]||opposite[localSnake.direction]===direction)return;
+  if(!localSnake.pending)localSnake.pending=direction;
+ }
  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
  const colors={bg:0x102b32,rail:0x547279,mint:0x83e3c5,gold:0xffcf73,red:0xff827b,white:0xf5f4e9};
  const pos=i=>({x:115+(i%3)*185,y:130+Math.floor(i/3)*145});
@@ -15,6 +38,7 @@ window.CupArcade=(()=>{
      const grid=this.add.graphics().setDepth(-.5),cell=36,ox=84,oy=72;
      grid.fillStyle(0x173941);grid.fillRoundedRect(ox-8,oy-8,448,448,16);grid.lineStyle(1,0x28505a);
      for(let i=0;i<=12;i++){grid.lineBetween(ox+i*cell,oy,ox+i*cell,oy+432);grid.lineBetween(ox,oy+i*cell,ox+432,oy+i*cell);}
+     this.time.addEvent({delay:240,loop:true,callback:localTick});
     }
     this.train=this.add.container(0,0).setDepth(5);const sprite=this.add.graphics();
     sprite.fillStyle(0x091e25,.3);sprite.fillRoundedRect(-35,-19,74,45,12);
@@ -111,9 +135,10 @@ window.CupArcade=(()=>{
     }else{
      const cell=36,ox=84,oy=72;
      this.badge.setText(`JAPAN CUP  ·  ${p.station.toUpperCase()}`);
-     const tx=ox+p.target[0]*cell+18,ty=oy+p.target[1]*cell+18;
+     const body=localSnake?.body||p.body,target=localSnake?.target||p.target;
+     const tx=ox+target[0]*cell+18,ty=oy+target[1]*cell+18;
      g.fillStyle(p.target_owner===own?colors.gold:colors.mint);g.fillCircle(tx,ty,12);g.lineStyle(3,0xf5f4e9,.5);g.strokeCircle(tx,ty,16);
-     p.body.forEach(([x,y],i)=>{g.fillStyle(i===0?colors.white:colors.mint);g.fillRoundedRect(ox+x*cell+3,oy+y*cell+3,30,30,9);if(i===0){g.fillStyle(colors.bg);g.fillCircle(ox+x*cell+11,oy+y*cell+12,3);g.fillCircle(ox+x*cell+24,oy+y*cell+12,3);}});
+     body.forEach(([x,y],i)=>{g.fillStyle(i===0?colors.white:colors.mint);g.fillRoundedRect(ox+x*cell+3,oy+y*cell+3,30,30,9);if(i===0){g.fillStyle(colors.bg);g.fillCircle(ox+x*cell+11,oy+y*cell+12,3);g.fillCircle(ox+x*cell+24,oy+y*cell+12,3);}});
      const active=p.phase==='race'||p.practice;
      if(!active||p.paused){g.fillStyle(colors.bg,.9);g.fillRoundedRect(115,227,370,116,18);this.text(300,267,p.paused?'GEMEINSAM PAUSIERT':p.phase==='countdown'?`START IN ${p.countdown}`:p.phase==='passport'?'CUP IM ZIEL':p.ready[own]?'BEREIT. DU AUCH?':'DEIN JAPAN-CUP',22,'#ffcf73');this.text(300,304,p.phase==='warmup'?'Üben oder unten auf „Ich bin bereit“ tippen':'Zwei Schlangen. Ein gemeinsames Ziel.',13);}
      this.message.setText(p.phase==='race'?`Stempel für ${p.target_owner===own?'dich':s.partner}  ·  Pfeile / WASD / Wischen`:'Euer Reisepass entsteht zusammen.');
@@ -122,7 +147,14 @@ window.CupArcade=(()=>{
   }
   game=new Phaser.Game({type:Phaser.CANVAS,width:600,height:550,parent,backgroundColor:'#102b32',banner:false,audio:{noAudio:true},input:{keyboard:false},scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH},scene:CupScene});
  }
- function update(s){pending=s;if(scene?.sys?.isActive())scene.paint(s);}
- function destroy(){if(game)game.destroy(true);game=null;scene=null;pending=null;}
- return{mount,update,destroy};
+ function update(s){
+  if(mode==='snake'){
+   const p=s.play,active=p.phase==='race'||p.practice;
+   if(active&&(!localSnake||localSnake.phase!==p.phase||p.index>localSnake.index||p.index+1<localSnake.index))localSnake={phase:p.phase,body:p.body.map(cell=>[...cell]),direction:p.direction,pending:null,index:p.index,target:[...p.target],cooldown:p.cooldown};
+   if(!active)localSnake=null;
+  }
+  pending=s;if(scene?.sys?.isActive())scene.paint(s);
+ }
+ function destroy(){if(game)game.destroy(true);game=null;scene=null;pending=null;localSnake=null;}
+ return{mount,update,destroy,turn};
 })();

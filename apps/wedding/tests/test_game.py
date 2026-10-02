@@ -363,6 +363,16 @@ class EngineTest(unittest.TestCase):
         self.assertEqual(len(w['body']),8)
         self.assertEqual(w['score'],2)
 
+    def test_snake_pickup_never_appears_inside_body(self):
+        state=initial(1);w=state['snakes']['a']
+        w.update(body=[[8,6],[7,6],[6,6],[5,6],[4,6],[9,2]],direction='right')
+        snake_tick(w,'a',state)
+        self.assertEqual(w['score'],1)
+        self.assertNotIn(w['target'],w['body'])
+        self.assertNotEqual(w['target'],[9,2])
+        state['last']=1
+        self.assertEqual(view(self.game,1,state,'a',1)['target'],w['target'])
+
     def test_race_pauses_without_partner_and_keeps_fair_clock(self):
         state=initial(1)
         command(self.game,1,state,'a',dict(kind='ready'),100)

@@ -276,7 +276,7 @@ class App:
                         previous=marker
                     else:
                         yield b': verbunden\n\n'
-                    time.sleep(.25)
+                    time.sleep(.5 if state['stage']==1 else .25)
             return events()
         if method!='POST' or action not in ('action','hint','logout'):
             return reply(404,{'error':'Nicht gefunden.'})
