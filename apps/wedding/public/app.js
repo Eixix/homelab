@@ -71,7 +71,7 @@ function render(state){
   $('title').textContent=state.complete?'Gemeinsam geöffnet.':state.stage_title;
   $('subtitle').textContent=state.complete?'Der CUP hat einen Sieger. Die Box habt ihr gemeinsam geöffnet.':state.subtitle;
   $('intro').textContent=state.complete?'Vier Aufgaben, zwei Perspektiven, ein gemeinsames Ergebnis.':state.intro;
-  if(state.complete){$('code').textContent=state.code;$('greeting').textContent=state.greeting;$('live').textContent='';}
+  if(state.complete){$('code').textContent=state.code;$('greeting').textContent=state.greeting;$('postscript').hidden=role!=='b';$('live').textContent='';}
   else [buildTrain,buildSnake,()=>buildBoard(false),buildCircuit,buildLock][state.stage]();
   if(changed){$('title').focus({preventScroll:true});$('title').scrollIntoView({block:'start'});}
  }
