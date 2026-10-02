@@ -303,6 +303,17 @@ class GameTest(unittest.TestCase):
 
 class EngineTest(unittest.TestCase):
     def setUp(self):self.game=make_game()
+    def test_snake_winner_is_identical_on_both_screens(self):
+        state=initial(1)
+        state.update(phase='race',last=100,elapsed=RACE_SECONDS,heartbeat={'a':100,'b':100})
+        state['snakes']['a']['score']=3
+        state['snakes']['b']['score']=5
+        advance(1,state,100,'a')
+        self.assertEqual(state['phase'],'passport')
+        self.assertEqual(view(self.game,1,state,'a',100)['winner'],'b')
+        self.assertEqual(view(self.game,1,state,'b',100)['winner'],'b')
+        self.assertEqual((view(self.game,1,state,'a',100)['score'],view(self.game,1,state,'a',100)['peer_score']),(3,5))
+        self.assertEqual((view(self.game,1,state,'b',100)['score'],view(self.game,1,state,'b',100)['peer_score']),(5,3))
     def test_train_needs_both_roles_and_locks_switch_during_travel(self):
         state=initial(0)
         for role,data in [('b',dict(kind='set_switch',node=0,direction='down')),('a',dict(kind='throttle',node=0)),('b',dict(kind='move',direction='down')),('a',dict(kind='ping',node=3)),('b',dict(kind='throttle',node=0))]:

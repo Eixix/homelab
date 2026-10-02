@@ -4,6 +4,7 @@ const role=location.pathname.split('/')[1];
 document.body.className=role==='a'?'romantic':'security';
 const $=id=>document.getElementById(id);
 let current,source,screen='',selected=null,polling=false,actionQueue=Promise.resolve(),lastVersion=-1;
+let snakeOutcomeAnnounced=false;
 const welcomeKey=`cup-welcome-2026-${role}`;
 const directions={up:'↑',left:'←',down:'↓',right:'→'};
 function el(tag,text,cls){const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;}
@@ -114,9 +115,17 @@ function updateTrain(){
  CupArcade.update(current);
 }
 function buildSnake(){
- const c=el('section',undefined,'snake-card');const score=el('div',undefined,'scoreboard');score.id='scoreboard';c.append(score);
+ snakeOutcomeAnnounced=false;
+ const c=el('section',undefined,'snake-card');
+ const challenge=el('p',undefined,'snake-challenge');challenge.id='snake-challenge';challenge.textContent='🏆 Japan-CUP: Drei Minuten, zwei Schlangen, ein CUP. Wer mehr Reisestationen sammelt, gewinnt. Danach bringt ihr den Reisepass gemeinsam ins Ziel.';c.append(challenge);
+ const score=el('div',undefined,'scoreboard');score.id='scoreboard';c.append(score);
  const info=el('p');info.id='snake-info';c.append(info);
+ const result=el('section',undefined,'snake-result');result.id='snake-result';result.hidden=true;result.setAttribute('role','status');result.setAttribute('aria-live','assertive');
+ const trophy=el('span','🏆','snake-trophy');trophy.setAttribute('aria-hidden','true');
+ const heading=el('h2');heading.id='snake-result-heading';const finalScore=el('p');finalScore.id='snake-result-score';
+ result.append(trophy,heading,finalScore,el('p','Der CUP ist entschieden. Den Reisepass bringt ihr jetzt nur zusammen ins Ziel.','snake-result-next'));
  const viewport=el('div',undefined,'arcade-viewport');viewport.id='snake';viewport.setAttribute('role','img');viewport.setAttribute('aria-label','Japan Snake Spielfeld. Pfeile, WASD oder Wischen.');c.append(viewport);
+ const stage=el('div',undefined,'snake-stage');c.replaceChild(stage,viewport);stage.append(viewport,result);
  buildDirections(c,'turn');const controls=el('div',undefined,'game-buttons');
  for(const [id,text,fn] of [['practice','Ohne Punkte üben',()=>act('practice')],['ready','Ich bin bereit',()=>act('ready')],['send','Stempel weiterschicken',()=>act('send')]]){const b=button(text,fn);b.id=id;controls.append(b);}c.append(controls);
  const list=el('div',undefined,'passport');list.id='passport';c.append(el('h2','Euer gemeinsamer Reisepass'),list);
@@ -127,7 +136,16 @@ function buildSnake(){
 function updateSnake(){
  const p=current.play,active=p.phase==='race'||p.practice;
  const timer=p.phase==='countdown'?`Start in ${p.countdown}`:p.phase==='race'?`${Math.floor(p.remaining/60)}:${String(p.remaining%60).padStart(2,'0')}`:p.phase==='passport'?'Rennen beendet':'Proberunde';
- $('scoreboard').replaceChildren(el('span',`${current.name} · ${p.score}`),el('strong',timer),el('span',`${current.partner} · ${p.peer_score}`));
+ const ownScore=el('span',`${current.name} · ${p.score}`),peerScore=el('span',`${current.partner} · ${p.peer_score}`);
+ if(p.phase==='passport'){
+  ownScore.classList.toggle('snake-score-winner',p.winner===role||p.winner==='tie');
+  peerScore.classList.toggle('snake-score-winner',p.winner!==role);
+  $('snake-result-heading').textContent=p.winner==='tie'?`${current.name} und ${current.partner} teilen sich den Japan-CUP!`:`${p.winner===role?current.name:current.partner} gewinnt den Japan-CUP!`;
+  $('snake-result-score').textContent=`Endstand: ${current.name} ${p.score} : ${p.peer_score} ${current.partner}`;
+  $('snake-result').hidden=false;
+  if(!snakeOutcomeAnnounced){$('snake-result').classList.add('snake-result-enter');snakeOutcomeAnnounced=true;}
+ }
+ $('scoreboard').replaceChildren(ownScore,el('strong',timer),peerScore);
  $('snake-info').textContent=p.phase==='passport'?(p.winner==='tie'?'Gleichstand. Ihr teilt euch den CUP.':`${p.winner===role?current.name:current.partner} hat den CUP gewonnen. Jetzt macht ihr den Reisepass gemeinsam voll.`):p.paused?'Die Uhr wartet: Eine Seite hat gerade keine Verbindung.':p.phase==='countdown'?'Beide sind bereit. Gleich geht es los.':p.phase==='warmup'?(p.ready[role]?`Du bist bereit. Warte auf ${current.partner}.`:'Übe zuerst die Steuerung. Danach bestätigt ihr beide eure Bereitschaft.'):`Nächster Halt: ${p.station} · Stempel für ${p.target_owner===role?'dich':current.partner}`;
  CupArcade.update(current);
  for(const d of Object.keys(directions))$('dir-'+d).disabled=!active;
