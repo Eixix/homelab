@@ -119,8 +119,10 @@ class App:
             row=db.execute('SELECT count FROM hints WHERE stage=? AND role=?',(stage,role)).fetchone()
             count=row[0] if row else 0
             award=db.execute("SELECT value FROM awards WHERE key='cup'").fetchone()
+            reset_epoch=db.execute("SELECT value FROM metadata WHERE key='reset'").fetchone()
         result=dict(role=role,name=self.game['names'][role],partner=self.game['names']['b' if role=='a' else 'a'],
                     title=self.game['title'],stage=stage,total=len(self.game['stages']),version=progress['version'],
+                    reset_epoch=reset_epoch[0] if reset_epoch else 'initial',
                     solved=bool(progress[role]),peer_solved=bool(progress['b' if role=='a' else 'a']),csrf=session['csrf'],
                     rewards=[s['reward'] for s in self.game['stages'][:stage] if s['reward']],complete=stage==len(self.game['stages']),
                     cup=award['value'] if award else None)

@@ -5,6 +5,7 @@ import hmac
 from io import BytesIO
 import json
 import os
+import sqlite3
 from pathlib import Path
 import sys
 import tempfile
@@ -17,6 +18,7 @@ from encrypt_gallery import encode_bundle
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from server import App
 from setup import password_hash, install_config
+from reset import reset
 from engine import initial, advance, command, snake_tick, GameError, RACE_SECONDS, TRAIN_SECONDS, view
 
 
@@ -33,6 +35,22 @@ class GameTest(unittest.TestCase):
         self.cookies={};self.csrf={}
 
     def tearDown(self): self.tmp.cleanup()
+
+    def test_reset_preserves_config_and_backs_up_progress(self):
+        with self.app.db() as db:
+            db.execute('UPDATE progress SET stage=2,a=1,b=1,version=40 WHERE id=1')
+            db.execute("INSERT INTO awards VALUES ('cup','a')")
+            db.execute("INSERT INTO hints VALUES (1,'a',2)")
+        before=self.config.read_bytes()
+        backup=reset(self.database,Path(self.tmp.name)/'backups')
+        self.assertEqual(self.config.read_bytes(),before)
+        with sqlite3.connect(backup) as db:
+            self.assertEqual(db.execute('SELECT stage,version FROM progress').fetchone(),(2,40))
+        with self.app.db() as db:
+            self.assertEqual(tuple(db.execute('SELECT stage,a,b,version FROM progress').fetchone()),(0,0,0,41))
+            self.assertEqual(db.execute('SELECT COUNT(*) FROM awards').fetchone()[0],0)
+            self.assertEqual(db.execute('SELECT COUNT(*) FROM hints').fetchone()[0],0)
+            self.assertTrue(db.execute("SELECT value FROM metadata WHERE key='reset'").fetchone()[0])
 
     def call(self,path,method='GET',body=None,role=None,origin='https://wedding.example',csrf=True,stream=False):
         payload=body.encode() if isinstance(body,str) else json.dumps(body).encode() if body is not None else b''

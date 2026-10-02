@@ -8,6 +8,11 @@ on:
         required: false
         default: ""
         type: string
+      reset_wedding:
+        description: "Reset wedding progress after deploying wedding (keeps a private database backup)"
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: production-deploy
@@ -28,6 +33,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Validate wedding reset selection
+        if: ${{ inputs.reset_wedding }}
+        run: |
+          if [ "$DEPLOY_SERVICES" != wedding ]; then
+            echo 'Wedding reset requires services=wedding.' >&2
+            exit 1
+          fi
 
       - name: Install and connect WireGuard
         env:
@@ -247,6 +260,11 @@ jobs:
             echo '### Containers actually updated'
             sed -n '/^UPDATED_CONTAINERS_BEGIN$/,/^UPDATED_CONTAINERS_END$/p' "$deployment_log" | sed '1d;$d;s/^/- `/' | sed 's/$/`/'
           } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Reset wedding progress
+        if: ${{ inputs.reset_wedding }}
+        run: |
+          ssh "$DEPLOY_USER@$DEPLOY_HOST" "cd '$DEPLOY_PATH' && python3 apps/wedding/reset.py --db data/wedding/game-v2.sqlite3 --backup-dir backups/wedding"
 
       - name: Disconnect WireGuard
         if: always()
