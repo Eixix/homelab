@@ -11,6 +11,11 @@ window.CupArcade=(()=>{
    create(){
     scene=this;this.board=this.add.graphics();this.ink=[];this.lastPosition=null;this.lastBody='';
     this.sky=this.add.graphics();this.sky.fillStyle(0x163a43);this.sky.fillCircle(590,70,115);this.sky.fillCircle(0,470,145);this.sky.setDepth(-1);
+    if(mode==='snake'){
+     const grid=this.add.graphics().setDepth(-.5),cell=36,ox=84,oy=72;
+     grid.fillStyle(0x173941);grid.fillRoundedRect(ox-8,oy-8,448,448,16);grid.lineStyle(1,0x28505a);
+     for(let i=0;i<=12;i++){grid.lineBetween(ox+i*cell,oy,ox+i*cell,oy+432);grid.lineBetween(ox,oy+i*cell,ox+432,oy+i*cell);}
+    }
     this.train=this.add.container(0,0).setDepth(5);const sprite=this.add.graphics();
     sprite.fillStyle(0x091e25,.3);sprite.fillRoundedRect(-35,-19,74,45,12);
     sprite.fillStyle(colors.white);sprite.fillRoundedRect(-34,-27,68,40,12);sprite.fillStyle(colors.mint);sprite.fillRoundedRect(-30,-25,60,12,5);
@@ -106,8 +111,6 @@ window.CupArcade=(()=>{
     }else{
      const cell=36,ox=84,oy=72;
      this.badge.setText(`JAPAN CUP  ·  ${p.station.toUpperCase()}`);
-     g.fillStyle(0x173941);g.fillRoundedRect(ox-8,oy-8,448,448,16);g.lineStyle(1,0x28505a);
-     for(let i=0;i<=12;i++){g.lineBetween(ox+i*cell,oy,ox+i*cell,oy+432);g.lineBetween(ox,oy+i*cell,ox+432,oy+i*cell);}
      const tx=ox+p.target[0]*cell+18,ty=oy+p.target[1]*cell+18;
      g.fillStyle(p.target_owner===own?colors.gold:colors.mint);g.fillCircle(tx,ty,12);g.lineStyle(3,0xf5f4e9,.5);g.strokeCircle(tx,ty,16);
      p.body.forEach(([x,y],i)=>{g.fillStyle(i===0?colors.white:colors.mint);g.fillRoundedRect(ox+x*cell+3,oy+y*cell+3,30,30,9);if(i===0){g.fillStyle(colors.bg);g.fillCircle(ox+x*cell+11,oy+y*cell+12,3);g.fillCircle(ox+x*cell+24,oy+y*cell+12,3);}});

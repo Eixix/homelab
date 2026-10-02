@@ -53,7 +53,7 @@ def snake_tick(w,role,state,practice=False):
         collide(w)
         return
     w['body'].insert(0,head)
-    if not eating or len(w['body'])>6: w['body'].pop()
+    if not eating: w['body'].pop()
     if eating:
         index=w['index'] % 11
         w['index']+=1

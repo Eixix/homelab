@@ -352,6 +352,17 @@ class EngineTest(unittest.TestCase):
         self.assertEqual(w['index'],2)
         with self.assertRaises(GameError):command(self.game,1,state,'a',dict(kind='score',score=9999),1)
 
+    def test_snake_keeps_growing_after_six_segments(self):
+        state=initial(1);w=state['snakes']['a']
+        w.update(body=[[8,6],[7,6],[6,6],[5,6],[4,6],[3,6]],direction='right')
+        snake_tick(w,'a',state)
+        self.assertEqual(len(w['body']),7)
+        self.assertEqual(w['score'],1)
+        w.update(body=[[8,2],[8,3],[8,4],[8,5],[8,6],[7,6],[6,6]],direction='right')
+        snake_tick(w,'a',state)
+        self.assertEqual(len(w['body']),8)
+        self.assertEqual(w['score'],2)
+
     def test_race_pauses_without_partner_and_keeps_fair_clock(self):
         state=initial(1)
         command(self.game,1,state,'a',dict(kind='ready'),100)

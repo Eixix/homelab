@@ -3,7 +3,7 @@ if(new URLSearchParams(location.hash.slice(1)).has('password'))history.replaceSt
 const role=location.pathname.split('/')[1];
 document.body.className=role==='a'?'romantic':'security';
 const $=id=>document.getElementById(id);
-let current,source,screen='',selected=null,polling=false,actionQueue=Promise.resolve(),lastVersion=-1;
+let current,source,screen='',selected=null,polling=false,actionQueue=Promise.resolve(),lastVersion=-1,lastStreamUpdate=0,lastRecoveryPoll=0;
 let snakeOutcomeAnnounced=false;
 const welcomeKey=`cup-welcome-2026-${role}`;
 const directions={up:'↑',left:'←',down:'↓',right:'→'};
@@ -235,9 +235,14 @@ $('welcome-start').onclick=()=>{sessionStorage.setItem(welcomeKey,'seen');$('wel
 $('hint').onclick=async()=>{try{render(await request('hint',{stage:current.stage}));}catch(error){$('feedback').textContent=error.message;}};
 $('logout').onclick=async()=>{try{await request('logout',{});sessionStorage.removeItem(welcomeKey);source?.close();location.replace('/');}catch(error){$('feedback').textContent=error.message;}};
 async function refresh(){if(polling)return;polling=true;try{render(await request('state'));}catch(error){$('connection').textContent=error.message||'Verbindung unterbrochen.';$('connection').className='offline';$('connection').hidden=false;}finally{polling=false;}}
-function listen(){source=new EventSource(`/api/${role}/events`);source.onmessage=e=>{connected();render(JSON.parse(e.data));};source.addEventListener('expired',()=>{source.close();refresh();});source.onerror=()=>{$('connection').textContent='Verbindung wird erneuert …';$('connection').className='offline';$('connection').hidden=false;};}
+function listen(){source=new EventSource(`/api/${role}/events`);source.onopen=()=>{lastStreamUpdate=Date.now();};source.onmessage=e=>{lastStreamUpdate=Date.now();connected();render(JSON.parse(e.data));};source.addEventListener('expired',()=>{source.close();refresh();});source.onerror=()=>{lastStreamUpdate=0;$('connection').textContent='Verbindung wird erneuert …';$('connection').className='offline';$('connection').hidden=false;};}
 refresh().then(()=>{if(current)listen();});
-setInterval(()=>{if(current&&!current.complete&&current.stage<2&&!document.hidden)refresh();},240);
+setInterval(()=>{if(!current||current.complete||current.stage>=2||document.hidden)return;
+ const now=Date.now(),streamOpen=source?.readyState===EventSource.OPEN;
+ if(streamOpen&&now-lastStreamUpdate<1200)return;
+ if(streamOpen&&now-lastRecoveryPoll<1000)return;
+ lastRecoveryPoll=now;refresh();
+},240);
 setInterval(()=>{if(current?.stage>=2&&!document.hidden)refresh();},5000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});window.addEventListener('online',refresh);
 window.addEventListener('keydown',e=>{
@@ -248,6 +253,6 @@ window.addEventListener('keydown',e=>{
    e.preventDefault();if(e.repeat)return;act(e.key===' '?'throttle':'brake');return;
   }
   if(d){e.preventDefault();if(e.repeat)return;if(current.play.driver===role){$('feedback').textContent='Dein Gegenüber stellt die Weiche. Du gibst mit Leertaste Gas und bremst mit B.';return;}if(!current.play.done&&current.play.motion==='stopped'&&current.play.tracks.includes(d))act('set_switch',{direction:d});}
- }else if(current.stage===1&&d&&(current.play.phase==='race'||current.play.practice)){e.preventDefault();act('turn',{direction:d});}
+ }else if(current.stage===1&&d&&(current.play.phase==='race'||current.play.practice)){e.preventDefault();if(!e.repeat)act('turn',{direction:d});}
 });
 window.addEventListener('offline',()=>{$('connection').textContent='Du bist offline.';$('connection').className='offline';$('connection').hidden=false;});
