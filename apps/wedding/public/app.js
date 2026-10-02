@@ -7,6 +7,13 @@ let current,source,screen='',selected=null,polling=false,actionQueue=Promise.res
 let snakeOutcomeAnnounced=false;
 const welcomeKey=state=>`cup-welcome-2026-${role}-${state.reset_epoch}`;
 const directions={up:'↑',left:'←',down:'↓',right:'→'};
+const touchTips=[
+ 'Smartphone: Tippe Halte, Richtungstasten und Fahrregler an.',
+ 'Smartphone: Wische über das Spielfeld oder tippe die Richtungstasten an.',
+ 'Smartphone: Tippe zuerst eine Karte und dann ihren Platz an.',
+ 'Smartphone: Tippe deine Schalter an und nutze die Eingabefelder im Browser.',
+ 'Smartphone: Wische über die Ringe oder tippe ▲ und ▼ an.'
+];
 function el(tag,text,cls){const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;}
 function button(text,fn,cls='secondary'){const b=el('button',text,cls);b.type='button';b.onclick=fn;return b;}
 function card(title,text){const c=el('section',undefined,'puzzle-card');c.append(el('h2',title),el('p',text));return c;}
@@ -64,6 +71,8 @@ function render(state){
  if(!state.rewards.length)$('rewards').append(el('p','Vier gemeinsame Aufgaben, vier Erinnerungsstücke.'));
  if(state.cup){const winner=state.cup==='tie'?'Geteilter CUP':state.cup===role?`${state.name} hat den CUP gewonnen`:`${state.partner} hat den CUP gewonnen`;$('rewards').append(el('p',`♜ ${winner}`,'cup-badge'));}
  $('hint-section').hidden=state.complete;$('finished').hidden=!state.complete;
+ $('touch-help').hidden=state.complete;
+ if(!state.complete)$('touch-help').textContent=touchTips[state.stage];
  const nextScreen=state.complete?'done':`${state.stage}:${state.stage===0?state.play.leg:''}`;
  if(screen!==nextScreen){
   const changed=screen!=='';screen=nextScreen;selected=null;CupArcade.destroy();$('feedback').textContent='';$('puzzle').replaceChildren();

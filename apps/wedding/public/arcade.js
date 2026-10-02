@@ -150,10 +150,14 @@ window.CupArcade=(()=>{
   game=new Phaser.Game({type:Phaser.CANVAS,width:600,height:550,parent,backgroundColor:'#102b32',banner:false,audio:{noAudio:true},input:{keyboard:false},scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH},scene:CupScene});
  }
  function update(s){
+  const previous=pending?.play;
   if(mode==='snake'){
    const p=s.play,active=p.phase==='race'||p.practice;
-   if(active&&(!localSnake||localSnake.phase!==p.phase||p.index>localSnake.index||p.index+1<localSnake.index))localSnake={phase:p.phase,body:p.body.map(cell=>[...cell]),direction:p.direction,pending:null,index:p.index,target:[...p.target],cooldown:p.cooldown};
+   if(active&&(!localSnake||localSnake.phase!==p.phase))localSnake={phase:p.phase,body:p.body.map(cell=>[...cell]),direction:p.direction,pending:null,index:p.index,target:[...p.target],cooldown:p.cooldown};
    if(!active)localSnake=null;
+   pending=s;
+   // Peer updates must never replace the locally moving snake or redraw its board.
+   if(active&&previous?.phase===p.phase&&previous.paused===p.paused)return;
   }
   pending=s;if(scene?.sys?.isActive())scene.paint(s);
  }
