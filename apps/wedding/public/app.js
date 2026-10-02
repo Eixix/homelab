@@ -14,6 +14,8 @@ const touchTips=[
  'Smartphone: Tippe deine Schalter an und nutze die Eingabefelder im Browser.',
  'Smartphone: Wische über die Ringe oder tippe ▲ und ▼ an.'
 ];
+const stageTitles=['Die Zugfahrt','Japan-CUP','Das Fotoalbum','Das Schaltpult','Die Schlüsselbox'];
+const stageSubtitles=['Fahrt von Weißenhorn nach Zürich und zurück','Sammelt Reisestationen für euren Reisepass','Ordnet Bilder und Beschriftungen zu','Tauscht Hinweise aus und öffnet das Archiv','Bringt Zahlen und Kapitel in die richtige Reihenfolge'];
 function el(tag,text,cls){const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;}
 function button(text,fn,cls='secondary'){const b=el('button',text,cls);b.type='button';b.onclick=fn;return b;}
 function card(title,text){const c=el('section',undefined,'puzzle-card');c.append(el('h2',title),el('p',text));return c;}
@@ -68,7 +70,7 @@ function render(state){
  $('cooperation').textContent=state.solved?'Dein Beitrag ist bestätigt. Dein Gegenüber bestätigt noch; danach geht es gemeinsam weiter.':state.peer_solved?'Dein Gegenüber hat bestätigt. Wenn ihr fertig seid, bestätige ebenfalls.':'';
  $('steps').replaceChildren(...Array.from({length:state.total},(_,i)=>{const n=el('span',`${String(i+1).padStart(2,'0')} ${i<state.stage?'✓':''}`,i===state.stage?'active':i<state.stage?'done':'');if(i===state.stage)n.setAttribute('aria-current','step');return n;}));
  $('rewards').replaceChildren(...state.rewards.map(([name,value])=>{const n=el('div',undefined,'reward');n.append(el('span',name),el('strong',value));return n;}));
- if(!state.rewards.length)$('rewards').append(el('p','Vier gemeinsame Aufgaben, vier Erinnerungsstücke.'));
+ if(!state.rewards.length)$('rewards').append(el('p','Hier erscheinen eure Erinnerungsstücke aus den Aufgaben.'));
  if(state.cup){const winner=state.cup==='tie'?'Geteilter CUP':state.cup===role?`${state.name} hat den CUP gewonnen`:`${state.partner} hat den CUP gewonnen`;$('rewards').append(el('p',`♜ ${winner}`,'cup-badge'));}
  $('hint-section').hidden=state.complete;$('finished').hidden=!state.complete;
  $('touch-help').hidden=state.complete;
@@ -76,10 +78,10 @@ function render(state){
  const nextScreen=state.complete?'done':`${state.stage}:${state.stage===0?state.play.leg:''}`;
  if(screen!==nextScreen){
   const changed=screen!=='';screen=nextScreen;selected=null;CupArcade.destroy();$('feedback').textContent='';$('puzzle').replaceChildren();
-  $('chapter').textContent=state.complete?'Euer gemeinsamer Abschluss':`Etappe ${state.stage+1} / ${state.total}`;
-  $('title').textContent=state.complete?'Gemeinsam geöffnet.':state.stage_title;
-  $('subtitle').textContent=state.complete?'Der CUP hat einen Sieger. Die Box habt ihr gemeinsam geöffnet.':state.subtitle;
-  $('intro').textContent=state.complete?'Vier Aufgaben, zwei Perspektiven, ein gemeinsames Ergebnis.':state.intro;
+  $('chapter').textContent=state.complete?'Euer Abschluss':`Etappe ${state.stage+1} / ${state.total}`;
+  $('title').textContent=state.complete?'Geschafft!':stageTitles[state.stage];
+  $('subtitle').textContent=state.complete?'Ihr habt alle Aufgaben gelöst und den Schlüssel gemeinsam zusammengesetzt.':stageSubtitles[state.stage];
+  $('intro').textContent=state.complete?'Mit diesen vier Ziffern könnt ihr eure Geschenkbox öffnen.':state.intro;
   if(state.complete){$('code').textContent=state.code;$('greeting').textContent=state.greeting;$('postscript').hidden=role!=='b';$('live').textContent='';}
   else [buildTrain,buildSnake,()=>buildBoard(false),buildCircuit,buildLock][state.stage]();
   if(changed){$('title').focus({preventScroll:true});$('title').scrollIntoView({block:'start'});}
@@ -102,7 +104,9 @@ function canConfirm(s){if(s.stage===0)return s.play.done;if(s.stage===1)return s
 function buildDirections(parent,kind){const box=el('div',undefined,'direction-pad');for(const name of ['up','left','down','right']){const b=button(directions[name],()=>act(kind,{direction:name}));b.id='dir-'+name;b.setAttribute('aria-label',({up:'Nach oben',down:'Nach unten',left:'Nach links',right:'Nach rechts'})[name]);b.classList.add(name);box.append(b);}parent.append(box);}
 function buildTrain(){
  const p=current.play,driver=p.driver===role;
- $('intro').textContent=driver?`Du bedienst Gas und Bremse. ${current.partner} stellt die Weiche. Nenne die Sperren und fahre erst bei grünem Signal.`:`Du stellst die Weiche am aktuellen Halt. ${current.partner} bedient Gas und Bremse und sieht die Sperren. Frage nach einem freien Gleis und wähle dann die Richtung.`;
+ $('intro').textContent=p.leg===0
+  ?driver?`Du fährst. ${current.partner} stellt die Weiche. Nenne die gesperrten Gleise, prüfe das Signal und gib Gas. In Zürich tauscht ihr die Rollen und fahrt zurück.`:`Du stellst die Weiche. ${current.partner} sieht die gesperrten Gleise und gibt Gas. Sprecht vor jedem Halt über den Weg nach Zürich.`
+  :driver?`Jetzt fährst du zurück nach Weißenhorn. ${current.partner} stellt die Weiche. Nenne die gesperrten Gleise, prüfe das Signal und gib Gas.`:`Jetzt stellst du die Weiche für die Rückfahrt nach Weißenhorn. ${current.partner} sieht die gesperrten Gleise und gibt Gas. Sprecht vor jedem Halt über den nächsten Weg.`;
  const c=el('section',undefined,'arcade-card');
  const hud=el('div',undefined,'train-hud');hud.id='train-position';c.append(hud);
  const viewport=el('div',undefined,'arcade-viewport');viewport.id='train-stage';viewport.setAttribute('role','img');viewport.setAttribute('aria-label',driver?'CUP Express Führerstand mit Signal und Fahrregler':'Stellwerk mit interaktiven Weichen am aktuellen Halt');c.append(viewport);
@@ -127,14 +131,15 @@ function updateTrain(){
 }
 function buildSnake(){
  snakeOutcomeAnnounced=false;
+ $('intro').textContent='Wer mehr Reisestationen einsammelt, gewinnt den CUP. Manche Stempel gehören dem anderen – schickt sie weiter. Nach dem Rennen ergänzt ihr gemeinsam die fehlenden Stationen im Reisepass.';
  const c=el('section',undefined,'snake-card');
- const challenge=el('p',undefined,'snake-challenge');challenge.id='snake-challenge';challenge.textContent='🏆 Japan-CUP: Drei Minuten, zwei Schlangen, ein CUP. Wer mehr Reisestationen sammelt, gewinnt. Danach bringt ihr den Reisepass gemeinsam ins Ziel.';c.append(challenge);
+ const challenge=el('p',undefined,'snake-challenge');challenge.id='snake-challenge';challenge.textContent='🏆 Japan-CUP · 3 Minuten Spielzeit';c.append(challenge);
  const score=el('div',undefined,'scoreboard');score.id='scoreboard';c.append(score);
  const info=el('p');info.id='snake-info';c.append(info);
  const result=el('section',undefined,'snake-result');result.id='snake-result';result.hidden=true;result.setAttribute('role','status');result.setAttribute('aria-live','assertive');
  const trophy=el('span','🏆','snake-trophy');trophy.setAttribute('aria-hidden','true');
  const heading=el('h2');heading.id='snake-result-heading';const finalScore=el('p');finalScore.id='snake-result-score';
- result.append(trophy,heading,finalScore,el('p','Der CUP ist entschieden. Den Reisepass bringt ihr jetzt nur zusammen ins Ziel.','snake-result-next'));
+ result.append(trophy,heading,finalScore,el('p','Das Rennen ist beendet. Ergänzt jetzt gemeinsam die fehlenden Stationen im Reisepass.','snake-result-next'));
  const viewport=el('div',undefined,'arcade-viewport');viewport.id='snake';viewport.setAttribute('role','img');viewport.setAttribute('aria-label','Japan Snake Spielfeld. Pfeile, WASD oder Wischen.');c.append(viewport);
  const stage=el('div',undefined,'snake-stage');c.replaceChild(stage,viewport);stage.append(viewport,result);
  buildDirections(c,'turn');const controls=el('div',undefined,'game-buttons');
@@ -157,7 +162,7 @@ function updateSnake(){
   if(!snakeOutcomeAnnounced){$('snake-result').classList.add('snake-result-enter');snakeOutcomeAnnounced=true;}
  }
  $('scoreboard').replaceChildren(ownScore,el('strong',timer),peerScore);
- $('snake-info').textContent=p.phase==='passport'?(p.winner==='tie'?'Gleichstand. Ihr teilt euch den CUP.':`${p.winner===role?current.name:current.partner} hat den CUP gewonnen. Jetzt macht ihr den Reisepass gemeinsam voll.`):p.paused?'Die Uhr wartet: Eine Seite hat gerade keine Verbindung.':p.phase==='countdown'?'Beide sind bereit. Gleich geht es los.':p.phase==='warmup'?(p.ready[role]?`Du bist bereit. Warte auf ${current.partner}.`:'Übe zuerst die Steuerung. Danach bestätigt ihr beide eure Bereitschaft.'):`Nächster Halt: ${p.station} · Stempel für ${p.target_owner===role?'dich':current.partner}`;
+ $('snake-info').textContent=p.phase==='passport'?(p.winner==='tie'?'Gleichstand. Ihr teilt euch den CUP.':`${p.winner===role?current.name:current.partner} hat den CUP gewonnen. Ergänzt jetzt gemeinsam die fehlenden Stationen.`):p.paused?'Die Uhr wartet: Eine Seite hat gerade keine Verbindung.':p.phase==='countdown'?'Beide sind bereit. Gleich geht es los.':p.phase==='warmup'?(p.ready[role]?`Du bist bereit. Warte auf ${current.partner}.`:'Übe zuerst die Steuerung. Danach bestätigt ihr beide eure Bereitschaft.'):`Nächster Halt: ${p.station} · Stempel für ${p.target_owner===role?'dich':current.partner}`;
  CupArcade.update(current);
  for(const d of Object.keys(directions))$('dir-'+d).disabled=!active;
  $('practice').hidden=p.phase!=='warmup';$('practice').disabled=p.ready[role]||p.practice;
@@ -170,6 +175,9 @@ function updateSnake(){
  for(const b of $('station-choices').children)b.disabled=p.stamp_role!==role||p.passport[Number(b.dataset.station)];
 }
 function buildBoard(lock){
+ if(!lock)$('intro').textContent=role==='a'
+  ?`Du ordnest vier Bilder. ${current.partner} hat die Beschriftungen. Beschreibt einander eure Karten und wählt für jedes Paar denselben Platz.`
+  :`Du ordnest vier Beschriftungen. ${current.partner} hat die Bilder. Beschreibt einander eure Karten und wählt für jedes Paar denselben Platz.`;
  const c=card(lock?'Vier Ringe für eure Box':role==='a'?'Deine Bildkarten':'Deine Beschriftungen',lock?'Wähle eine Karte und dann ihren Platz. Jede Änderung erscheint auch auf der anderen Seite.':'Wähle eine Karte und dann einen Platz im Album. Dein Gegenüber ordnet seine eigene Hälfte.');
  if(current.play.rules)current.play.rules.forEach(text=>c.append(el('p',text,'rule')));
  const choices=el('div',undefined,'tile-choices');choices.id='tile-choices';
@@ -184,7 +192,9 @@ function updateBoard(){const p=current.play;for(let i=0;i<4;i++){const b=$('slot
  for(const b of $('tile-choices').children)b.setAttribute('aria-pressed',String(Number(b.dataset.item)===selected));
 }
 function buildLock(){
- $('intro').textContent=role==='a'?`Du bedienst die Zahlenringe. ${current.partner} ordnet die Kapitel. Sprecht über eure Erinnerungsstücke und dreht beide die Ringe in dieselbe Reihenfolge.`:`Du bedienst die Kapitelringe. ${current.partner} besitzt die Zahlen dazu. Nutze deine Reihenfolge-Hinweise, um eure beiden Boxhälften abzustimmen.`;
+ $('intro').textContent=role==='a'
+  ?`Deine Erinnerungsstücke liefern die vier Zahlen. ${current.partner} kennt ihre Reihenfolge. Vergleicht eure Hinweise und stellt beide Boxhälften passend ein. Bestätigt zum Schluss gemeinsam.`
+  :`Du kennst die Reihenfolge der vier Kapitel. ${current.partner} hat die Zahlen dazu. Vergleicht eure Hinweise und stellt beide Boxhälften passend ein. Bestätigt zum Schluss gemeinsam.`;
  const c=el('section',undefined,'arcade-card');const viewport=el('div',undefined,'arcade-viewport');viewport.id='lock-stage';viewport.setAttribute('role','img');viewport.setAttribute('aria-label','Vier interaktive Schlossringe. Mit Pfeilen drehen oder über die Ringe wischen.');c.append(viewport);$('puzzle').append(c);
  const notes=card(role==='a'?'Deine Erinnerungsstücke':'Dein Plan für die Box','Drehe jeden Ring mit ▲ und ▼ oder wische über den Ring im Spielfeld. Jede Person bedient ihre eigene Boxhälfte.');
  if(current.play.rules)for(const rule of current.play.rules)notes.append(el('p',rule,'rule'));
@@ -197,7 +207,9 @@ function buildLock(){
 }
 function updateLock(){const p=current.play;for(let i=0;i<4;i++)$('ring-label-'+i).textContent=`Ring ${i+1}: ${p.labels[p.order[i]]}${p.matched[i]?' ✓':''}`;CupArcade.update(current);}
 function buildCircuit(){
- $('intro').textContent=`Bringt gemeinsam Strom ins CUP Lab. Du bedienst ${role==='a'?'A und B':'C und D'}; ${current.partner} bedient die andere Hälfte. Nur zusammen kennt ihr alle Bedingungen.`;
+ $('intro').textContent=role==='a'
+  ?`Du bedienst A und B, ${current.partner} C und D. Tauscht eure Bedingungen aus, stellt die Schalter ein und prüft beide die Schaltung. Danach gibst du ${current.partner} den Schlüsselteil.`
+  :`Du bedienst C und D, ${current.partner} A und B. Tauscht eure Bedingungen aus und prüft beide die Schaltung. Danach öffnest du mit ihrem Schlüsselteil das verschlüsselte Archiv und gibst ihr das Prüfwort.`;
  const c=el('section',undefined,'arcade-card');const viewport=el('div',undefined,'arcade-viewport');viewport.id='circuit-stage';viewport.setAttribute('role','img');viewport.setAttribute('aria-label','Interaktives Schaltpult mit vier Hebeln und gemeinsamen Stromleitungen');c.append(viewport);$('puzzle').append(c);
  const notes=card('Deine Bedingungen','Teilt die Hinweise, stellt eure Schalter ein und prüft die Schaltung anschließend beide.');
  current.play.rules.forEach(text=>notes.append(el('p',text,'rule')));
@@ -206,12 +218,12 @@ function buildCircuit(){
  const check=button('Schaltung prüfen',()=>act('check'),'primary');check.id='check';notes.append(check);$('puzzle').append(notes);CupArcade.mount('circuit-stage','circuit',role,act);
  const archive=el('section',undefined,'puzzle-card');archive.id='archive-panel';
  if(role==='a'){
-  archive.append(el('h2','Dein Schlüsselteil'),el('p',`Nenne ${current.partner} diesen Schlüssel oder schicke ihn im Chat. Er ist für diese Spielrunde bestimmt.`));
+  archive.append(el('h2','Dein Schlüsselteil'),el('p',`Gib ${current.partner} den Schlüsselteil per Anruf durch oder kopiere ihn in euren Chat.`));
   const fragment=el('code');fragment.id='fragment';archive.append(fragment);
   const copy=button('Schlüssel kopieren',async()=>{try{await navigator.clipboard.writeText(current.play.fragment);$('feedback').textContent='Schlüssel kopiert.';}catch{$('feedback').textContent='Markiere den Schlüssel und kopiere ihn in euren Chat.';}});archive.append(copy);
   const form=el('form');form.id='word-form';const label=el('label','Welches Prüfwort hat dein Gegenüber ermittelt?');label.htmlFor='word';const input=el('input');input.id='word';input.maxLength=8;input.required=true;input.autocomplete='off';input.spellcheck=false;const submit=el('button','Prüfwort bestätigen ↗','primary');submit.type='submit';submit.id='receipt-submit';form.append(label,input,submit);form.onsubmit=e=>{e.preventDefault();confirm({word:input.value});};archive.append(form);
  }else{
-  archive.append(el('h2','Das verschlüsselte Archiv'),el('p','Öffne die Datei in einem eigenen Werkzeug oder nutze den Helfer unten. Der Helfer zeigt nur den berechneten Wert und das Prüfwort, niemals das entschlüsselte Datum.'));
+  archive.append(el('h2','Das verschlüsselte Archiv'),el('p',`Öffne das Archiv im Browser und gib ${current.partner}s Schlüsselteil unten ein. Du kannst die Datei auch mit einem eigenen Werkzeug untersuchen.`));
   const download=el('a','Archiv im Browser öffnen');download.href='/api/b/archive';download.target='_blank';download.rel='noopener';archive.append(download);
   archive.append(el('p','Dateiformat: Hex-Geheimtext XOR SHA-256(Schlüsselteil:Salz). Die Datei beschreibt die Berechnung und die Prüfung.','fineprint'));
   const form=el('form');const label=el('label','Schlüsselteil von deiner Mitspielerin');label.htmlFor='archive-key';const input=el('input');input.id='archive-key';input.autocomplete='off';input.spellcheck=false;input.required=true;const submit=el('button','Archiv prüfen','secondary');submit.type='submit';form.append(label,input,submit);

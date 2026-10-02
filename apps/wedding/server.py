@@ -11,7 +11,7 @@ import sqlite3
 import time
 import unicodedata
 from urllib.parse import parse_qs, urlsplit
-from engine import TRAIN_HINTS, initial, advance, command, view, GameError
+from engine import TRAIN_HINTS, SNAKE_HINTS, initial, advance, command, view, GameError
 from game import previous_pin_game, gallery_key
 
 PUBLIC = Path(__file__).parent / 'public'
@@ -131,7 +131,7 @@ class App:
         else:
             current=self.game['stages'][stage]
             result.update(stage_title=current['title'],subtitle=current['subtitle'],minutes=current['minutes'],
-                          intro=(('Du bedienst Gas und Bremse. Dein Gegenüber stellt die Weiche.' if role==('b' if runtime['leg']==0 else 'a') else 'Du stellst die Weiche. Dein Gegenüber bedient Gas und Bremse.') if stage==0 else current['copy'][role]),hints=(TRAIN_HINTS['driver' if role==('b' if runtime['leg']==0 else 'a') else 'signal'] if stage==0 else current['hints'][role])[:count],play=view(self.game,stage,runtime,role,time.time()))
+                          intro=(('Du bedienst Gas und Bremse. Dein Gegenüber stellt die Weiche.' if role==('b' if runtime['leg']==0 else 'a') else 'Du stellst die Weiche. Dein Gegenüber bedient Gas und Bremse.') if stage==0 else current['copy'][role]),hints=(TRAIN_HINTS['driver' if role==('b' if runtime['leg']==0 else 'a') else 'signal'] if stage==0 else SNAKE_HINTS if stage==1 else current['hints'][role])[:count],play=view(self.game,stage,runtime,role,time.time()))
         return result
 
     def __call__(self, env, start_response):
@@ -218,7 +218,7 @@ class App:
                 return reply(404,{'error':'Einladung nicht gefunden.'})
             if method=='GET' and self.session(env,role):
                 return reply(303,'',mime='text/plain',extra=[('Location',f'/{role}')])
-            message='Zwei Perspektiven. Eine gemeinsame Lösung. Melde dich mit eurem Passwort an.'
+            message='Melde dich mit eurem gemeinsamen Passwort an.'
             status=200
             if method=='POST':
                 if env.get('HTTP_ORIGIN') not in self.origins:
@@ -241,7 +241,7 @@ class App:
                     return reply(303,'',mime='text/plain',extra=[('Location',f'/{role}'),('Set-Cookie',f'wedding_{role}={cookie}; Path=/; HttpOnly; SameSite=Strict; Max-Age=604800{flags}')])
                 message='Das Passwort stimmt nicht. Bitte versuche es erneut.'
                 status=401
-            form='<form method="post"><label for="password">Euer Passwort</label><input id="password" name="password" type="password" autocomplete="current-password" required maxlength="256"><button type="submit">Gemeinsam beginnen <span aria-hidden="true">↗</span></button></form>'
+            form='<form method="post"><label for="password">Euer Passwort</label><input id="password" name="password" type="password" autocomplete="current-password" required maxlength="256"><button type="submit">Anmelden</button></form>'
             return reply(status,(PUBLIC/'login.html').read_text().replace('{{MESSAGE}}',message).replace('{{FORM}}',form),mime='text/html; charset=utf-8')
         if len(pieces)!=3 or pieces[0]!='api' or pieces[1] not in ('a','b'):
             return reply(404,{'error':'Nicht gefunden.'})

@@ -15,6 +15,11 @@ TRAIN_HINTS = {
  'signal': ['Du stellst die Weiche am aktuellen Halt. Dein Gegenüber bedient Gas und Bremse.', 'Frage den Fahrer nach gesperrten Richtungen, bevor du die Weiche stellst.', 'Ein sicherer Weg: Weißenhorn → Memmingen → Lindau → St. Gallen → Zürich. Zurück: Zürich → Winterthur → Lindau → Ulm → Weißenhorn.'],
  'driver': ['Du bedienst Gas und Bremse. Die Fahrtrichtung legt das Stellwerk fest.', 'Nenne deinem Gegenüber die Sperren. Fahre erst bei grünem Signal; an jedem Halt stoppt der Zug automatisch.', 'Ein sicherer Weg: Weißenhorn → Memmingen → Lindau → St. Gallen → Zürich. Zurück: Zürich → Winterthur → Lindau → Ulm → Weißenhorn.']
 }
+SNAKE_HINTS = [
+ 'In der Proberunde zählen keine Punkte. Wische auf dem Spielfeld oder tippe die Richtungstasten.',
+ 'Bei einer Kollision startet deine Schlange wieder am Anfang. Punkte und Stempel bleiben erhalten.',
+ 'Nach dem Rennen könnt ihr fehlende Stationen ergänzen. Der nächste fehlende Halt wird dann angezeigt.'
+]
 
 
 class GameError(ValueError):
@@ -38,9 +43,9 @@ def snake_target(w):
 def initial(stage):
     if stage==0: return dict(leg=0,position=0,done=False,switch_direction=None,motion='stopped',travel=None,last='Das Stellwerk stellt zuerst die Weiche. Danach gibt der Fahrer Gas.')
     if stage==1: return dict(phase='warmup',ready={'a':False,'b':False},snakes={r:snake_world() for r in ('a','b')},passport=[False]*11,elapsed=0,last=None,heartbeat={'a':0,'b':0},winner=None,last_action='Noch läuft die Proberunde. Hier zählt nichts.')
-    if stage==2: return dict(photos=[2,0,3,1],captions=[1,3,0,2],last_action='Vier Bilder suchen vier Plätze.')
+    if stage==2: return dict(photos=[2,0,3,1],captions=[1,3,0,2],last_action='Ordnet Bilder und Beschriftungen zu.')
     if stage==3: return dict(switches=[False]*4,armed={'a':False,'b':False},unlocked=False,last_action='Das Bierdiplom ist anerkannt. Für diese Schaltung braucht ihr trotzdem beide.')
-    if stage==4: return dict(cards=[3,1,0,2],chapters=[2,0,3,1],last_action='Vier Erinnerungsstücke. Ein gemeinsames Schloss.')
+    if stage==4: return dict(cards=[3,1,0,2],chapters=[2,0,3,1],last_action='Ordnet eure Erinnerungsstücke an der Schlüsselbox.')
     return {}
 
 

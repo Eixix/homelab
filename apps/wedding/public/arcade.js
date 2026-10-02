@@ -103,7 +103,7 @@ window.CupArcade=(()=>{
       this.message.setText(p.done?'Ziel erreicht. Bestätigt jetzt beide.':'Leertaste: Gas · B: Bremse · oder tippe auf die Fahrregler.');
      }
     }else if(mode==='circuit'){
-     this.badge.setText(p.unlocked?'ARCHIV MIT TEAMSTROM GEÖFFNET':'CUP LAB  ·  ZWEI HÄNDE, EIN STROMKREIS');
+     this.badge.setText(p.unlocked?'ARCHIV GEÖFFNET':'CUP LAB  ·  SCHALTPULT');
      g.fillStyle(0x173941);g.fillRoundedRect(54,85,492,370,25);
      g.lineStyle(7,p.unlocked?colors.mint:0x355b64);g.lineBetween(300,108,300,435);
      for(let i=0;i<4;i++){
@@ -142,7 +142,7 @@ window.CupArcade=(()=>{
      g.fillStyle(p.target_owner===own?colors.gold:colors.mint);g.fillCircle(tx,ty,12);g.lineStyle(3,0xf5f4e9,.5);g.strokeCircle(tx,ty,16);
      body.forEach(([x,y],i)=>{g.fillStyle(i===0?colors.white:colors.mint);g.fillRoundedRect(ox+x*cell+3,oy+y*cell+3,30,30,9);if(i===0){g.fillStyle(colors.bg);g.fillCircle(ox+x*cell+11,oy+y*cell+12,3);g.fillCircle(ox+x*cell+24,oy+y*cell+12,3);}});
      const active=p.phase==='race'||p.practice;
-     if(!active||p.paused){g.fillStyle(colors.bg,.9);g.fillRoundedRect(115,227,370,116,18);this.text(300,267,p.paused?'GEMEINSAM PAUSIERT':p.phase==='countdown'?`START IN ${p.countdown}`:p.phase==='passport'?'CUP IM ZIEL':p.ready[own]?'BEREIT. DU AUCH?':'DEIN JAPAN-CUP',22,'#ffcf73');this.text(300,304,p.phase==='warmup'?'Üben oder unten auf „Ich bin bereit“ tippen':'Zwei Schlangen. Ein gemeinsames Ziel.',13);}
+     if(!active||p.paused){g.fillStyle(colors.bg,.9);g.fillRoundedRect(115,227,370,116,18);this.text(300,267,p.paused?'GEMEINSAM PAUSIERT':p.phase==='countdown'?`START IN ${p.countdown}`:p.phase==='passport'?'RENNEN BEENDET':p.ready[own]?'BEREIT. DU AUCH?':'DEIN JAPAN-CUP',22,'#ffcf73');this.text(300,304,p.paused?'Wartet, bis ihr beide wieder verbunden seid.':p.phase==='warmup'?'Üben oder unten auf „Ich bin bereit“ tippen':p.phase==='passport'?'Ergänzt jetzt die fehlenden Stationen.':'Das Rennen beginnt gleich.',13);}
      this.message.setText(p.phase==='race'?`Stempel für ${p.target_owner===own?'dich':s.partner}  ·  Pfeile / WASD / Wischen`:'Euer Reisepass entsteht zusammen.');
     }
    }
