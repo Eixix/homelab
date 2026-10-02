@@ -27,7 +27,9 @@ window.CupArcade=(()=>{
  }
  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
  const colors={bg:0x102b32,rail:0x547279,mint:0x83e3c5,gold:0xffcf73,red:0xff827b,white:0xf5f4e9};
- const pos=i=>({x:115+(i%3)*185,y:130+Math.floor(i/3)*145});
+ // A schematic southwest-bound map: the node indices still define the puzzle's tracks.
+ const trainPositions=[{x:420,y:115},{x:395,y:70},{x:520,y:95},{x:370,y:200},{x:280,y:275},{x:150,y:340},{x:330,y:345},{x:220,y:390},{x:95,y:420}];
+ const pos=i=>trainPositions[i];
  function mount(parent,type,role,onAction){
   destroy();mode=type;own=role;send=onAction;
   class CupScene extends Phaser.Scene{
@@ -84,7 +86,7 @@ window.CupArcade=(()=>{
       g.lineStyle(2,colors.rail);for(let i=0;i<9;i++){const a=pos(i);for(const next of [i%3<2?i+1:-1,i<6?i+3:-1])if(next>=0){const b=pos(next);g.lineBetween(a.x,a.y,b.x,b.y);}}
       let switchTarget=null;if(p.switch_direction){const offsets={up:-3,down:3,left:-1,right:1};switchTarget=p.position+offsets[p.switch_direction];const a=pos(p.position),b=pos(switchTarget);g.lineStyle(7,colors.gold);g.lineBetween(a.x,a.y,b.x,b.y);}
       for(let i=0;i<9;i++){const a=pos(i),adjacent=Math.abs(i%3-p.position%3)+Math.abs(Math.floor(i/3)-Math.floor(p.position/3))===1;
-       g.fillStyle(i===p.goal?colors.gold:i===switchTarget?0x47725e:0x244a55);g.fillCircle(a.x,a.y,29);g.lineStyle(adjacent&&p.motion==='stopped'?3:2,adjacent&&p.motion==='stopped'?colors.mint:colors.rail);g.strokeCircle(a.x,a.y,35);this.text(a.x,a.y,String.fromCharCode(65+i),22,i===p.goal?'#102b32':'#f5f4e9');}
+       g.fillStyle(i===p.goal?colors.gold:i===switchTarget?0x47725e:0x244a55);g.fillCircle(a.x,a.y,29);g.lineStyle(adjacent&&p.motion==='stopped'?3:2,adjacent&&p.motion==='stopped'?colors.mint:colors.rail);g.strokeCircle(a.x,a.y,35);this.text(a.x,a.y,'●',19,i===p.goal?'#102b32':'#f5f4e9');this.text(a.x,a.y+47,p.stops[i],13,i===p.goal?'#ffcf73':'#f5f4e9');}
       const from=pos(p.position),to=p.travel?pos(p.travel.target):from,t=p.travel_progress||0;const target={x:from.x+(to.x-from.x)*t,y:from.y+(to.y-from.y)*t-12};
       this.tweens.killTweensOf(this.train);if(this.lastPosition===null)this.train.setPosition(target.x,target.y);else this.tweens.add({targets:this.train,x:target.x,y:target.y,duration:reduced?0:200,ease:'Linear'});this.lastPosition=p.position;
       this.message.setText(p.done?'Beide Fahrten geschafft. Bestätigt euren Teambeitrag.':p.motion==='moving'?'Der Zug fährt. Die Weiche bleibt verriegelt.':p.motion==='paused'?'Der Fahrer hat gebremst. Die Weiche bleibt verriegelt.':'Tippe den nächsten benachbarten Halt an, um die Weiche zu stellen.');
@@ -94,7 +96,7 @@ window.CupArcade=(()=>{
       const signal=p.motion==='moving'||p.motion==='paused'?'green':p.signal;const color=signal==='green'?colors.mint:signal==='red'?colors.red:colors.gold;
       g.fillStyle(0x091e25);g.fillRoundedRect(250,62,100,88,19);g.fillStyle(color);g.fillCircle(300,105,25);
       this.text(300,175,p.motion==='moving'?'ZUG FÄHRT':p.motion==='paused'?'GEBREMST':signal==='green'?'FAHRT FREI':signal==='red'?'GLEIS GESPERRT':'WEICHE FEHLT',20,signal==='red'?'#ff827b':'#f5f4e9');
-      this.text(300,300,`HALT ${String.fromCharCode(65+p.position)}`,19,'#ffcf73');
+      this.text(300,300,`HALT ${p.stops[p.position].toUpperCase()}`,19,'#ffcf73');
       const labels={up:'OBEN',down:'UNTEN',left:'LINKS',right:'RECHTS'};this.text(300,346,`WEICHE: ${p.switch_direction?labels[p.switch_direction]:'NOCH NICHT GESTELLT'}`,14);
       g.fillStyle(p.motion==='moving'?0x244a55:0x21584e);g.fillRoundedRect(120,382,170,60,15);this.text(205,412,p.motion==='paused'?'▶ WEITER':'▶ GAS',21,'#83e3c5');
       g.fillStyle(p.motion==='moving'?0x7a663f:0x244a55);g.fillRoundedRect(310,382,170,60,15);this.text(395,412,'■ BREMSE',19,'#ffcf73');

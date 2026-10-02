@@ -85,7 +85,7 @@ function render(state){
   const note=$('confirmation-note');if(note){
    if(state.stage===0&&!state.play.done){
     const driver=state.play.driver===role?state.name:state.partner;
-    note.textContent=`Noch ist die Fahrt nicht abgeschlossen. ${driver} fährt mit Gas und Bremse von ${String.fromCharCode(65+state.play.position)} nach ${String.fromCharCode(65+state.play.goal)}. ${state.play.leg===0?'Danach tauscht ihr die Rollen und fahrt zurück nach A.':'Danach könnt ihr beide „Gemeinsam weiter“ bestätigen.'} Das Stellwerk muss vor jedem Abschnitt die Weiche stellen.`;
+    note.textContent=`Noch ist die Fahrt nicht abgeschlossen. ${driver} fährt mit Gas und Bremse von ${state.play.stops[state.play.position]} nach ${state.play.stops[state.play.goal]}. ${state.play.leg===0?'Danach tauscht ihr die Rollen und fahrt zurück nach Weißenhorn.':'Danach könnt ihr beide „Gemeinsam weiter“ bestätigen.'} Das Stellwerk muss vor jedem Abschnitt die Weiche stellen.`;
    }else note.textContent=canConfirm(state)?'Aufgabe geschafft. Bestätigt jetzt beide „Gemeinsam weiter“.':'Löst zuerst die gemeinsame Aufgabe. Danach bestätigt ihr beide.';
   }}
 }
@@ -105,7 +105,7 @@ function buildTrain(){
 }
 function updateTrain(){
  const p=current.play,driver=p.driver===role,labels={up:'oben',down:'unten',left:'links',right:'rechts'};
- $('train-position').textContent=p.done?'✓ TEAMSTRECKE GESCHAFFT':`ABSCHNITT ${p.leg+1}/2 · HALT ${String.fromCharCode(65+p.position)} → ZIEL ${String.fromCharCode(65+p.goal)}`;
+ $('train-position').textContent=p.done?'✓ TEAMSTRECKE GESCHAFFT':`ABSCHNITT ${p.leg+1}/2 · ${p.stops[p.position]} → ${p.stops[p.goal]}`;
  if(driver){
   const signal=p.motion==='paused'?'Gebremst. Gib Gas, um die Fahrt fortzusetzen.':p.motion==='moving'?'Der Zug fährt und hält am nächsten Halt automatisch.':p.signal==='unset'?`${current.partner} stellt zuerst die Weiche.`:p.signal==='red'?'Rotes Signal: Das gewählte Gleis ist gesperrt. Bitte um eine andere Weichenstellung.':'Grünes Signal. Du kannst Gas geben.';
   $('blocked').textContent=p.done?'Beide Fahrten geschafft.':`Gesperrt: ${p.blocked.map(d=>labels[d]).join(', ')}. ${signal}`;

@@ -7,12 +7,13 @@ DIRECTIONS = {'up':(0,-1),'right':(1,0),'down':(0,1),'left':(-1,0)}
 OPPOSITE = {'up':'down','down':'up','left':'right','right':'left'}
 TARGETS = [(9,6),(9,2),(2,2),(2,9),(9,9),(6,9),(6,3),(10,3),(10,10),(3,10),(3,4)]
 BLOCKED = [{(0,1),(1,2),(4,5),(5,8)}, {(7,8),(3,6),(2,5),(3,4)}]
+TRAIN_STOPS = ('Weißenhorn','Ulm','München','Memmingen','Lindau','Winterthur','Bregenz','St. Gallen','Zürich')
 RACE_SECONDS = 180
 TICK = .24
 TRAIN_SECONDS = 2.0
 TRAIN_HINTS = {
- 'signal': ['Du stellst die Weiche am aktuellen Halt. Dein Gegenüber bedient Gas und Bremse.', 'Frage den Fahrer nach gesperrten Richtungen, bevor du die Weiche stellst.', 'Ein sicherer Weg: A → D → E → H → I. Zurück: I → F → E → B → A.'],
- 'driver': ['Du bedienst Gas und Bremse. Die Fahrtrichtung legt das Stellwerk fest.', 'Nenne deinem Gegenüber die Sperren. Fahre erst bei grünem Signal; an jedem Halt stoppt der Zug automatisch.', 'Ein sicherer Weg: A → D → E → H → I. Zurück: I → F → E → B → A.']
+ 'signal': ['Du stellst die Weiche am aktuellen Halt. Dein Gegenüber bedient Gas und Bremse.', 'Frage den Fahrer nach gesperrten Richtungen, bevor du die Weiche stellst.', 'Ein sicherer Weg: Weißenhorn → Memmingen → Lindau → St. Gallen → Zürich. Zurück: Zürich → Winterthur → Lindau → Ulm → Weißenhorn.'],
+ 'driver': ['Du bedienst Gas und Bremse. Die Fahrtrichtung legt das Stellwerk fest.', 'Nenne deinem Gegenüber die Sperren. Fahre erst bei grünem Signal; an jedem Halt stoppt der Zug automatisch.', 'Ein sicherer Weg: Weißenhorn → Memmingen → Lindau → St. Gallen → Zürich. Zurück: Zürich → Winterthur → Lindau → Ulm → Weißenhorn.']
 }
 
 
@@ -83,7 +84,7 @@ def advance(stage,state,now,role):
         travel=state.get('travel')
         if state.get('motion')=='moving' and travel and now>=travel['arrives_at']:
             state['position']=travel['target'];state['travel']=None;state['motion']='stopped';state['switch_direction']=None
-            state['last']=f"Halt {chr(65+state['position'])} erreicht. Der Zug hält; das Stellwerk stellt die nächste Weiche."
+            state['last']=f"{TRAIN_STOPS[state['position']]} erreicht. Der Zug hält; das Stellwerk stellt die nächste Weiche."
             goal=8 if state['leg']==0 else 0
             if state['position']==goal:
                 if state['leg']==0:
@@ -256,6 +257,7 @@ def view(game,stage,state,role,now=None):
     if stage==0:
         driver='b' if state['leg']==0 else 'a';pos=state['position']
         result.pop('ping',None);result['driver']=driver;result['goal']=8 if state['leg']==0 else 0
+        result['stops']=TRAIN_STOPS
         result['switch_direction']=state.get('switch_direction');result['motion']=state.get('motion','stopped');result['travel']=state.get('travel')
         result['tracks']=[];blocked=[]
         for name,(dx,dy) in DIRECTIONS.items():

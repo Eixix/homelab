@@ -316,6 +316,8 @@ class EngineTest(unittest.TestCase):
         self.assertEqual((view(self.game,1,state,'b',100)['score'],view(self.game,1,state,'b',100)['peer_score']),(5,3))
     def test_train_needs_both_roles_and_locks_switch_during_travel(self):
         state=initial(0)
+        self.assertEqual(view(self.game,0,state,'a',100)['stops'][0],'Weißenhorn')
+        self.assertEqual(view(self.game,0,state,'a',100)['stops'][8],'Zürich')
         for role,data in [('b',dict(kind='set_switch',node=0,direction='down')),('a',dict(kind='throttle',node=0)),('b',dict(kind='move',direction='down')),('a',dict(kind='ping',node=3)),('b',dict(kind='throttle',node=0))]:
             with self.assertRaises(GameError):command(self.game,0,state,role,data,100)
         command(self.game,0,state,'a',dict(kind='set_switch',node=0,direction='right'),100)
