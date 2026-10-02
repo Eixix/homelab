@@ -44,6 +44,7 @@ function makeConfirm(parent){
  },'primary');b.id='confirm';parent.append(note,b);
 }
 function render(state){
+ $('identity').textContent=state.name;
  if(state.stage===0&&!sessionStorage.getItem(welcomeKey)){
   current=state;$('game').hidden=true;$('welcome').hidden=false;connected();
   if(document.activeElement!==$('welcome-start'))$('welcome-title').focus({preventScroll:true});
@@ -52,7 +53,7 @@ function render(state){
  $('welcome').hidden=true;
  if(state.version<lastVersion)return;
  lastVersion=state.version;current=state;document.body.classList.toggle('arcade-mode',!state.complete&&state.stage!==2);
- $('game').hidden=false;$('identity').textContent=`${state.name} / ${role==='a'?'Das Album':'Das Protokoll'}`;
+ $('game').hidden=false;
  $('self-name').textContent=state.name;$('peer-name').textContent=state.partner;
  $('self-status').textContent=state.complete||state.solved?'✓ Bestätigt':'In Arbeit';
  $('peer-status').textContent=state.complete||state.peer_solved?'✓ Bestätigt':'In Arbeit';
