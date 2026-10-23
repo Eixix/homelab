@@ -40,6 +40,13 @@ docker compose --env-file .env --profile external config --quiet
 docker compose --env-file .env up -d loki alloy grafana reverse-proxy
 ```
 
+The lowest-priority HTTPS router sends unmatched hosts, including direct-IP
+requests, to the existing `external-blackhole` service. Named application routes
+and the internal `.home` error page take precedence. Direct IPv4/IPv6 requests
+on HTTP also use the blackhole instead of the HTTPS redirect; hostname requests
+keep the redirect. Recreate `reverse-proxy` when deploying this change because
+the redirect priority is static configuration.
+
 If the monitoring directories were previously created by Docker as root or an
 image-specific UID, repair them once before redeploying:
 
