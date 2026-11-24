@@ -1,7 +1,0 @@
-*
-!Dockerfile
-!server.py
-!game.py
-!engine.py
-!public/
-!public/**
