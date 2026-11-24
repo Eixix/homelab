@@ -1,0 +1,26 @@
+name: Test deployment smoke checks
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/deploy-smoke.py'
+      - 'tests/test_deploy_smoke.py'
+      - '.github/workflows/deploy*.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/deploy-smoke.py'
+      - 'tests/test_deploy_smoke.py'
+      - '.github/workflows/deploy*.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test container states and startup retries
+        run: python3 -B -m unittest discover -s tests -p 'test_deploy_smoke.py'

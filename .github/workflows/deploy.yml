@@ -115,6 +115,7 @@ jobs:
           fi
 
       - name: Validate and optionally deploy services
+        id: deploy_services
         run: |
           set -euo pipefail
           DEPLOY_SERVICES_B64="$(printf '%s' "$DEPLOY_SERVICES" | base64 -w 0)"
@@ -266,6 +267,71 @@ jobs:
         if: ${{ inputs.reset_wedding }}
         run: |
           ssh "$DEPLOY_USER@$DEPLOY_HOST" "cd '$DEPLOY_PATH' && python3 apps/wedding/reset.py --db data/wedding/game-v2.sqlite3 --backup-dir backups/wedding"
+
+      - name: Smoke test all homelab containers
+        id: smoke
+        if: ${{ !cancelled() && (steps.deploy_services.outcome == 'success' || steps.deploy_services.outcome == 'failure') }}
+        timeout-minutes: 6
+        run: |
+          set -euo pipefail
+          selection_b64="$(printf '%s' "$DEPLOY_SERVICES" | base64 -w 0)"
+          smoke_log="$RUNNER_TEMP/homelab-smoke.log"
+          result=0
+          ssh -o ConnectTimeout=15 -o ServerAliveInterval=15 -o ServerAliveCountMax=3 \
+            "$DEPLOY_USER@$DEPLOY_HOST" "DEPLOY_SERVICES_B64=$selection_b64 bash -s" <<'REMOTE' > "$smoke_log" 2>&1 || result=$?
+            set -euo pipefail
+            cd /home/github/homelab
+            selection="$(printf '%s' "$DEPLOY_SERVICES_B64" | base64 --decode)"
+            read -r -a services <<< "$selection"
+            python3 scripts/deploy-smoke.py "${services[@]}"
+          REMOTE
+          cat "$smoke_log"
+          {
+            echo '### Post-deploy container smoke test'
+            echo '```text'
+            cat "$smoke_log"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$result" -ne 0 ]; then
+            echo '::error::Post-deploy container smoke test failed. See the job summary for broken or missing containers.'
+            exit 1
+          fi
+
+      - name: Notify about broken containers
+        if: ${{ !cancelled() && steps.smoke.outcome == 'failure' }}
+        env:
+          N8N_WEBHOOK: ${{ secrets.N8N_WEBHOOK }}
+        run: |
+          set -euo pipefail
+          if [ -z "$N8N_WEBHOOK" ]; then
+            echo '::warning::N8N_WEBHOOK is not configured; failure details are available in the Actions summary and workflow failure notifications.'
+            exit 0
+          fi
+          python3 - <<'PY' > "$RUNNER_TEMP/homelab-smoke-notification.json"
+          import datetime
+          import json
+          import os
+          import sys
+          from pathlib import Path
+
+          log = Path(os.environ['RUNNER_TEMP']) / 'homelab-smoke.log'
+          run_url = f"{os.environ['GITHUB_SERVER_URL']}/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['GITHUB_RUN_ID']}"
+          json.dump({
+              'job': 'homelab-deploy',
+              'status': 'failure',
+              'exit_code': 1,
+              'timestamp': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+              'message': 'Homelab post-deploy container smoke test failed',
+              'details': log.read_text() if log.exists() else 'Smoke test timed out before producing a report.',
+              'run_url': run_url,
+          }, sys.stdout)
+          PY
+          if ! curl --silent --fail --connect-timeout 10 --max-time 30 \
+            -X POST "$N8N_WEBHOOK" -H 'Content-Type: application/json' \
+            --data-binary "@$RUNNER_TEMP/homelab-smoke-notification.json" >/dev/null; then
+            echo '::error::Failed to deliver the deployment failure notification.'
+            exit 1
+          fi
 
       - name: Disconnect WireGuard
         if: always()

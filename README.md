@@ -72,6 +72,10 @@ The `services` workflow input accepts space-separated Compose service names. Lea
 
 Each workflow run records the containers that were actually created or recreated in the GitHub Actions job summary. An unchanged deployment reports `(none)`.
 
+After a deployment, a read-only smoke test checks every existing homelab container, plus missing selected services and their dependencies (`all` requires every service across all profiles). It waits up to three minutes for three consecutive checks to pass: long-running containers must be running and, when a Docker health check exists, healthy. Dependency jobs such as `monitoring-permissions` must exit successfully. Empty, stage-only runs check existing containers without requiring additional services to be started. The check also runs after a failed deployment attempt so partially deployed stacks are reported.
+
+Broken, unhealthy, or missing containers fail the workflow and appear in the Actions job summary. Configure the optional GitHub Actions secret `N8N_WEBHOOK` to receive a failure POST with `job=homelab-deploy`, `status=failure`, container details, and a link to the workflow run. The webhook is called from the runner, so alerts can still be sent when the deployed n8n container is down if the endpoint is hosted independently. Without the secret, use GitHub Actions failure notifications. No container logs or environment values are included in the smoke report. This checks container state and Docker health checks, not application URLs.
+
 The production backup setup and restore outline are documented in [`docs/backup.md`](docs/backup.md).
 
 ## Neue Services ergänzen
