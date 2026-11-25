@@ -27,14 +27,22 @@ services:
       - traefik.http.routers.immich-external.priority=100
       - traefik.http.routers.immich-external.tls=true
       - traefik.http.routers.immich-external.tls.certresolver=externalresolver
-      - traefik.http.routers.immich-external.middlewares=security-headers@file
+      - traefik.http.routers.immich-external.middlewares=public-api@file
       - traefik.http.routers.immich-external.service=immich
 
       - traefik.http.routers.immich-additional-external.rule=Host(`${IMMICH_ADDITIONAL_EXTERNAL_HOST}`)
       - traefik.http.routers.immich-additional-external.entrypoints=websecure
       - traefik.http.routers.immich-additional-external.tls=true
-      - traefik.http.routers.immich-additional-external.middlewares=security-headers@file
+      - traefik.http.routers.immich-additional-external.middlewares=public-api@file
       - traefik.http.routers.immich-additional-external.service=immich
+
+      # Limit password attempts without throttling uploads or token refreshes.
+      - traefik.http.routers.immich-login.rule=(Host(`${IMMICH_HOST}`) || Host(`${IMMICH_ADDITIONAL_EXTERNAL_HOST}`)) && Path(`/api/auth/login`) && Method(`POST`)
+      - traefik.http.routers.immich-login.entrypoints=websecure
+      - traefik.http.routers.immich-login.priority=200
+      - traefik.http.routers.immich-login.tls=true
+      - traefik.http.routers.immich-login.middlewares=cloudflare-only@file,login-rate-limit@file,security-headers@file
+      - traefik.http.routers.immich-login.service=immich
 
       - traefik.http.routers.immich-internal.rule=Host(`${IMMICH_INTERNAL_HOST}`)
       - traefik.http.routers.immich-internal.entrypoints=websecure

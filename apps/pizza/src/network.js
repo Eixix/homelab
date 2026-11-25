@@ -6,6 +6,14 @@ export function normalizeIp(value = '') {
   return first.replace(/^\[|\]$/g, '');
 }
 
+// Only use this behind the Cloudflare peer check in Traefik. X-Forwarded-For
+// may contain values supplied by the visitor, or be rewritten by Anubis.
+export function requestClientIp(req) {
+  const value = req.headers['cf-connecting-ip'] ?? req.socket.remoteAddress ?? '';
+  if (typeof value !== 'string' || !isIP(value.trim())) return '';
+  return normalizeIp(value.trim());
+}
+
 function ipv4Number(ip) {
   return ip.split('.').reduce((number, octet) => (number << 8n) + BigInt(octet), 0n);
 }

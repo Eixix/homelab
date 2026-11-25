@@ -32,8 +32,9 @@ services:
       - traefik.http.routers.actual-enablebanking-callback.priority=1000
       - traefik.http.routers.actual-enablebanking-callback.tls=true
       - traefik.http.routers.actual-enablebanking-callback.tls.certresolver=externalresolver
-      - traefik.http.routers.actual-enablebanking-callback.middlewares=actual-enablebanking-rate-limit,actual-enablebanking-headers
+      - traefik.http.routers.actual-enablebanking-callback.middlewares=cloudflare-only@file,actual-enablebanking-rate-limit,actual-enablebanking-headers
       - traefik.http.routers.actual-enablebanking-callback.service=actual-server
+      - traefik.http.middlewares.actual-enablebanking-rate-limit.ratelimit.sourcecriterion.requestheadername=CF-Connecting-IP
       - traefik.http.middlewares.actual-enablebanking-rate-limit.ratelimit.average=10
       - traefik.http.middlewares.actual-enablebanking-rate-limit.ratelimit.period=1m
       - traefik.http.middlewares.actual-enablebanking-rate-limit.ratelimit.burst=5

@@ -32,7 +32,9 @@ services:
       BIND: :8080
       TARGET: http://zahldeineschuldenan:3000
       REDIRECT_DOMAINS: ${ZAHLDEINESCHULDENAN_HOST:?Set ZAHLDEINESCHULDENAN_HOST in .env}
-      USE_REMOTE_ADDRESS: "true"
+      # Cloudflare-only middleware verifies the peer before trusting this header.
+      USE_REMOTE_ADDRESS: "false"
+      CUSTOM_REAL_IP_HEADER: CF-Connecting-IP
       POLICY_FNAME: /etc/anubis/policy.yaml
       SERVE_ROBOTS_TXT: "true"
     labels:
@@ -43,7 +45,7 @@ services:
       - traefik.http.routers.anubis-zahldeineschuldenan.entrypoints=websecure
       - traefik.http.routers.anubis-zahldeineschuldenan.tls=true
       - traefik.http.routers.anubis-zahldeineschuldenan.tls.certresolver=externalresolver
-      - traefik.http.routers.anubis-zahldeineschuldenan.middlewares=security-headers@file,anubis-noindex
+      - traefik.http.routers.anubis-zahldeineschuldenan.middlewares=public-browser@file,anubis-noindex
       - traefik.http.services.anubis-zahldeineschuldenan.loadbalancer.server.port=8080
       - traefik.http.middlewares.anubis-noindex.headers.customresponseheaders.X-Robots-Tag=noindex, nofollow, noarchive, nosnippet, noimageindex
 
@@ -54,7 +56,9 @@ services:
       BIND: :8080
       TARGET: http://flag-quiz:3000
       REDIRECT_DOMAINS: flags.betz.coffee
-      USE_REMOTE_ADDRESS: "true"
+      # Cloudflare-only middleware verifies the peer before trusting this header.
+      USE_REMOTE_ADDRESS: "false"
+      CUSTOM_REAL_IP_HEADER: CF-Connecting-IP
       POLICY_FNAME: /etc/anubis/policy.yaml
       SERVE_ROBOTS_TXT: "true"
     labels:
@@ -65,7 +69,7 @@ services:
       - traefik.http.routers.anubis-flag-quiz.entrypoints=websecure
       - traefik.http.routers.anubis-flag-quiz.tls=true
       - traefik.http.routers.anubis-flag-quiz.tls.certresolver=externalresolver
-      - traefik.http.routers.anubis-flag-quiz.middlewares=security-headers@file,anubis-noindex@docker
+      - traefik.http.routers.anubis-flag-quiz.middlewares=public-browser@file,anubis-noindex@docker
       - traefik.http.services.anubis-flag-quiz.loadbalancer.server.port=8080
 
   anubis-mtg-hand-oracle:
@@ -75,7 +79,9 @@ services:
       BIND: :8080
       TARGET: http://mtg-hand-oracle:80
       REDIRECT_DOMAINS: mtg-oracle.betz.coffee
-      USE_REMOTE_ADDRESS: "true"
+      # Cloudflare-only middleware verifies the peer before trusting this header.
+      USE_REMOTE_ADDRESS: "false"
+      CUSTOM_REAL_IP_HEADER: CF-Connecting-IP
       POLICY_FNAME: /etc/anubis/policy.yaml
       SERVE_ROBOTS_TXT: "true"
     labels:
@@ -86,5 +92,5 @@ services:
       - traefik.http.routers.anubis-mtg-hand-oracle.entrypoints=websecure
       - traefik.http.routers.anubis-mtg-hand-oracle.tls=true
       - traefik.http.routers.anubis-mtg-hand-oracle.tls.certresolver=externalresolver
-      - traefik.http.routers.anubis-mtg-hand-oracle.middlewares=security-headers@file,anubis-noindex@docker
+      - traefik.http.routers.anubis-mtg-hand-oracle.middlewares=public-browser@file,anubis-noindex@docker
       - traefik.http.services.anubis-mtg-hand-oracle.loadbalancer.server.port=8080

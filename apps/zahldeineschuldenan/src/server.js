@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import QRCode from 'qrcode';
 import { parseAmount } from './amount.js';
 import { createEpcPayload } from './epc.js';
-import { DEFAULT_BOSCH_CIDRS, isBoschIp, normalizeIp, parseCidrs } from './network.js';
+import { DEFAULT_BOSCH_CIDRS, isBoschIp, requestClientIp, parseCidrs } from './network.js';
 
 const publicDir = fileURLToPath(new URL('../public/', import.meta.url));
 const index = await readFile(`${publicDir}/index.html`, 'utf8');
@@ -70,7 +70,7 @@ const requestOrigin = (req) => {
 };
 
 const renderPage = (req, data, amount = null) => {
-  const clientIp = normalizeIp(req.headers['x-forwarded-for'] || req.socket.remoteAddress);
+  const clientIp = requestClientIp(req);
   const stylesheet = isBoschIp(clientIp, boschCidrs) ? 'style.css' : 'classic.css';
   const origin = requestOrigin(req);
   const canonicalUrl = amount

@@ -2,7 +2,7 @@ import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypt
 import { readFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { fileURLToPath } from 'node:url';
-import { classifyIp, normalizeIp, parseCidrs } from './network.js';
+import { classifyIp, requestClientIp, parseCidrs } from './network.js';
 import { loadCatalog } from './catalog.js';
 import { Store } from './store.js';
 import { PushService } from './push.js';
@@ -90,7 +90,7 @@ createServer(async (req, res) => {
   try {
     const url = new URL(req.url, 'http://localhost');
     if (url.pathname === '/healthz') return json(res, 200, { ok: true });
-    const ip = normalizeIp(req.headers['x-forwarded-for'] || req.socket.remoteAddress);
+    const ip = requestClientIp(req);
     const audience = classifyIp(ip, boschCidrs, ownerCidrs);
     if (!audience) {
       res.writeHead(404, { 'Cache-Control': 'no-store', ...noIndex });

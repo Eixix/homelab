@@ -90,4 +90,4 @@ The production backup setup and restore outline are documented in [`docs/backup.
 docker compose --env-file .env --profile external config --quiet
 ```
 
-Ein Beispiel bietet das [Service-Template](docs/service-template.md). Weitere Grundlagen: [Netzwerkisolation](docs/network-isolation.md), [Traefik-Access-Logs](docs/traefik-access-logs.md) und [Backup und Restore](docs/backup.md). Anwendungsspezifische Bedienung steht in den jeweiligen Runbooks unter `docs/`.
+Ein Beispiel bietet das [Service-Template](docs/service-template.md). Weitere Grundlagen: [Netzwerkisolation](docs/network-isolation.md), [Traefik-Access-Logs](docs/traefik-access-logs.md), [Anti-Bot-Schutz](docs/anti-bot.md) und [Backup und Restore](docs/backup.md). Anwendungsspezifische Bedienung steht in den jeweiligen Runbooks unter `docs/`.

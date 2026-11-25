@@ -38,7 +38,7 @@ services:
       - traefik.http.routers.pizza.entrypoints=websecure
       - traefik.http.routers.pizza.tls=true
       - traefik.http.routers.pizza.tls.certresolver=externalresolver
-      - traefik.http.routers.pizza.middlewares=pizza-blackhole-errors,security-headers@file
+      - traefik.http.routers.pizza.middlewares=cloudflare-only@file,pizza-blackhole-errors,security-headers@file
       - traefik.http.services.pizza.loadbalancer.server.port=3000
       - traefik.docker.network=external_network
       - traefik.http.middlewares.pizza-blackhole-errors.errors.status=404

@@ -24,7 +24,7 @@ services:
       - traefik.http.routers.shlink.priority=100
       - traefik.http.routers.shlink.tls=true
       - traefik.http.routers.shlink.tls.certresolver=externalresolver
-      - traefik.http.routers.shlink.middlewares=security-headers@file
+      - traefik.http.routers.shlink.middlewares=public-browser@file
       - traefik.http.services.shlink.loadbalancer.server.port=8080
       - traefik.docker.network=external_network
 

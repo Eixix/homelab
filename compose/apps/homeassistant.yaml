@@ -27,5 +27,5 @@ services:
       - traefik.http.routers.homeassistant-alexa.priority=100
       - traefik.http.routers.homeassistant-alexa.tls=true
       - traefik.http.routers.homeassistant-alexa.tls.certresolver=externalresolver
-      - traefik.http.routers.homeassistant-alexa.middlewares=security-headers@file
+      - traefik.http.routers.homeassistant-alexa.middlewares=public-api@file
       - traefik.http.routers.homeassistant-alexa.service=homeassistant

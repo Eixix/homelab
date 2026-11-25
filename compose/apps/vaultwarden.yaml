@@ -10,6 +10,10 @@ services:
       TZ: ${TZ}
       DOMAIN: https://${VAULTWARDEN_HOST}
       SIGNUPS_ALLOWED: "false"
+      # The public router checks Cloudflare's peer IP before accepting this header.
+      IP_HEADER: CF-Connecting-IP
+      LOGIN_RATELIMIT_SECONDS: "60"
+      LOGIN_RATELIMIT_MAX_BURST: "10"
       SMTP_HOST: ${SMTP_SERVER}
       SMTP_FROM: vaultwarden@${DOMAIN_EXTERNAL}
       SMTP_FROM_NAME: ${SMTP_FROM_NAME:-Vaultwarden}
@@ -28,6 +32,6 @@ services:
       - traefik.http.routers.vaultwarden.priority=100
       - traefik.http.routers.vaultwarden.tls=true
       - traefik.http.routers.vaultwarden.tls.certresolver=externalresolver
-      - traefik.http.routers.vaultwarden.middlewares=vaultwarden-security-headers@file
+      - traefik.http.routers.vaultwarden.middlewares=public-api-limit@file,vaultwarden-security-headers@file
       - traefik.http.services.vaultwarden.loadbalancer.server.port=80
       - traefik.docker.network=external_network
