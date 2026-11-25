@@ -1,0 +1,31 @@
+http:
+  routers:
+    # Existing sibling containers may still advertise priority-100 backend
+    # routers until their next deployment. Keep those closed if Anubis vanishes.
+    anubis-fail-closed:
+      rule: Host(`flags.betz.coffee`) || Host(`mtg-oracle.betz.coffee`) || Host(`30.betz.coffee`) || Host(`mtg.betz.coffee`) || Host(`money.betz.coffee`)
+      entryPoints:
+        - websecure
+      priority: 900
+      tls:
+        certResolver: externalresolver
+      service: external-blackhole@file
+
+    # Reverb authenticates its own channels. Only a WebSocket upgrade on its
+    # dedicated path bypasses the browser challenge, never ordinary web pages.
+    tournament-websocket:
+      rule: Host(`mtg.betz.coffee`) && PathPrefix(`/app/`) && Method(`GET`) && Header(`Upgrade`, `websocket`)
+      entryPoints:
+        - websecure
+      priority: 2000
+      tls:
+        certResolver: externalresolver
+      middlewares:
+        - public-api@file
+      service: tournament-websocket
+
+  services:
+    tournament-websocket:
+      loadBalancer:
+        servers:
+          - url: http://magic_tournament:80

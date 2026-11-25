@@ -21,6 +21,12 @@ NAT/proxy replacing it. Verify both IPv4 and IPv6 during deployment.
   uses `CUSTOM_REAL_IP_HEADER=CF-Connecting-IP` and does not use Traefik's socket
   address as the visitor identity. The payment backend has `traefik.enable=false`;
   stopping Anubis must never expose an unchallenged backend route.
+- Birthday (`30.betz.coffee`), tournament (`mtg.betz.coffee`), and SplitLedger's
+  browser frontend (`money.betz.coffee`): central Anubis reverse proxies. Targets
+  are `jump-to-birthday-web-1:80`, `magic_tournament:80`, and `splitledger-web:80`.
+  The tournament's exact GET WebSocket upgrade path `/app/` has a higher-priority
+  app route; ordinary HTTP requests still go through Anubis. SplitLedger's relay
+  hostname is separate and keeps its app-facing route without a challenge.
 - Shlink: browser rate limit, without an interactive challenge so redirects and
   link previews work.
 - Immich (both public hosts), KitchenOwl, Vaultwarden and Home Assistant's public
@@ -49,6 +55,13 @@ The Anubis policy keeps its existing exceptions for `/.well-known/*`, favicons,
 `robots.txt` and `sitemap.xml`. Do not place sensitive application endpoints in
 those namespaces. Noindex headers are advisory, not an access restriction.
 
+A priority-900 file-provider guard for all five sibling browser hostnames sends
+requests to the blackhole if their priority-1000 Anubis router is unavailable.
+This prevents old priority-100 backend labels from becoming a bypass while
+sibling deployment updates are pending. Their security branches disable those
+browser backend routers entirely. The guard is intentionally independent of
+Docker container health. Wedding and Examns are outside this deployment scope.
+
 Unknown hosts, direct-IP catchalls and scanner paths retain the intentional
 blackhole behavior. No changes to their destination, priorities or timeouts are
 needed for this policy. Known public routes reject direct non-Cloudflare peers;
@@ -67,9 +80,16 @@ remove its old Traefik labels), all three Anubis containers and the affected app
 containers: `shlink`, `vaultwarden`, `kitchenowl-front`, `immich-server`,
 `homeassistant`, `actual-server`, and `pizza`. The mounted dynamic configuration directory
 is watched by Traefik; its static entrypoint configuration is unchanged.
-The flag quiz and MTG oracle upstreams are managed outside this Compose project;
-check their deployed labels separately for any direct router that could bypass
-Anubis. Nothing in this repository can exclude such an out-of-repository route.
+All five sibling upstreams are managed outside this Compose project. Deploy
+Anubis instances `anubis-birthday`, `anubis-tournament`, and `anubis-splitledger`
+alongside the existing three. The file-provider guards also protect against old
+backend routers until sibling deployments remove their labels.
+
+The direct SSH deployment copies Git-managed files only and preserves existing
+`.env`, `secrets/`, `data/`, and `backups/`. Do not replace runtime credentials
+when deploying this protection. A proposed idempotent initialization change to
+the GitHub workflow is retained locally in the ignored security-review backup;
+the current GitHub OAuth token cannot publish workflow changes.
 
 After deployment, verify browser access to all three Anubis sites, Immich login
 on both public hosts, a mobile upload/sync, Vaultwarden login with 2FA, KitchenOwl,

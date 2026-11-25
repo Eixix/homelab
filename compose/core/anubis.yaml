@@ -94,3 +94,69 @@ services:
       - traefik.http.routers.anubis-mtg-hand-oracle.tls.certresolver=externalresolver
       - traefik.http.routers.anubis-mtg-hand-oracle.middlewares=public-browser@file,anubis-noindex@docker
       - traefik.http.services.anubis-mtg-hand-oracle.loadbalancer.server.port=8080
+
+  anubis-birthday:
+    <<: *anubis-base
+    container_name: anubis-birthday
+    environment:
+      BIND: :8080
+      TARGET: http://jump-to-birthday-web-1:80
+      REDIRECT_DOMAINS: 30.betz.coffee
+      USE_REMOTE_ADDRESS: "false"
+      CUSTOM_REAL_IP_HEADER: CF-Connecting-IP
+      POLICY_FNAME: /etc/anubis/policy.yaml
+      SERVE_ROBOTS_TXT: "true"
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=external_network
+      - traefik.http.routers.anubis-birthday.rule=Host(`30.betz.coffee`)
+      - traefik.http.routers.anubis-birthday.priority=1000
+      - traefik.http.routers.anubis-birthday.entrypoints=websecure
+      - traefik.http.routers.anubis-birthday.tls=true
+      - traefik.http.routers.anubis-birthday.tls.certresolver=externalresolver
+      - traefik.http.routers.anubis-birthday.middlewares=public-browser@file,anubis-noindex@docker
+      - traefik.http.services.anubis-birthday.loadbalancer.server.port=8080
+
+  anubis-tournament:
+    <<: *anubis-base
+    container_name: anubis-tournament
+    environment:
+      BIND: :8080
+      TARGET: http://magic_tournament:80
+      REDIRECT_DOMAINS: mtg.betz.coffee
+      USE_REMOTE_ADDRESS: "false"
+      CUSTOM_REAL_IP_HEADER: CF-Connecting-IP
+      POLICY_FNAME: /etc/anubis/policy.yaml
+      SERVE_ROBOTS_TXT: "true"
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=external_network
+      - traefik.http.routers.anubis-tournament.rule=Host(`mtg.betz.coffee`)
+      - traefik.http.routers.anubis-tournament.priority=1000
+      - traefik.http.routers.anubis-tournament.entrypoints=websecure
+      - traefik.http.routers.anubis-tournament.tls=true
+      - traefik.http.routers.anubis-tournament.tls.certresolver=externalresolver
+      - traefik.http.routers.anubis-tournament.middlewares=public-browser@file,anubis-noindex@docker
+      - traefik.http.services.anubis-tournament.loadbalancer.server.port=8080
+
+  anubis-splitledger:
+    <<: *anubis-base
+    container_name: anubis-splitledger
+    environment:
+      BIND: :8080
+      TARGET: http://splitledger-web:80
+      REDIRECT_DOMAINS: money.betz.coffee
+      USE_REMOTE_ADDRESS: "false"
+      CUSTOM_REAL_IP_HEADER: CF-Connecting-IP
+      POLICY_FNAME: /etc/anubis/policy.yaml
+      SERVE_ROBOTS_TXT: "true"
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=external_network
+      - traefik.http.routers.anubis-splitledger.rule=Host(`money.betz.coffee`)
+      - traefik.http.routers.anubis-splitledger.priority=1000
+      - traefik.http.routers.anubis-splitledger.entrypoints=websecure
+      - traefik.http.routers.anubis-splitledger.tls=true
+      - traefik.http.routers.anubis-splitledger.tls.certresolver=externalresolver
+      - traefik.http.routers.anubis-splitledger.middlewares=public-browser@file,anubis-noindex@docker
+      - traefik.http.services.anubis-splitledger.loadbalancer.server.port=8080
